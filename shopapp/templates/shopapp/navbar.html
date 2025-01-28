@@ -1,32 +1,17 @@
 {% load static %}
 <header class="header">
-    <div class="header__top">
-      <div class="header__container container">
-        <div class="header__contact">
-          <span>(+01) - 9876 - 5432-10</span>
-          <span>Our location</span>
-        </div>
-        <p class="header__alert-news">
-          Super Values Deals - Save more coupons
-        </p>
-        <a href="login-register.html" class="header__top-action">
-          Log In / Sign Up
-        </a>
-      </div>
-    </div>
-
     <nav class="nav container">
       <a href="index.html" class="nav__logo">
         <img
           class="nav__logo-img"
-          src="assets/img/logo.svg"
+          src="{% static "images/logo.svg" %}"
           alt="website logo"
         />
       </a>
       <div class="nav__menu" id="nav-menu">
         <div class="nav__menu-top">
           <a href="index.html" class="nav__menu-logo">
-            <img src=" {% static "images/logo.svg" %}" alt="">
+            <img src=" {% static 'images/logo.svg' %}" alt="">
           </a>
           <div class="nav__close" id="nav-close">
             <i class="fi fi-rs-cross-small"></i>
@@ -34,20 +19,38 @@
         </div>
         <ul class="nav__list">
           <li class="nav__item">
-            <a href="index.html" class="nav__link active-link">Home</a>
+            <a href="{% url 'home' %}" class="nav__link {% if request.resolver_match.url_name == 'home' %}active-link{% endif %}">
+              <i class="fas fa-home"></i> Home 
+            </a>
           </li>
           <li class="nav__item">
-            <a href="shop.html" class="nav__link">Shop</a>
+            <a href="{% url 'shop' %}" class="nav__link {% if request.resolver_match.url_name == 'shop' %}active-link{% endif %}">
+              <i class="fas fa-store"></i> Shop 
+            </a>
           </li>
           <li class="nav__item">
-            <a href="accounts.html" class="nav__link">My Account</a>
+            <a href="{% url 'contact' %}" class="nav__link {% if request.resolver_match.url_name == 'contact' %}active-link{% endif %}">
+              <i class="fas fa-envelope"></i> Contact 
+            </a>
+          </li>
+          {% if user.is_authenticated %}
+          <li class="nav__item">
+            <a href="accounts.html" class="nav__link">
+              <i class="fas fa-user"></i>My Account 
+            </a>
           </li>
           <li class="nav__item">
-            <a href="compare.html" class="nav__link">Compare</a>
+            <a href="{% url 'log-out' %}" class="nav__link">
+              <i class="fas fa-sign-out-alt"></i> Logout 
+            </a>
           </li>
+          {% else %}
           <li class="nav__item">
-            <a href="{% url "login" %}" class="nav__link">Login</a>
+            <a href="{% url 'login' %}" class="nav__link">
+              <i class="fas fa-sign-in-alt"></i> Login 
+            </a>
           </li>
+          {% endif %}
         </ul>
         <div class="header__search">
           <input

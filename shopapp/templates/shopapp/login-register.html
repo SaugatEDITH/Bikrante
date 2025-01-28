@@ -8,7 +8,7 @@
       <!--=============== BREADCRUMB ===============-->
       <section class="breadcrumb">
         <ul class="breadcrumb__list flex container">
-          <li><a href="index.html" class="breadcrumb__link">Home</a></li>
+          <li><a href="{% url 'home' %}" class="breadcrumb__link">Home</a></li>
           <li><span class="breadcrumb__link">></span></li>
           <li><span class="breadcrumb__link">{% if is_login %}Login{% else %}Register{% endif %}</span></li>
         </ul>
@@ -21,48 +21,72 @@
           {% if is_login %}
           <div class="login" style="max-width: 500px; margin: 0 auto;">
             <h3 class="section__title">Login</h3>
-            <form class="form grid">
+            {% if message %}
+                {% for msg in message %}
+                    <div class="alert" style="color: red; margin-bottom: 10px;">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+            <form class="form grid" method="POST" action="{% url 'login' %}">
+              {% csrf_token %}
               <input
                 type="email"
                 placeholder="Your Email"
                 class="form__input"
+                name="email"
+                required
               />
               <input
                 type="password"
                 placeholder="Your Password"
                 class="form__input"
+                name="password"
+                required
               />
               <div class="form__btn">
-                <button class="btn">Login</button>
+                <button type="submit" class="btn">Login</button>
               </div>
             </form>
           </div>
           {% else %}
           <div class="register" style="max-width: 500px; margin: 0 auto;">
+            {% if message %}
+            {% for msg in message %}
+                <div class="alert" style="color: red; margin-bottom: 10px;">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
             <h3 class="section__title">Create an Account</h3>
-            <form class="form grid">
+            <form class="form grid" method="POST" action="{% url 'signup' %}">
+              {% csrf_token %}
               <input
                 type="text"
                 placeholder="Username"
                 class="form__input"
+                name="username"
+                required
               />
               <input
                 type="email"
                 placeholder="Your Email"
                 class="form__input"
+                name="email"
+                required
               />
               <input
                 type="password"
                 placeholder="Your Password"
                 class="form__input"
+                name="password"
+                required
               />
               <input
                 type="password"
                 placeholder="Confirm Password"
                 class="form__input"
+                name="cpassword"
+                required
               />
               <div class="form__btn">
-                <button class="btn">Submit & Register</button>
+                <button type="submit" class="btn">Submit & Register</button>
               </div>
             </form>
           </div>
