@@ -1,0 +1,30 @@
+{% extends "shopapp/base.html" %}
+{% load static %}
+
+{% block content %}
+   
+    <main class="main">
+      <!--=============== HOME ===============-->
+  {% include "shopapp/hero-banner.html" %}
+
+      <!--=============== CATEGORIES ===============-->
+     {% include "shopapp/product-categories.html" %}
+      <!--=============== PRODUCTS ===============-->
+  {% include "shopapp/products-card.html" %}
+
+      <!--=============== DEALS ===============-->
+     {% include "shopapp/deals.html" %}
+      <!--=============== NEW ARRIVALS ===============-->
+      
+      {% include "shopapp/new-added.html" %}
+      <!--=============== SHOWCASE ===============-->
+      {% include "shopapp/release-showcase.html" %}
+
+      <!--=============== NEWSLETTER ===============-->
+
+    </main>
+
+  
+    {% endblock content %}
+
+
