@@ -4,10 +4,12 @@
       <a href="index.html" class="nav__logo">
         <img
           class="nav__logo-img"
-          src="{% static "images/logo.svg" %}"
+          src="{% static 'images/logo.svg' %}"
           alt="website logo"
+          style="width: 150px; height: 150px;"
         />
       </a>
+     
       <div class="nav__menu" id="nav-menu">
         <div class="nav__menu-top">
           <a href="index.html" class="nav__menu-logo">
@@ -35,19 +37,24 @@
           </li>
           {% if user.is_authenticated %}
           <li class="nav__item">
-            <a href="accounts.html" class="nav__link">
+            <a href="{% url "user-dashboard" %}" class="nav__link">
               <i class="fas fa-user"></i>My Account 
             </a>
           </li>
           <li class="nav__item">
-            <a href="{% url 'log-out' %}" class="nav__link">
+            <a href="{% url 'logout' %}" class="nav__link">
               <i class="fas fa-sign-out-alt"></i> Logout 
             </a>
           </li>
           {% else %}
           <li class="nav__item">
-            <a href="{% url 'login' %}" class="nav__link">
+            <a href="{% url 'login' %}" class="nav__link {% if request.resolver_match.url_name == 'login' %}active-link{% endif %}">
               <i class="fas fa-sign-in-alt"></i> Login 
+            </a>
+          </li>
+          <li class="nav__item">
+            <a href="{% url 'signup' %}" class="nav__link {% if request.resolver_match.url_name == 'signup' %}active-link{% endif %}">
+                <i class="fas fa-user-plus"></i> Signup 
             </a>
           </li>
           {% endif %}

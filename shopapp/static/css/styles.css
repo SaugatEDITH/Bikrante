@@ -248,6 +248,7 @@ table {
   min-width: 120px; /* Prevent logo from shrinking too much */
 }
 
+
 .nav__menu {
   flex-grow: 1;
   margin-left: 2.5rem;
