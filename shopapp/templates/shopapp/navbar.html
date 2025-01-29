@@ -71,11 +71,11 @@
         </div>
       </div>
       <div class="header__user-actions">
-        <a href="wishlist.html" class="header__action-btn" title="Wishlist">
+        <a href="{% url 'wishlist' %}" class="header__action-btn" title="Wishlist">
           <img src="{% static "images/icon-heart.svg" %} " alt="" />
-          <span class="count">3</span>
+          <span class="count">{{ user.liked_products.count }}</span>
         </a>
-        <a href="cart.html" class="header__action-btn" title="Cart">
+        <a href="{% url 'cart' %}" class="header__action-btn" title="Cart">
           <img src="{% static 'images/icon-cart.svg' %}" alt="" />
           <span class="count">3</span>
         </a>

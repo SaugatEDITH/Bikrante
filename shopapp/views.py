@@ -6,10 +6,20 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 import re
+from django.shortcuts import render, get_object_or_404
+from .models import Category, Product
 
 def home(request):
+    # Get all categories instead of trying to get a single undefined category
+    categories = Category.objects.all()
     context = {
-        'is_home': True
+        'is_home': True,
+        'categories': categories,  # Pass all categories
+        'hot_products': Product.get_hot_products(),
+        'trending_products': Product.get_trending_products(),
+        'new_arrivals': Product.get_new_arrivals(),
+        'top_selling': Product.get_top_selling(),
+        'popular_products': Product.get_popular_products(),
     }
     return render(request, 'shopapp/index.html', context)
 
@@ -123,3 +133,32 @@ def user_dashboard(request):
             else:
                 context['message'].append("Current password is incorrect.")
     return render(request,'shopapp/user-dashboard.html')
+
+def category_detail(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    products = category.products.all()  # Get all products in this category
+    context={
+        'category':category,
+        'products':products
+             }
+    return render(request, 'shopapp/shop.html',context)
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    product.increment_views()  # Record the view
+    
+    context = {
+        'product': product,
+        'cross_sell_products': product.get_cross_sell_products(),
+        'upsell_products': product.get_upsell_products(),
+    }
+    return render(request, 'shopapp/details.html', context)
+
+@login_required
+def wishlist(request):
+    liked_products = request.user.liked_products.all()
+    return render(request, 'shopapp/wishlist.html', {
+        'liked_products': liked_products
+    })
+def cart(request):
+    return render(request,'shopapp/cart.html')

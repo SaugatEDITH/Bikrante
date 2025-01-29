@@ -3,70 +3,22 @@
     <h3 class="section__title"><span>Popular</span> Categories</h3>
     <div class="categories__container swiper">
       <div class="swiper-wrapper">
-        <a href="shop.html" class="category__item swiper-slide">
-          <img
-            src="{% static "images/category-1.jpg" %}"
-            alt=""
-            class="category__img"
-          />
-          <h3 class="category__title">T-Shirt</h3>
+        {% if categories %}
+          {% for category in categories %}
+
+        <a href="{% url 'category-detail' category.slug %}" class="category__item swiper-slide">
+          {% if category.image %}
+              <img src="{{ category.image.url }}" alt="{{ category.name }}" class="category__img">
+            {% else %}
+              <img src="{% static 'images/default-category.jpg' %}" alt="{{ category.name }}" class="category__img">
+            {% endif %}
+          <h3 class="category__title">{{ category.name }}</h3>
         </a>
-        <a href="shop.html" class="category__item swiper-slide">
-          <img
-            src="assets/img/category-2.jpg"
-            alt=""
-            class="category__img"
-          />
-          <h3 class="category__title">Bags</h3>
-        </a>
-        <a href="shop.html" class="category__item swiper-slide">
-          <img
-            src="assets/img/category-3.jpg"
-            alt=""
-            class="category__img"
-          />
-          <h3 class="category__title">Sandal</h3>
-        </a>
-        <a href="shop.html" class="category__item swiper-slide">
-          <img
-            src="assets/img/category-4.jpg"
-            alt=""
-            class="category__img"
-          />
-          <h3 class="category__title">Scarf Cap</h3>
-        </a>
-        <a href="shop.html" class="category__item swiper-slide">
-          <img
-            src="assets/img/category-5.jpg"
-            alt=""
-            class="category__img"
-          />
-          <h3 class="category__title">Shoes</h3>
-        </a>
-        <a href="shop.html" class="category__item swiper-slide">
-          <img
-            src="assets/img/category-6.jpg"
-            alt=""
-            class="category__img"
-          />
-          <h3 class="category__title">Pillowcase</h3>
-        </a>
-        <a href="shop.html" class="category__item swiper-slide">
-          <img
-            src="assets/img/category-7.jpg"
-            alt=""
-            class="category__img"
-          />
-          <h3 class="category__title">Jumpsuit</h3>
-        </a>
-        <a href="shop.html" class="category__item swiper-slide">
-          <img
-            src="assets/img/category-8.jpg"
-            alt=""
-            class="category__img"
-          />
-          <h3 class="category__title">Hats</h3>
-        </a>
+        {% endfor %}
+        {% else %}
+        <p>No categories found.</p>
+      {% endif %}
+        
       </div>
 
       <div class="swiper-button-prev">
