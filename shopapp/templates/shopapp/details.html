@@ -19,24 +19,24 @@
         <div class="details__container container grid">
           <div class="details__group">
             <img
-              src="./assets/img/product-8-1.jpg"
-              alt=""
+              src="{{ product.image1.url }}"
+              alt="{{ product.name }}"
               class="details__img"
             />
             <div class="details__small-images grid">
               <img
-                src="./assets/img/product-8-2.jpg"
-                alt=""
+                src="{{ product.image2.url }}"
+                alt="{{ product.name }}"
                 class="details__small-img"
               />
               <img
-                src="./assets/img/product-8-1.jpg"
-                alt=""
+                src="{{ product.image3.url }}"
+                alt="{{ product.name }}"
                 class="details__small-img"
               />
               <img
-                src="./assets/img/product-8-2.jpg"
-                alt=""
+                src="{{ product.image4 }}"
+                alt="{{ product.name }}"
                 class="details__small-img"
               />
             </div>
@@ -46,15 +46,11 @@
             <p class="details__brand">Brand: <span>adidas</span></p>
             <div class="details__price flex">
               <span class="new__price">$116</span>
-              <span class="old__price">$200.00</span>
-              <span class="save__price">25% Off</span>
+              <span class="old__price">{{ product.price }}</span>
+              <span class="save__price">{{ product.category.discount_percentage }}% Off</span>
             </div>
             <p class="short__description">
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              Voluptate, fuga. Quo blanditiis recusandae facere nobis cum optio,
-              inventore aperiam placeat, quis maxime nam officiis illum? Optio
-              et nisi eius, inventore impedit ratione sunt, cumque, eligendi
-              asperiores iste porro non error?
+          {{ product.description }}
             </p>
             <ul class="products__list">
               <li class="list__item flex">

@@ -5,17 +5,22 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-import re
+import re,random
 from django.shortcuts import render, get_object_or_404
 from .models import Category, Product
-
+# All the function call returning the objects are at models
 def home(request):
-    # Get all categories instead of trying to get a single undefined category
     categories = Category.objects.all()
+    hot_products=Product.get_hot_products()
+    normal_products=Product.objects.filter(is_hot=False)
+    colors=['light-pink','light-orange','light-green','light-blue']
+    for hot_product in hot_products:
+        hot_product.class_color=random.choice(colors)
     context = {
-        'is_home': True,
-        'categories': categories,  # Pass all categories
-        'hot_products': Product.get_hot_products(),
+        'is_home':True, ##! yadi home ma card xa vani filter button natra total item no dekhauxa
+        'normal_products':normal_products,
+        'categories':categories,
+        'hot_products':hot_products ,
         'trending_products': Product.get_trending_products(),
         'new_arrivals': Product.get_new_arrivals(),
         'top_selling': Product.get_top_selling(),

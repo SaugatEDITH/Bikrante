@@ -80,6 +80,7 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    brand_name=models.CharField(max_length=255)
     sku = models.CharField(max_length=100, unique=True)
     tags = models.CharField(
         max_length=255,
@@ -91,11 +92,13 @@ class Product(models.Model):
     colors = models.CharField(
         max_length=255, blank=True, help_text="Comma seperated colors e.g.()"
     )
-    sizes = models.CharField(max_length=255, blank=True)
+    sizes = models.CharField(max_length=255, blank=True,help_text="Comma seperated sizes e.g.(xl,xxl ,l,ml etc)")
     image1 = models.ImageField(upload_to="product_images/")
-    image2 = models.ImageField(upload_to="product_images/", null=True, blank=True)
+    image2 = models.ImageField(upload_to="product_images/")
     image3 = models.ImageField(upload_to="product_images/", null=True, blank=True)
     image4 = models.ImageField(upload_to="product_images/", null=True, blank=True)
+    image5 = models.ImageField(upload_to="product_images/", null=True, blank=True)
+    image6 = models.ImageField(upload_to="product_images/", null=True, blank=True)
     likes = models.ManyToManyField(User, related_name="liked_products", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)  # Add slug field
