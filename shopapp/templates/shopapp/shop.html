@@ -1,22 +1,53 @@
 {% extends "shopapp/base.html" %}
 {% block content %}
-   <!--=============== MAIN ===============-->
-   <main class="main">
-    <!--=============== BREADCRUMB ===============-->
-   {% include "shopapp/includes/_breadcrumb.html" %}
+<main class="main">
+  {% include "shopapp/includes/_breadcrumb.html" %}
 
-    <!--=============== PRODUCTS ===============-->
-   {% include "shopapp/includes/_products-card.html" %}
-   <ul class="pagination">
-    <li><a href="#" class="pagination__link active">01</a></li>
-    <li><a href="#" class="pagination__link">02</a></li>
-    <li><a href="#" class="pagination__link">03</a></li>
-    <li><a href="#" class="pagination__link">...</a></li>
-    <li><a href="#" class="pagination__link">16</a></li>
-    <li><a href="#" class="pagination__link icon">
-      <i class="fi-rs-angle-double-small-right"></i>
-    </a></li>
-  </ul>
-  </main>
+  <section class="products section--lg">
+    <div class="container">
+      {% if search_text %}
+        <h2 class="section__title">Search Results for "{{ search_text }}"</h2>
+        {% if total_results %}
+          <p class="total__products">Found <span>{{ total_results }}</span> products</p>
+        {% endif %}
+      {% endif %}
+      
+      <div class="products__container grid">
+        {% if products %}
+          {% for product in products %}
+            <div class="product__item">
+              <div class="product__banner">
+                <a href="{% url 'product-detail' product.slug %}" class="product__images">
+                  <img src="{{ product.image1.url }}" alt="{{ product.name }}" class="product__img default" />
+                  {% if product.image2 %}
+                  <img src="{{ product.image2.url }}" alt="{{ product.name }}" class="product__img hover" />
+                  {% endif %}
+                </a>
+                {% if product.is_hot %}
+                  <div class="product__badge {{ product.class_color|default:'light-blue' }}">Hot</div>
+                {% endif %}
+              </div>
+              <div class="product__content">
+                <span class="product__category">{{ product.category.name }}</span>
+                <a href="{% url 'product-detail' product.slug %}">
+                  <h3 class="product__title">{{ product.name }}</h3>
+                </a>
+                <div class="product__price flex">
+                  <span class="new__price">रु{{ product.price }}</span>
+                  {% if product.old_price %}
+                  <span class="old__price">रु{{ product.old_price }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="no-results">
+            <p>No products available.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</main>
 {% endblock content %}
- 

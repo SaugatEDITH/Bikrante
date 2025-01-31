@@ -1,7 +1,7 @@
 {% load static %}
 <header class="header">
     <nav class="nav container">
-      <a href="index.html" class="nav__logo">
+      <a href="{% url 'home' %}" class="nav__logo">
         <img
           class="nav__logo-img"
           src="{% static 'images/logo.svg' %}"
@@ -12,7 +12,7 @@
      
       <div class="nav__menu" id="nav-menu">
         <div class="nav__menu-top">
-          <a href="index.html" class="nav__menu-logo">
+          <a href="{% url 'home' %}" class="nav__menu-logo">
             <img src=" {% static 'images/logo.svg' %}" alt="">
           </a>
           <div class="nav__close" id="nav-close">
@@ -60,14 +60,22 @@
           {% endif %}
         </ul>
         <div class="header__search">
-          <input
-            type="text"
-            placeholder="Search For Items..."
-            class="form__input"
-          />
-          <button class="search__btn">
-            <img src="{% static 'images/search.png' %}" alt="search icon" />
-          </button>
+          <form class="search-form">
+            <input
+              type="text"
+              placeholder="Search For Items..."
+              class="form__input"
+              name="search_text"
+              autocomplete="off"
+              hx-get="{% url 'search' %}"
+              hx-trigger="input changed delay:300ms"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+            />
+            <button type="submit" class="search__btn">
+              <img src="{% static 'images/search.png' %}" alt="search icon" class="search-indicator" />
+            </button>
+          </form>
         </div>
       </div>
       <div class="header__user-actions">

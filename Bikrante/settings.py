@@ -39,8 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'shopapp',
-    'ckeditor',  # Changed from django_ckeditor_5
-    'ckeditor_uploader',  # Add this line
+    'ckeditor',  #!for django_ckeditor
+    'ckeditor_uploader', 
+    "django_htmx",##!for django-htmx
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django_htmx.middleware.HtmxMiddleware", ##!for django-htmx
+
 ]
 
 ROOT_URLCONF = 'Bikrante.urls'

@@ -327,13 +327,31 @@ table {
 
 .header__search .form__input {
   width: 100%;
+  padding-right: 2.5rem;  /* Make room for search icon */
 }
 
 .search__btn {
   position: absolute;
-  top: 24%;
-  right: 1.25rem;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
   cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.search__btn img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.search__btn:hover img {
+  opacity: 1;
 }
 
 .header__user-actions {
@@ -403,6 +421,100 @@ table {
   border-radius: 0.25rem;
   padding: 0.25rem 0.5rem;
   transition: background-color 0.3s var(--transition);
+}
+
+/* Search loading indicator */
+.search-indicator {
+    opacity: 1;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.htmx-request .search-indicator {
+    opacity: 0.5;
+}
+
+/* Make sure the search icon is visible */
+.search__btn img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+    display: block;
+}
+
+/* Search loading states */
+.htmx-request .search-indicator {
+    opacity: 0.5;
+    animation: pulse 1s infinite;
+}
+
+.htmx-request .products__container {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* Smooth transitions for search results */
+.products__container {
+    transition: opacity 0.3s ease;
+}
+
+.no-results {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-color-light);
+    background: var(--container-color);
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+/* Search Form Styles */
+.search-form {
+    width: 100%;
+    position: relative;
+}
+
+.search-form .form__input {
+    width: 100%;
+    padding-right: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.search-form .form__input:focus {
+    border-color: var(--first-color);
+    box-shadow: 0 0 0 2px var(--first-color-alt);
+}
+
+/* Search Loading States */
+.htmx-request .search-indicator {
+    opacity: 0.5;
+    animation: pulse 1s infinite;
+}
+
+.htmx-request .products__container {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.search-results-wrapper {
+    min-height: 200px;
+    position: relative;
+}
+
+.search-results-wrapper.htmx-request::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 1;
 }
 
 /*=============== HOME ===============*/
@@ -789,7 +901,21 @@ table {
 .product__badge.light-blue {
   background-color: hsl(202, 53%, 76%);
 }
+.product__badge.light-red {
+  background-color: hsl(0, 100%, 73%);
+}
 
+.product__badge.light-purple {
+  background-color: hsl(270, 100%, 73%);
+}
+
+.product__badge.light-yellow {
+  background-color: hsl(60, 100%, 73%);
+}
+
+.product__badge.light-cyan {
+  background-color: hsl(180, 100%, 73%);
+}
 .product__content {
   padding: 0 1.25rem 1.125rem;
   position: relative;
@@ -1270,6 +1396,24 @@ table {
 .pagination__link.icon {
   border-top-right-radius: 50%;
   border-bottom-right-radius: 50%;
+}
+
+/* Search Results Styles */
+.no-results {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-color-light);
+}
+
+.pagination__link.active {
+    background-color: var(--first-color);
+    color: var(--body-color);
+    cursor: default;
+}
+
+.pagination__link:not(.active):hover {
+    background-color: var(--first-color-alt);
+    color: var(--first-color);
 }
 
 /*=============== DETAILS ===============*/

@@ -1,0 +1,56 @@
+<div class="products__container grid">
+  {% if products %}
+    {% for product in products %}
+    <div class="product__item">
+      <div class="product__banner">
+        <a href="{% url 'product-detail' product.slug %}" class="product__images">
+          <img src="{{ product.image1.url }}" alt="{{ product.name }}" class="product__img default" />
+          {% if product.image2 %}
+          <img src="{{ product.image2.url }}" alt="{{ product.name }}" class="product__img hover" />
+          {% endif %}
+        </a>
+        <div class="product__actions">
+          <a href="#" class="action__btn" aria-label="Quick View">
+            <i class="fi fi-rs-eye"></i>
+          </a>
+          <a href="#" class="action__btn" aria-label="Add to Wishlist">
+            <i class="fi fi-rs-heart"></i>
+          </a>
+          <a href="#" class="action__btn" aria-label="Compare">
+            <i class="fi fi-rs-shuffle"></i>
+          </a>
+        </div>
+        {% if product.is_hot %}
+          <div class="product__badge {{product.class_color}}">Hot</div>
+        {% endif %}
+      </div>
+      <div class="product__content">
+        <span class="product__category">{{ product.category.name }}</span>
+        <a href="{% url 'product-detail' product.slug %}">
+          <h3 class="product__title">{{ product.name }}</h3>
+        </a>
+        <div class="product__rating">
+          <i class="fi fi-rs-star"></i>
+          <i class="fi fi-rs-star"></i>
+          <i class="fi fi-rs-star"></i>
+          <i class="fi fi-rs-star"></i>
+          <i class="fi fi-rs-star"></i>
+        </div>
+        <div class="product__price flex">
+          <span class="new__price">रु{{ product.price }}</span>
+          {% if product.old_price %}
+          <span class="old__price">रु{{ product.old_price }}</span>
+          {% endif %}
+        </div>
+        <a href="#" class="action__btn cart__btn" aria-label="Add To Cart">
+          <i class="fi fi-rs-shopping-bag-add"></i>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="no-products">
+      <p>No products found.</p>
+    </div>
+  {% endif %}
+</div>

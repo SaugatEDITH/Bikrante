@@ -12,5 +12,6 @@ urlpatterns = [
     path('wishlist/',views.wishlist,name="wishlist"),
     path('user-dashboard/',views.user_dashboard,name='user-dashboard'),
     path('category/<slug:slug>/', views.category_detail, name='category-detail'),
-    path('product/<slug:slug>/', views.product_detail, name='product-detail')
+    path('product/<slug:slug>/', views.product_detail, name='product-detail'),
+    path('search/',views.search,name="search")
 ]

@@ -18,13 +18,33 @@
     <!--=============== FONT AWESOME ===============-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    
+    <!-- Add HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Optional: Add HTMX loading indicator styles -->
+    <style>
+        .htmx-indicator {
+            opacity: 1;
+            transition: opacity 200ms ease-in;
+        }
+        .htmx-indicator.htmx-request {
+            opacity: 0.5;
+        }
+    </style>
   </head>
   <body>
      <!--=============== HEADER ===============-->
     {% include "shopapp/includes/_navbar.html" %}
-    {% block content %} 
     
-    {% endblock content %}
+    <div id="main-content">
+        {% block content %} 
+        {% endblock content %}
+    </div>
+    
+    <!-- Add this div for search results -->
+    <div id="search-results"></div>
+    
      <!--=============== FOOTER ===============-->
     {% include "shopapp/includes/_news-letter.html" %}
     {% include "shopapp/includes/_footer.html" %}

@@ -5,20 +5,17 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-import re,random
+import re, random
 from django.shortcuts import render, get_object_or_404
 from .models import Category, Product
 from django.urls import reverse
-
-##! for getting data and handaling url
-import urllib3
 ##! for create custom highend search querys
 from django.db.models import Q
 ##! to seperate large data set to smaller managable pages
 from django.core.paginator import Paginator
 # All the function call returning the objects are at models
 def home(request):
-    colors=['light-pink','light-orange','light-green','light-blue']
+    colors=['light-pink','light-orange','light-green','light-blue','light-red', 'light-purple', 'light-yellow', 'light-cyan']
     products=list(Product.objects.all())
     for product in products:
         if product.is_hot:
@@ -29,8 +26,6 @@ def home(request):
     normal_products=[product for product in products if not product.is_hot]
     categories = Category.objects.all()
 
-    for hot_product in hot_products:
-        hot_product.class_color=random.choice(colors)
     context = {
         'is_home':True, ##! yadi home ma card xa vani filter button natra total item no dekhauxa
         'categories':categories,
@@ -44,10 +39,178 @@ def home(request):
     return render(request, 'shopapp/index.html', context)
 
 def shop(request):
+    products = Product.objects.all()
     context = {
-        'is_home': False
+        'is_home': False,
+        'products': products,
     }
     return render(request, 'shopapp/shop.html', context)
+
+
+
+
+##! OLD search
+# def search(request):
+#     search_text = request.GET.get("search_text", "").strip()
+#     page_num = int(request.GET.get('page', 1))
+    
+#     context = {
+#         'is_home': False,
+#         'search_text': search_text,
+#         'current_page': page_num,
+#     }
+    
+#     if search_text:
+#         try:
+#             # Split search terms
+#             terms = search_text.lower().split()
+#             # Start with all products
+#             products = Product.objects.all()
+            
+#             # Apply each search term
+#             for term in terms:
+#                 products = products.filter(
+#                     Q(name__icontains=term) |
+#                     Q(description__icontains=term) |
+#                     Q(category__name__icontains=term) |
+#                     Q(brand_name__icontains=term) |
+#                     Q(tags__icontains=term)
+#                 )
+            
+#             # Pagination
+#             paginator = Paginator(products, 12)
+#             try:
+#                 products = paginator.page(page_num)
+#             except:
+#                 products = paginator.page(1)
+            
+#             context.update({
+#                 'products': products,
+#                 'total_results': paginator.count,
+#                 'has_results': True
+#             })
+            
+#         except Exception as e:
+#             print(f"Search error: {e}")
+#             context.update({
+#                 'products': [],
+#                 'has_results': False,
+#                 'error': str(e)
+#             })
+#     else:
+#         # Show all products when no search
+#         products = Product.objects.all().order_by('-created_at')
+#         paginator = Paginator(products, 12)
+#         try:
+#             products = paginator.page(page_num)
+#             context.update({
+#                 'products': products,
+#                 'total_results': paginator.count,
+#                 'has_results': True
+#             })
+#         except:
+#             context.update({
+#                 'products': [],
+#                 'has_results': False
+#             })
+    
+#     if request.htmx:
+#         return render(request, 'shopapp/includes/_search_results.html', context)
+#     return render(request, 'shopapp/shop.html', context)
+
+## ! God level search
+def search(request):
+    """
+    The `search` function in Python handles searching for products based on user input and pagination,
+    displaying results accordingly.
+    
+    :param request: The `search` function you provided is a view function in Django that handles
+    searching for products based on the search text provided in the request. Here's a breakdown of the
+    function:
+    :return: The `search` function returns a rendered template based on the request type. If the request
+    is made using HTMX (a library that allows for creating dynamic web pages using JavaScript), it
+    returns the search results template (`shopapp/includes/_search_results.html`) with the context
+    containing the search results data. If the request is not made using HTMX, it returns the main shop
+    template (`shopapp/shop
+    """
+    search_text = request.GET.get("search_text", "").strip()
+    page_num = int(request.GET.get('page', 1))
+
+    context = {
+        'is_home': False,
+        'search_text': search_text,
+        'current_page': page_num,
+    }
+
+    if search_text:
+        try:
+            # Split the search text into individual terms
+            terms = search_text.lower().split()
+
+            # Initialize the query for the OR logic (search any term in any relevant field)
+            query = Q()
+
+            # Create a query that matches any term in the name, description, category, etc.
+            for term in terms:
+                term_query = (
+                    Q(name__icontains=term) |
+                    Q(description__icontains=term) |
+                    Q(category__name__icontains=term) |
+                    Q(brand_name__icontains=term) |
+                    Q(tags__icontains=term)
+                )
+                query |= term_query  # Use OR for combining terms (either term can match)
+
+            # Apply the query to filter products
+            products = Product.objects.filter(query)
+
+            # Pagination
+            paginator = Paginator(products, 12)
+            products = paginator.get_page(page_num)
+
+            context.update({
+                'products': products,
+                'total_results': paginator.count,
+                'has_results': True
+            })
+
+        except Exception as e:
+            print(f"Search error: {e}")
+            context.update({
+                'products': [],
+                'has_results': False,
+                'error': str(e)
+            })
+    else:
+        # Show all products when no search text is provided
+        products = Product.objects.all().order_by('-created_at')
+        paginator = Paginator(products, 12)
+        products = paginator.get_page(page_num)
+
+        context.update({
+            'products': products,
+            'total_results': paginator.count,
+            'has_results': True
+        })
+
+    if request.htmx:
+        return render(request, 'shopapp/includes/_search_results.html', context)
+    return render(request, 'shopapp/shop.html', context)
+
+
+
+def calculate_page_range(paginator, current_page):
+    """Calculate the range of pages to display"""
+    if paginator.num_pages <= 7:
+        return range(1, paginator.num_pages + 1)
+    
+    if current_page <= 4:
+        return range(1, 8)
+    
+    if current_page >= paginator.num_pages - 3:
+        return range(paginator.num_pages - 6, paginator.num_pages + 1)
+    
+    return range(current_page - 3, current_page + 4)
 
 def login(request):
     context = {
