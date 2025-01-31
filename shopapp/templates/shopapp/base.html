@@ -17,16 +17,17 @@
     <link rel="stylesheet" href="{% static "css/styles.css" %}">
     <!--=============== FONT AWESOME ===============-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
   </head>
   <body>
      <!--=============== HEADER ===============-->
-    {% include "shopapp/navbar.html" %}
+    {% include "shopapp/includes/_navbar.html" %}
     {% block content %} 
     
     {% endblock content %}
      <!--=============== FOOTER ===============-->
-    {% include "shopapp/news-letter.html" %}
-    {% include "shopapp/footer.html" %}
+    {% include "shopapp/includes/_news-letter.html" %}
+    {% include "shopapp/includes/_footer.html" %}
     
       <!--=============== SWIPER JS ===============-->
       <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>

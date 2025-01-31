@@ -1,33 +1,138 @@
 {% extends "shopapp/base.html" %}
 {% block content %}
 <main class="main">
-  <section class="breadcrumb">
-    <ul class="breadcrumb__list flex container">
-      <li><a href="{% url 'home' %}" class="breadcrumb__link">Home</a></li>
-      <li><span class="breadcrumb__link">></span></li>
-      <li><span class="breadcrumb__link">Contact</span></li>
-    </ul>
+  {% include 'shopapp/includes/_breadcrumb.html' %}
+
+  <!-- Hero Section with Floating Cards -->
+  <section class="contact-hero">
+    <div class="container">
+      <div class="contact-hero__content">
+        <h2 class="contact-hero__title">Need Help?</h2>
+        <p class="contact-hero__description">We're here to assist you 24/7</p>
+        
+        <!-- Floating Contact Cards -->
+        <div class="floating-cards">
+          <div class="floating-card">
+            <div class="floating-card__icon">
+              <i class="fas fa-headset"></i>
+            </div>
+            <h4>24/7 Support</h4>
+            <p>Always here to help</p>
+          </div>
+          <div class="floating-card">
+            <div class="floating-card__icon">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <h4>Quick Response</h4>
+            <p>Within 24 hours</p>
+          </div>
+          <div class="floating-card">
+            <div class="floating-card__icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h4>Live Chat</h4>
+            <p>Real-time assistance</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="contact section--lg">
-    <div class="contact__container container grid">
-      <div class="contact__info">
-        <h3 class="section__title">Contact Information</h3>
-        <div class="contact__data grid">
-          <div class="contact__card">
-            <i class="fas fa-phone"></i>
-            <h3>Phone</h3>
+    <div class="container">
+      <!-- Contact Information Cards -->
+      <div class="contact__info-grid">
+        <div class="contact__card primary">
+          <div class="contact__card-icon">
+            <i class="fas fa-phone-alt"></i>
+          </div>
+          <div class="contact__card-content">
+            <h3>Call Us</h3>
             <p>(+01) - 9876 - 5432-10</p>
+            <span>Mon-Fri 9am-6pm</span>
           </div>
-          <div class="contact__card">
+        </div>
+        
+        <div class="contact__card secondary">
+          <div class="contact__card-icon">
             <i class="fas fa-map-marker-alt"></i>
-            <h3>Location</h3>
-            <p>123 Main Street, Your City</p>
           </div>
-          <div class="contact__card">
+          <div class="contact__card-content">
+            <h3>Visit Us</h3>
+            <p>123 Main Street, Your City</p>
+            <span>Find us on Google Maps</span>
+          </div>
+        </div>
+        
+        <div class="contact__card tertiary">
+          <div class="contact__card-icon">
             <i class="fas fa-envelope"></i>
-            <h3>Email</h3>
+          </div>
+          <div class="contact__card-content">
+            <h3>Email Us</h3>
             <p>info@bikrante.com</p>
+            <span>We'll respond within 24 hours</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Form and Map Section -->
+      <div class="contact__main">
+        <div class="contact__form-wrapper">
+          <div class="form__header">
+            <h3 class="section__title">Send Us a Message</h3>
+            <p class="contact__form-description">Have a question or feedback? We'd love to hear from you.</p>
+          </div>
+          
+          <form action="" class="contact__form">
+            <div class="form__group">
+              <div class="form__field">
+                <label for="name" class="form__label">Full Name</label>
+                <div class="input__wrapper">
+                  <i class="fas fa-user input__icon"></i>
+                  <input type="text" id="name" placeholder="John Doe" class="form__input" required>
+                </div>
+              </div>
+              <div class="form__field">
+                <label for="email" class="form__label">Email Address</label>
+                <div class="input__wrapper">
+                  <i class="fas fa-envelope input__icon"></i>
+                  <input type="email" id="email" placeholder="john@example.com" class="form__input" required>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form__field">
+              <label for="subject" class="form__label">Subject</label>
+              <div class="input__wrapper">
+                <i class="fas fa-tag input__icon"></i>
+                <input type="text" id="subject" placeholder="How can we help?" class="form__input" required>
+              </div>
+            </div>
+            
+            <div class="form__field">
+              <label for="message" class="form__label">Message</label>
+              <div class="input__wrapper">
+                <i class="fas fa-pencil-alt input__icon"></i>
+                <textarea id="message" placeholder="Write your message here..." class="form__input textarea" required></textarea>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn--md submit__btn">
+              <i class="fas fa-paper-plane"></i>
+              Send Message
+            </button>
+          </form>
+        </div>
+
+        <div class="contact__map-wrapper">
+          <div class="contact__map">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.240249828675!2d85.31405401506!3d27.709932982790654!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb193edf6bd2af%3A0x44ac26fce7c33d8c!2sThamel%2C%20Kathmandu%2044600!5e0!3m2!1sen!2snp!4v1646493765425!5m2!1sen!2snp"
+              style="border:0;" 
+              allowfullscreen="" 
+              loading="lazy">
+            </iframe>
           </div>
         </div>
       </div>

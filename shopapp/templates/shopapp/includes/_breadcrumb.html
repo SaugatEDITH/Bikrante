@@ -1,0 +1,8 @@
+<section class="breadcrumb">
+    <ul class="breadcrumb__list flex container">
+        {% for item in breadcrumb_items %}
+        <li>{% if item.url %}<a href="{{ item.url }}" class="breadcrumb__link">{{ item.title }}</a>{% else %}<span class="breadcrumb__link">{{ item.title }}</span>{% endif %}</li>
+        <li><span class="breadcrumb__link separator">&nbsp;>&nbsp;</span></li>
+        {% endfor %}
+    </ul>
+</section>

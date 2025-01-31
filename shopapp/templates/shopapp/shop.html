@@ -3,16 +3,10 @@
    <!--=============== MAIN ===============-->
    <main class="main">
     <!--=============== BREADCRUMB ===============-->
-    <section class="breadcrumb">
-      <ul class="breadcrumb__list flex container">
-        <li><a href="index.html" class="breadcrumb__link">Home</a></li>
-        <li><span class="breadcrumb__link"></span>></li>
-        <li><span class="breadcrumb__link">Shop</span></li>
-      </ul>
-    </section>
+   {% include "shopapp/includes/_breadcrumb.html" %}
 
     <!--=============== PRODUCTS ===============-->
-   {% include "shopapp/products-card.html" %}
+   {% include "shopapp/includes/_products-card.html" %}
    <ul class="pagination">
     <li><a href="#" class="pagination__link active">01</a></li>
     <li><a href="#" class="pagination__link">02</a></li>

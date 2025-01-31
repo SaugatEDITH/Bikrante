@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'shopapp',
+    'ckeditor',  # Changed from django_ckeditor_5
+    'ckeditor_uploader',  # Add this line
 ]
 
 MIDDLEWARE = [
@@ -135,3 +137,26 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+##! CKEditor settings
+CKEDITOR_UPLOAD_PATH = "ckeditor/"
+CKEDITOR_IMAGE_BACKEND = "pillow"
+CKEDITOR_FORCE_JPEG_COMPRESSION = True
+CKEDITOR_IMAGE_QUALITY = 90
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+        'removePlugins': 'stylesheetparser',
+        'extraPlugins': ','.join([
+            'uploadimage',
+            'image2',
+            'codesnippet',
+        ]),
+        # Simple table class configuration
+        'table_default_attributes': {
+            'class': 'info__table'
+        }
+    },
+}

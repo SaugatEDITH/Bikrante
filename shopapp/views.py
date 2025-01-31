@@ -8,18 +8,33 @@ from django.contrib.auth.decorators import login_required
 import re,random
 from django.shortcuts import render, get_object_or_404
 from .models import Category, Product
+from django.urls import reverse
+
+##! for getting data and handaling url
+import urllib3
+##! for create custom highend search querys
+from django.db.models import Q
+##! to seperate large data set to smaller managable pages
+from django.core.paginator import Paginator
 # All the function call returning the objects are at models
 def home(request):
-    categories = Category.objects.all()
-    hot_products=Product.get_hot_products()
-    normal_products=Product.objects.filter(is_hot=False)
     colors=['light-pink','light-orange','light-green','light-blue']
+    products=list(Product.objects.all())
+    for product in products:
+        if product.is_hot:
+            product.class_color=random.choice(colors)
+        else:
+            product.class_color=None
+    hot_products=[product for product in products if product.is_hot]
+    normal_products=[product for product in products if not product.is_hot]
+    categories = Category.objects.all()
+
     for hot_product in hot_products:
         hot_product.class_color=random.choice(colors)
     context = {
         'is_home':True, ##! yadi home ma card xa vani filter button natra total item no dekhauxa
-        'normal_products':normal_products,
         'categories':categories,
+        'normal_products':normal_products,
         'hot_products':hot_products ,
         'trending_products': Product.get_trending_products(),
         'new_arrivals': Product.get_new_arrivals(),
@@ -98,7 +113,11 @@ def user_logout(request):
     return redirect('home')
 
 def contact(request):
-    return render(request, 'shopapp/contact.html')
+    breadcrumb_items = [
+        {'title': 'Home', 'url': reverse('home')},
+        {'title': 'Contact', 'url': None}  # Current page doesn't need URL
+    ]
+    return render(request, 'shopapp/contact.html', {'breadcrumb_items': breadcrumb_items})
 
 @login_required
 def user_dashboard(request):
@@ -152,10 +171,18 @@ def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
     product.increment_views()  # Record the view
     
+    # Generate breadcrumb data
+    breadcrumb_items = [
+        {'title': 'Home', 'url': reverse('home')},
+        {'title': product.category.name, 'url': product.category.get_absolute_url()},
+        {'title': product.name, 'url': None}  # Current page doesn't need URL
+    ]
+    
     context = {
         'product': product,
         'cross_sell_products': product.get_cross_sell_products(),
         'upsell_products': product.get_upsell_products(),
+        'breadcrumb_items': breadcrumb_items,
     }
     return render(request, 'shopapp/details.html', context)
 
@@ -165,5 +192,19 @@ def wishlist(request):
     return render(request, 'shopapp/wishlist.html', {
         'liked_products': liked_products
     })
+
 def cart(request):
     return render(request,'shopapp/cart.html')
+
+def checkout(request):
+    # Generate breadcrumb data
+    breadcrumb_items = [
+        {'title': 'Shop', 'url': reverse('shop')},
+        {'title': 'Checkout', 'url': None}  # Current page doesn't need URL
+    ]
+    
+    context = {
+        'breadcrumb_items': breadcrumb_items,
+        # ... other context data ...
+    }
+    return render(request, 'shopapp/checkout.html', context)

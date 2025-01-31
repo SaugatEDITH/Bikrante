@@ -9,7 +9,9 @@ from django.core.files.storage import default_storage
 from django.core.files import File
 import os
 from django.urls import reverse
-
+##! for word like gui type text typing (if also image upload required un comment below and comment up one)
+from ckeditor.fields import RichTextField
+## from ckeditor_uploader.fields import RichTextUploadingField
 def generate_slug(title):
     # Convert to lowercase and replace spaces with hyphens
     slug = title.lower().strip().replace(' ', '-')
@@ -103,10 +105,13 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)  # Add slug field
     is_hot = models.BooleanField(default=False)
+    ##! for word like gui type text typing
+    specifications = RichTextField(null=True, blank=True)
     views_count = models.PositiveIntegerField(default=0)
     sales_count = models.PositiveIntegerField(default=0)
     last_viewed = models.DateTimeField(null=True, blank=True)
-
+    
+ 
     def __str__(self):
         return self.name
 
@@ -137,10 +142,6 @@ class Product(models.Model):
             self.slug = unique_slug
         super().save(*args, **kwargs)
 
-    @classmethod
-    def get_hot_products(cls, limit=4):
-        """Products manually marked as hot deals"""
-        return cls.objects.filter(is_hot=True)[:limit]
     
     @classmethod
     def get_trending_products(cls, days=7, limit=4):

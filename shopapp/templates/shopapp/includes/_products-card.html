@@ -47,7 +47,6 @@
               </div>
        
               <div class="product__badge {{ hot_product.class_color }}">Hot</div>
-              <div class="product__badge light-green">Hot</div>
             </div>
             <div class="product__content">
               <span class="product__category">{{ hot_product.category.name }}</span>
@@ -78,6 +77,7 @@
           {% endif %}
 
       
+        {% if normal_products %}
 
           {% for normal_product in normal_products %}
           <div class="product__item">
@@ -109,7 +109,7 @@
                   <i class="fi fi-rs-shuffle"></i>
                 </a>
               </div>
-              <div class="product__badge light-green">Hot</div>
+              <div class="product__badge">{{ normal_product.category.discount_percentage }}% Off</div>
             </div>
             <div class="product__content">
               <span class="product__category">{{ normal_product.category.name }}</span>
@@ -139,7 +139,8 @@
           {% endfor %}
         </div>
       </div>
-    
+      {% endif %}
+
       {% if popular_products %}
       <div class="tab__item" content id="popular">
         <div class="products__container grid">
@@ -205,6 +206,7 @@
         </div>
       </div>
       {% endif %}
+
 {% if new_arrivals %}
       <div class="tab__item" content id="new-added">
         <div class="products__container grid">
