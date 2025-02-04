@@ -31,9 +31,38 @@
         .htmx-indicator.htmx-request {
             opacity: 0.5;
         }
+
+        /* Heart icon styles */
+        .fi-rs-heart {
+            color: #666;
+            transition: color 0.3s ease;
+        }
+        
+        /* Wishlist button state */
+        .wishlist-btn.liked {
+            background-color: #ff0000 !important;
+        }
+        
+        /* Heart icon color when button is liked */
+        .wishlist-btn.liked .fi-rs-heart {
+            color: #fff;
+        }
+
+        .action__btn {
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 40px; /* Adjust as needed */
+        }
     </style>
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+    </script>
   </head>
-  <body>
+  <body class="{% if user.is_authenticated %}user-authenticated{% endif %}">
      <!--=============== HEADER ===============-->
     {% include "shopapp/includes/_navbar.html" %}
     

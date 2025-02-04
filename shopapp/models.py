@@ -72,6 +72,12 @@ class Category(models.Model):
             return self.image.url if self.image else None
         except:
             return None
+    def updated_product_discount(self):
+        """Method to update the discount price for all products in this category."""
+        products=self.products.all()
+        for product in products:
+            product.category_discount_applied=False
+            product.save()
 
 
 # Product
@@ -82,6 +88,8 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    price_after_discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # New Field
+    
     brand_name=models.CharField(max_length=255)
     sku = models.CharField(max_length=100, unique=True)
     tags = models.CharField(
@@ -106,23 +114,29 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, blank=True)  # Add slug field
     is_hot = models.BooleanField(default=False)
     ##! for word like gui type text typing
-    specifications = RichTextField(null=True, blank=True)
+    specifications = RichTextField(null=True, blank=True,help_text="Enter table class name as :info__table")
     views_count = models.PositiveIntegerField(default=0)
     sales_count = models.PositiveIntegerField(default=0)
     last_viewed = models.DateTimeField(null=True, blank=True)
-    
+    category_discount_applied = models.BooleanField(default=False)
  
     def __str__(self):
         return self.name
 
     def get_discounted_price(self):
         """
-        Dynamically calculates the discounted price based on the catagory's discount percentage.
+        Dynamically calculates and stores the discounted price in the price_after_discount field.
+        If the category discount is applied, this field will hold the discounted price.
         """
-        if self.category.discount_percentage > 0:
-            discount_amount = (self.price * self.category.discount_percentage) / 100
-            return round(self.price - discount_amount, 2)
-        return self.price
+        if not self.category_discount_applied:
+            if self.category.discount_percentage > 0:
+                discount_amount = (self.price * self.category.discount_percentage) / 100
+                discounted_price = round(self.price - discount_amount, 2)
+                self.price_after_discount=discounted_price
+                self.category_discount_applied=True
+                self.save()
+                return discounted_price
+            return self.price
 
     def total_likes(self):
         """
@@ -247,7 +261,19 @@ class OrderItem(models.Model):  # Changed from OrderItems to OrderItem
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
 
+class CartItem(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name="cart_items")
+    product=models.ForeignKey(Product,on_delete=models.CASCADE)
+    quantity=models.PositiveIntegerField(default=1)
+    added_at=models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"
+    
+    def total_price(self):
+        return (self.product.price_after_discount or self.product.price)*self.quantity
+    
+        
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     address = models.TextField(blank=True)

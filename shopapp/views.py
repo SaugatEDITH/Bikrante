@@ -7,13 +7,19 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 import re, random
 from django.shortcuts import render, get_object_or_404
-from .models import Category, Product
+from django.http import HttpResponse, HttpResponseForbidden
+from .models import Category, Product,CartItem
 from django.urls import reverse
 ##! for create custom highend search querys
 from django.db.models import Q
 ##! to seperate large data set to smaller managable pages
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.middleware.csrf import get_token  # Add this import at the top
 # All the function call returning the objects are at models
+
+
+##! home page view
 def home(request):
     colors=['light-pink','light-orange','light-green','light-blue','light-red', 'light-purple', 'light-yellow', 'light-cyan']
     products=list(Product.objects.all())
@@ -118,6 +124,7 @@ def shop(request):
 #         return render(request, 'shopapp/includes/_search_results.html', context)
 #     return render(request, 'shopapp/shop.html', context)
 
+
 ## ! God level search
 def search(request):
     """
@@ -212,6 +219,7 @@ def calculate_page_range(paginator, current_page):
     
     return range(current_page - 3, current_page + 4)
 
+##! Custom made Login page view
 def login(request):
     context = {
         'is_login': True,
@@ -233,6 +241,7 @@ def login(request):
             context['message'].append("No account found with this email")
     return render(request, 'shopapp/login-register.html', context)
 
+##! Custome made signup page view
 def signup(request):
     context = {
         'is_login': False,
@@ -282,7 +291,7 @@ def contact(request):
     ]
     return render(request, 'shopapp/contact.html', {'breadcrumb_items': breadcrumb_items})
 
-@login_required
+@login_required(login_url='login')
 def user_dashboard(request):
     context={
         'message':[]
@@ -349,18 +358,91 @@ def product_detail(request, slug):
     }
     return render(request, 'shopapp/details.html', context)
 
-@login_required
+@login_required(login_url='login')
 def wishlist(request):
-    liked_products = request.user.liked_products.all()
-    return render(request, 'shopapp/wishlist.html', {
-        'liked_products': liked_products
-    })
+    liked_products = Product.objects.filter(likes=request.user)
+    if request.htmx:
+        liked_products.likes.remove(request.user)
+        liked_products.save()
+        return render(request, 'shopapp/wishlist.html', {
+            'liked_products': liked_products
+            })
+    return render(request, 'shopapp/wishlist.html',{'liked_products':liked_products})
+@login_required(login_url='login')
+def add_remove_wishlist(request, slug):
+    if request.method == "POST":
+        product = get_object_or_404(Product, slug=slug)
+        was_liked = product.likes.filter(id=request.user.id).exists()
+        
+        if was_liked:
+            product.likes.remove(request.user)
+            is_liked = False
+        else:
+            product.likes.add(request.user)
+            is_liked = True
+            
+        count = request.user.liked_products.count()
+        
+        return JsonResponse({
+            'success': True,
+            'is_liked': is_liked,
+            'wishlist_count': count,
+            'wishlist_action':"wishlist_update",
+            'product_slug': slug
+        })
+    ##! To delete from the wishlist
+    if request.method == "DELETE":
+        product = get_object_or_404(Product, slug=slug)
+        product.likes.remove(request.user)
+        count = request.user.liked_products.count()
+        
+        # Update both the wishlist count and remove the item
+        return JsonResponse({
+            'success': True,
+            'wishlist_count': count,
+            'wishlist_action':"wishlist_update",
+            'product_slug': slug
+        })
+    
+    return JsonResponse({'success': False}, status=400)
 
+@login_required(login_url='login')
 def cart(request):
-    return render(request,'shopapp/cart.html')
-
-def checkout(request):
-    # Generate breadcrumb data
+    cart_items=CartItem.objects.all()
+    context={'cart_items':cart_items}
+    return render(request,'shopapp/cart.html',context=context)
+   
+    
+@login_required(login_url='login')
+def add_remove_cart(request,slug):
+    product=get_object_or_404(Product,slug=slug)
+    if request.method == "POST":
+        cart_item,created=CartItem.objects.get_or_create(user=request.user,product=product)
+        if not created:
+            cart_item.quantity +=1
+            cart_item.save()
+        count=request.user.cart_items.count()
+        return JsonResponse({
+            'success':True,
+            'action':'added',
+            'cart_count':count,
+            'product_slug':slug,
+        })
+    if request.method=="DELETE":
+        cart_item=CartItem.objects.filter(user=request.user,product=product).first()
+        if cart_item:
+            cart_item.delete()
+        count=request.user.cart_items.count()
+        return JsonResponse({
+            'success':True,
+            'action':'removed',
+            'cart_count':count,
+            'product_slug':slug,
+            
+        })
+    return JsonResponse({'success': False}, status=400)
+@login_required(login_url='login')
+def checkout(request):    # Generate breadcrumb data
     breadcrumb_items = [
         {'title': 'Shop', 'url': reverse('shop')},
         {'title': 'Checkout', 'url': None}  # Current page doesn't need URL
@@ -371,3 +453,4 @@ def checkout(request):
         # ... other context data ...
     }
     return render(request, 'shopapp/checkout.html', context)
+

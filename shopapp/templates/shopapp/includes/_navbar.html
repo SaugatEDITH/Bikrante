@@ -81,11 +81,15 @@
       <div class="header__user-actions">
         <a href="{% url 'wishlist' %}" class="header__action-btn" title="Wishlist">
           <img src="{% static "images/icon-heart.svg" %} " alt="" />
-          <span class="count">{{ user.liked_products.count }}</span>
+          <span class="count" id="nav-wishlist-count" hx-swap-oob="true">
+            {{ user.liked_products.count|default:"0" }}
+          </span>
         </a>
         <a href="{% url 'cart' %}" class="header__action-btn" title="Cart">
           <img src="{% static 'images/icon-cart.svg' %}" alt="" />
-          <span class="count">3</span>
+          <span class="count" id="nav-cart-count" hx-swap-oob="true" >
+            {{ user.cart_items.count | default:"0" }}
+          </span>
         </a>
         <div class="header__action-btn nav__toggle" id="nav-toggle">
           <img src="{% static 'images/menu-burger.svg' %}" alt="">

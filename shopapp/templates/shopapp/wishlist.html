@@ -28,75 +28,87 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
+          {% for product in liked_products %}    
+              <tr id="wishlist-item-{{ product.slug }}">
                 <td>
                   <img
-                    src="./assets//img/product-1-2.jpg"
-                    alt=""
+                    src="{{ product.image1.url }}"
+                    alt="{{ product.name }}"
                     class="table__img"
                   />
                 </td>
                 <td>
                   <h3 class="table__title">
-                    J.Crew Mercantile Women's Short-Sleeve
+                    {{ product.name }}
                   </h3>
                   <p class="table__description">
-                    Lorem ipsum dolor sit amet consectetur.
+                    {{ product.description }}
                   </p>
                 </td>
                 <td>
-                  <span class="table__price">$110</span>
+                  <span class="table__price">${{ product.price }}</span>
                 </td>
-                <td><span class="table__stock">In Stock</span></td>
+                <td><span class="table__stock">{% if product.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}</span></td>
                 <td><a href="#" class="btn btn--sm">Add to Cart</a></td>
-                <td><i class="fi fi-rs-trash table__trash"></i></td>
+                <td>
+                  <a
+                    href="#"
+                    hx-delete="{% url 'add_remove_wishlist' product.slug %}"
+                    hx-target="#wishlist-item-{{ product.slug }}"
+                    hx-swap="delete"
+                    hx-trigger="click"
+                    data-product-slug="{{ product.slug }}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    aria-label="Remove from Wishlist"
+                  >
+                    <i class="fi fi-rs-trash"></i>
+                  </a>
+                </td>
               </tr>
-              <tr>
-                <td>
-                  <img
-                    src="./assets//img/product-7-1.jpg"
-                    alt=""
-                    class="table__img"
-                  />
-                </td>
-                <td>
-                  <h3 class="table__title">Amazon Essentials Women's Tank</h3>
-                  <p class="table__description">
-                    Lorem ipsum dolor sit amet consectetur.
-                  </p>
-                </td>
-                <td>
-                  <span class="table__price">$110</span>
-                </td>
-                <td><span class="table__stock">In Stock</span></td>
-                <td><a href="#" class="btn btn--sm">Add to Cart</a></td>
-                <td><i class="fi fi-rs-trash table__trash"></i></td>
-              </tr>
-              <tr>
-                <td>
-                  <img
-                    src="./assets//img/product-2-1.jpg"
-                    alt=""
-                    class="table__img"
-                  />
-                </td>
-                <td>
-                  <h3 class="table__title">
-                    Amazon Brand - Daily Ritual Women's Jersey
-                  </h3>
-                  <p class="table__description">
-                    Lorem ipsum dolor sit amet consectetur.
-                  </p>
-                </td>
-                <td>
-                  <span class="table__price">$110</span>
-                </td>
-                <td><span class="table__stock">In Stock</span></td>
-                <td><a href="#" class="btn btn--sm">Add to Cart</a></td>
-                <td><i class="fi fi-rs-trash table__trash"></i></td>
-              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
       </section>
-    {% endblock content %}
+    </main>
+
+    <!-- Add this script at the bottom of the template -->
+    <script>
+    document.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.successful) {
+            try {
+                const response = JSON.parse(evt.detail.xhr.response);
+                if (response.success) {
+                    // Remove the product item from wishlist
+                    const itemToRemove = document.getElementById(`wishlist-item-${response.product_slug}`);
+                    if (itemToRemove) {
+                        itemToRemove.remove();
+                    }
+
+                    // Update wishlist count in navbar
+                    const navCount = document.getElementById('nav-wishlist-count');
+                    if (navCount) {
+                        navCount.textContent = response.wishlist_count;
+                    }
+
+                    // If no items left, show empty message
+                    const wishlistContainer = document.querySelector('.products__container');
+                    if (response.count === 0 && wishlistContainer) {
+                        wishlistContainer.innerHTML = '<div class="no-items">Your wishlist is empty</div>';
+                    }
+
+                    console.log('Product removed from wishlist:', response.product_slug);
+                }
+            } catch (e) {
+                console.error('Error processing response:', e);
+            }
+        }
+    });
+
+    document.addEventListener('htmx:responseError', function(evt) {
+        if (evt.detail.xhr.status === 403 && !document.body.classList.contains('user-authenticated')) {
+            window.location.href = "{% url 'login' %}";
+        }
+    });
+    </script> 
+{% endblock content %}

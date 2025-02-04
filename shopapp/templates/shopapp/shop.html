@@ -1,6 +1,9 @@
 {% extends "shopapp/base.html" %}
+{% load static %}
+{% csrf_token %}
 {% block content %}
 <main class="main">
+  
   {% include "shopapp/includes/_breadcrumb.html" %}
 
   <section class="products section--lg">
@@ -23,6 +26,27 @@
                   <img src="{{ product.image2.url }}" alt="{{ product.name }}" class="product__img hover" />
                   {% endif %}
                 </a>
+                <div class="product__actions">
+                  <a href="#" class="action__btn" aria-label="Quick View">
+                    <i class="fi fi-rs-eye"></i>
+                  </a>
+                  <a
+                    href="#"
+                    hx-post="{% url 'add_remove_wishlist' product.slug %}"
+                    hx-target="body"
+                    hx-swap="none"
+                    hx-trigger="click"
+                    data-wishlist-product-slug="{{ product.slug }}"
+                    class="action__btn wishlist-btn {% if request.user.is_authenticated and product in request.user.liked_products.all %}liked{% endif %}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    aria-label="Add to Wishlist"
+                  >
+                    <i class="fi fi-rs-heart"></i>
+                  </a>
+                  <a href="#" class="action__btn" aria-label="Compare">
+                    <i class="fi fi-rs-shuffle"></i>
+                  </a>
+                </div>
                 {% if product.is_hot %}
                   <div class="product__badge {{ product.class_color|default:'light-blue' }}">Hot</div>
                 {% endif %}
@@ -38,6 +62,19 @@
                   <span class="old__price">रु{{ product.old_price }}</span>
                   {% endif %}
                 </div>
+                <a
+                  href="#"
+                  hx-post="{% url "add-remove-cart" product.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  data-product-slug="{{ product.slug }}"
+                  class="action__btn cart__btn"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  aria-label="Add To Cart"
+                >
+                  <i class="fi fi-rs-shopping-bag-add"></i>
+                </a>
               </div>
             </div>
           {% endfor %}
@@ -50,4 +87,47 @@
     </div>
   </section>
 </main>
+
+<!-- Update the script at the end of the template -->
+<script>
+document.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.successful) {
+        try {
+            const response = JSON.parse(evt.detail.xhr.response);
+            if (response.success) {
+              //changes count in cart
+              if(response.cart_count!==undefined){
+                navCartCount=document.getElementById('nav-cart-count')
+                if(navCartCount){
+                  navCartCount.textContent=response.cart_count;
+                }
+              }
+              //changes count on wishlist
+              if(response.wishlist_count !== undefined){
+                const navWishlistCount=document.getElementById('nav-wishlist-count');
+                if(navWishlistCount){
+                  navWishlistCount.textContent=response.wishlist_count;
+                }
+              }
+              if(response.wishlist_action=="wishlist_update"){
+                
+
+                 // Update wishlist buttons with the product slug
+                 const wishlistButtons = document.querySelectorAll(`[data-wishlist-product-slug="${response.product_slug}"]`);
+                 wishlistButtons.forEach(btn => {
+                     if (response.is_liked) {
+                         btn.classList.add('liked');
+                     } else {
+                         btn.classList.remove('liked');
+                     }
+                 });
+                }
+            }
+        } catch (e) {
+            console.error('Error processing response:', e);
+        }
+    }
+}); 
+
+</script>
 {% endblock content %}

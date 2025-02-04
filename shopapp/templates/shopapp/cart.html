@@ -3,15 +3,7 @@
     <!--=============== MAIN ===============-->
     <main class="main">
       <!--=============== BREADCRUMB ===============-->
-      <section class="breadcrumb">
-        <ul class="breadcrumb__list flex container">
-          <li><a href="index.html" class="breadcrumb__link">Home</a></li>
-          <li><span class="breadcrumb__link"></span>></li>
-          <li><span class="breadcrumb__link">Shop</span></li>
-          <li><span class="breadcrumb__link"></span>></li>
-          <li><span class="breadcrumb__link">Cart</span></li>
-        </ul>
-      </section>
+    {% include "shopapp/includes/_breadcrumb.html" %}
 
       <!--=============== CART ===============-->
       <section class="cart section--lg container">
@@ -28,73 +20,44 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
+{% for cart_item in cart_items %}
+              <tr id="cart-item-{{cart_item.product.slug}}">
                 <td>
                   <img
-                    src="./assets//img/product-1-2.jpg"
+                    src="{{ cart_item.product.image1.url }}"
                     alt=""
                     class="table__img"
                   />
                 </td>
                 <td>
                   <h3 class="table__title">
-                    J.Crew Mercantile Women's Short-Sleeve
+                    {{ cart_item.product.name }}
                   </h3>
                   <p class="table__description">
-                    Lorem ipsum dolor sit amet consectetur.
+                    {{ cart_item.product.description }}
                   </p>
                 </td>
                 <td>
                   <span class="table__price">$110</span>
                 </td>
-                <td><input type="number" value="3" class="quantity" /></td>
+                <td><input type="number" min="1" value="1" class="quantity" /></td>
                 <td><span class="subtotal">$220</span></td>
-                <td><i class="fi fi-rs-trash table__trash"></i></td>
+                <td>
+                  <a
+                  href="#"
+                  hx-delete="{% url "add-remove-cart" cart_item.product.slug %}"
+                  hx-target="#cart-item-{{cart_item.product.slug}}"
+                  hx-swap="delete"
+                  hx-trigger="click"
+                  data-product-slug={{ cart_item.product.slug }}
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  aria-label="Remove from Cart"       
+                  >
+                  <i class="fi fi-rs-trash table__trash"></i>
+                </a>
+              </td>
               </tr>
-              <tr>
-                <td>
-                  <img
-                    src="./assets//img/product-7-1.jpg"
-                    alt=""
-                    class="table__img"
-                  />
-                </td>
-                <td>
-                  <h3 class="table__title">Amazon Essentials Women's Tank</h3>
-                  <p class="table__description">
-                    Lorem ipsum dolor sit amet consectetur.
-                  </p>
-                </td>
-                <td>
-                  <span class="table__price">$110</span>
-                </td>
-                <td><input type="number" value="3" class="quantity" /></td>
-                <td><span class="subtotal">$220</span></td>
-                <td><i class="fi fi-rs-trash table__trash"></i></td>
-              </tr>
-              <tr>
-                <td>
-                  <img
-                    src="./assets//img/product-2-1.jpg"
-                    alt=""
-                    class="table__img"
-                  />
-                </td>
-                <td>
-                  <h3 class="table__title">
-                    Amazon Brand - Daily Ritual Women's Jersey
-                  </h3>
-                  <p class="table__description">
-                    Lorem ipsum dolor sit amet consectetur.
-                  </p>
-                </td>
-                <td>
-                  <span class="table__price">$110</span>
-                </td>
-                <td><input type="number" value="3" class="quantity" /></td>
-                <td><span class="subtotal">$220</span></td>
-                <td><i class="fi fi-rs-trash table__trash"></i></td>
-              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -173,9 +136,48 @@
                 </tr>
             </table>
             <a href="checkout.html" class="btn flex btn--md">
-              <i class="fi fi-rs-box-alt"></i> Proceed To Checkout
+              <i class="fi fi-rs-box-alt"></i> &nbsp  Proceed To Checkout
             </a>
           </div>
         </div>
       </section>
+      <script>
+        document.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.successful) {
+                try {
+                    const response = JSON.parse(evt.detail.xhr.response);
+                    if (response.success) {
+                        // Remove the product item from wishlist
+                        const itemToRemove = document.getElementById(`cart-item-${response.product_slug}`);
+                        if (itemToRemove) {
+                            itemToRemove.remove();
+                        }
+    
+                        // Update wishlist count in navbar
+                        const navCount = document.getElementById('nav-cart-count');
+                        if (navCount) {
+                            navCount.textContent = response.cart_count;
+                        }
+    
+                        // If no items left, show empty message
+                        const wishlistContainer = document.querySelector('.products__container');
+                        if (response.count === 0 && cartContainer) {
+                            cartContainer.innerHTML = '<div class="no-items">Your wishlist is empty</div>';
+                        }
+    
+                        console.log('Product removed from wishlist:', response.product_slug);
+                    }
+                } catch (e) {
+                    console.error('Error processing response:', e);
+                }
+            }
+        });
+    
+        document.addEventListener('htmx:responseError', function(evt) {
+            if (evt.detail.xhr.status === 403 && !document.body.classList.contains('user-authenticated')) {
+                window.location.href = "{% url 'login' %}";
+            }
+        });
+        </script> 
+        <main>
       {% endblock content %}

@@ -36,7 +36,13 @@
                 </a>
                 <a
                   href="#"
-                  class="action__btn"
+                  hx-post="{% url 'add_remove_wishlist' hot_product.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  data-product-slug="{{ hot_product.slug }}"
+                  class="action__btn wishlist-btn {% if request.user.is_authenticated and hot_product in request.user.liked_products.all %}liked{% endif %}"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                   aria-label="Add to Wishlist"
                 >
                   <i class="fi fi-rs-heart"></i>
@@ -66,8 +72,14 @@
               </div>
               <a
                 href="#"
+                hx-post="{% url "add-remove-cart" hot_product.slug %}"
+                hx-target="body"
+                hx-swap="none"
+                hx-trigger="click"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                 class="action__btn cart__btn"
                 aria-label="Add To Cart"
+                data-product-slug="{{ normal_product.slug }}"
               >
                 <i class="fi fi-rs-shopping-bag-add"></i>
               </a>
@@ -95,13 +107,19 @@
                 />
               </a>
               <div class="product__actions">
-                <a href="" class="action__btn" aria-label="Quick View">
+                <a href="#" class="action__btn" aria-label="Quick View">
                   <i class="fi fi-rs-eye"></i>
                 </a>
                 <a
                   href="#"
-                  class="action__btn"
+                  hx-post="{% url 'add_remove_wishlist' normal_product.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  class="action__btn wishlist-btn {% if request.user.is_authenticated and normal_product in request.user.liked_products.all %}liked{% endif %}"
                   aria-label="Add to Wishlist"
+                  data-product-slug="{{ normal_product.slug }}"
                 >
                   <i class="fi fi-rs-heart"></i>
                 </a>
@@ -129,8 +147,14 @@
               </div>
               <a
                 href="#"
+                hx-post="{% url "add-remove-cart" normal_product.slug %}"
+                hx-target="body"
+                hx-swap="none"
+                hx-trigger="click"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                 class="action__btn cart__btn"
                 aria-label="Add To Cart"
+                data-product-slug="{{ normal_product.slug }}"
               >
                 <i class="fi fi-rs-shopping-bag-add"></i>
               </a>
@@ -165,8 +189,14 @@
                 </a>
                 <a
                   href="#"
-                  class="action__btn"
+                  hx-post="{% url 'add_remove_wishlist' popular_product.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  class="action__btn wishlist-btn {% if request.user.is_authenticated and popular_product in request.user.liked_products.all %}liked{% endif %}"
                   aria-label="Add to Wishlist"
+                  data-product-slug="{{ popular_product.slug }}"
                 >
                   <i class="fi fi-rs-heart"></i>
                 </a>
@@ -194,8 +224,14 @@
               </div>
               <a
                 href="#"
+                hx-post="{% url "add-remove-cart" popular_product.slug %}"
+                hx-target="body"
+                hx-swap="none"
+                hx-trigger="click"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                 class="action__btn cart__btn"
                 aria-label="Add To Cart"
+                data-product-slug="{{ normal_product.slug }}"
               >
                 <i class="fi fi-rs-shopping-bag-add"></i>
               </a>
@@ -231,8 +267,14 @@
                 </a>
                 <a
                   href="#"
-                  class="action__btn"
+                  hx-post="{% url 'add_remove_wishlist' new_arrival.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  class="action__btn wishlist-btn {% if request.user.is_authenticated and new_arrival in request.user.liked_products.all %}liked{% endif %}"
                   aria-label="Add to Wishlist"
+                  data-product-slug="{{ new_arrival.slug }}"
                 >
                   <i class="fi fi-rs-heart"></i>
                 </a>
@@ -260,8 +302,14 @@
               </div>
               <a
                 href="#"
+                hx-post="{% url "add-remove-cart" new_arrival.slug %}"
+                hx-target="body"
+                hx-swap="none"
+                hx-trigger="click"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                 class="action__btn cart__btn"
                 aria-label="Add To Cart"
+                data-product-slug="{{ normal_product.slug }}"
               >
                 <i class="fi fi-rs-shopping-bag-add"></i>
               </a>
@@ -273,3 +321,42 @@
     </div>
     {% endif %}
   </section>
+
+  <script>
+    document.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.successful) {
+            try {
+                const response = JSON.parse(evt.detail.xhr.response);
+                if (response.success) {
+                  // changes count on cart
+                  if(response.cart_count!==undefined){
+                    navCartCount=document.getElementById('nav-cart-count')
+                    if(navCartCount){
+                      navCartCount.textContent=response.cart_count;
+                    }
+                    // changes count on cart
+                  }
+                  if(response.wishlist_count !== undefined){
+                    const navWishlistCount=document.getElementById('nav-wishlist-count');
+                    if(navWishlistCount){
+                      navWishlistCount.textContent=response.wishlist_count;
+                    }
+                  }
+    if(response.wishlist_action=="wishlist_update"){
+                    // Update all buttons with this product slug
+                    const buttons = document.querySelectorAll(`[data-product-slug="${response.product_slug}"]`);
+                    buttons.forEach(btn => {
+                        if (response.is_liked) {
+                            btn.classList.add('liked');
+                        } else {
+                            btn.classList.remove('liked');
+                        }
+                    });}
+                }
+            } catch (e) {
+                console.error('Error processing response:', e);
+            }
+        }
+    }); 
+    
+    </script>

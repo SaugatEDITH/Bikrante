@@ -7,15 +7,6 @@
       {% endif %}
     {% endif %}
     
-    <!-- Debug info -->
-    {% comment %} {% if debug %}
-    <div class="search-debug-info" style="background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px;">
-      <p>Search text: "{{ search_text }}"</p>
-      <p>Results found: {{ total_results|default:"0" }}</p>
-      <p>Current page: {{ current_page }}</p>
-      <p>Template used: {{ template_name }}</p>
-    </div>
-    {% endif %} {% endcomment %}
 
     <div class="products__container grid">
       {% if products %}
@@ -28,6 +19,22 @@
                 <img src="{{ product.image2.url }}" alt="{{ product.name }}" class="product__img hover" />
                 {% endif %}
               </a>
+              <div class="product__actions">
+                <a href="#" class="action__btn" aria-label="Quick View">
+                  <i class="fi fi-rs-eye"></i>
+                </a>
+                <a
+                  href="#"
+                  class="action__btn"
+                  aria-label="Add to Wishlist"
+                >
+                  <i class="fi fi-rs-heart"></i>
+                </a>
+                <a href="#" class="action__btn" aria-label="Compare">
+                  <i class="fi fi-rs-shuffle"></i>
+                </a>
+              </div>
+       
               {% if product.is_hot %}
                 <div class="product__badge {{ product.class_color|default:'light-blue' }}">Hot</div>
               {% endif %}
