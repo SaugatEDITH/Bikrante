@@ -50,7 +50,10 @@ class Category(models.Model):
         default=0.0,
         help_text="Discount percentage for all products in this category (e.g., 10 for 10%)",
     )
-
+    category_discount_apply=models.BooleanField(
+        default=False,
+        help_text="Enable discount application for products in this category"
+    )
     class Meta:
         verbose_name_plural = "Categories"
         ordering = ['name']
@@ -72,22 +75,17 @@ class Category(models.Model):
             return self.image.url if self.image else None
         except:
             return None
-    def updated_product_discount(self):
-        """Method to update the discount price for all products in this category."""
-        products=self.products.all()
-        for product in products:
-            product.category_discount_applied=False
-            product.save()
-
 
 # Product
 class Product(models.Model):
+    id=models.AutoField(primary_key=True)
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name="products"
     )
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_applied=models.BooleanField(default=False,help_text="Apply discount to this product")
     price_after_discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # New Field
     
     brand_name=models.CharField(max_length=255)
@@ -95,14 +93,14 @@ class Product(models.Model):
     tags = models.CharField(
         max_length=255,
         blank=True,
-        help_text="Comma-seperated tags e.g.(tech,makup,education etc..)",
+        help_text="Comma-separated tags e.g.(tech, makeup, education, etc..)",
     )
     stock = models.IntegerField()
     availability = models.BooleanField(default=True)
     colors = models.CharField(
         max_length=255, blank=True, help_text="Comma seperated colors e.g.()"
     )
-    sizes = models.CharField(max_length=255, blank=True,help_text="Comma seperated sizes e.g.(xl,xxl ,l,ml etc)")
+    sizes = models.CharField(max_length=255, blank=True,help_text="Comma seperated sizes e.g.(xl, xxl, l, ml etc)")
     image1 = models.ImageField(upload_to="product_images/")
     image2 = models.ImageField(upload_to="product_images/")
     image3 = models.ImageField(upload_to="product_images/", null=True, blank=True)
@@ -118,42 +116,38 @@ class Product(models.Model):
     views_count = models.PositiveIntegerField(default=0)
     sales_count = models.PositiveIntegerField(default=0)
     last_viewed = models.DateTimeField(null=True, blank=True)
-    category_discount_applied = models.BooleanField(default=False)
  
     def __str__(self):
         return self.name
 
     def get_discounted_price(self):
         """
-        Dynamically calculates and stores the discounted price in the price_after_discount field.
-        If the category discount is applied, this field will hold the discounted price.
+        Calculate the discounted price based on category discount settings
         """
-        if not self.category_discount_applied:
-            if self.category.discount_percentage > 0:
-                discount_amount = (self.price * self.category.discount_percentage) / 100
-                discounted_price = round(self.price - discount_amount, 2)
-                self.price_after_discount=discounted_price
-                self.category_discount_applied=True
-                self.save()
-                return discounted_price
-            return self.price
+        if self.discount_applied and self.category.category_discount_apply:
+            discount_amount = (self.price * self.category.discount_percentage) / 100
+            return round(self.price - discount_amount, 2)
+        return self.price
 
-    def total_likes(self):
+    def update_discount_price(self):
         """
-        Returns the total number of likes for the product
+        Updates the stored price_after_discount based on category settings
         """
-        return self.likes.count()
-    # unique slug generator
+        self.price_after_discount = self.get_discounted_price()
+
     def save(self, *args, **kwargs):
+        # Calculate and update the discounted price
+        self.update_discount_price()
+        
         if not self.slug:
             base_slug = generate_slug(self.name)
-            # Check for existing slugs
             unique_slug = base_slug
             counter = 1
             while Product.objects.filter(slug=unique_slug).exists():
                 unique_slug = f"{base_slug}-{counter}"
                 counter += 1
             self.slug = unique_slug
+            
         super().save(*args, **kwargs)
 
     
@@ -224,36 +218,54 @@ class Review(models.Model):
         blank=True,
         default=None,
     )
-
     review_text = models.TextField(blank=True)
+    visible=models.BooleanField(default=True)
+    ip=models.CharField(max_length=20,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user.username}'s review on {self.product.name}"
+    @classmethod
+    def get_client_ip(request):
+        """Returns the real IP address of the user."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]  # Get the first IP in the list
+        else:
+            ip = request.META.get('REMOTE_ADDR')  # Fallback to direct IP
+        return ip
 
 
 #  Orders
 class Order(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Completed", "Completed"),
+        ("Cancelled", "Cancelled"),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
-    product = models.ManyToManyField(Product, through="OrderItem")
+    products = models.ManyToManyField(Product, through="OrderItem")
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    shipping_price = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(
-        max_length=50,
-        choices=[
-            ("Pending", "Pending"),
-            ("Completed", "Completed"),
-            ("Cancelled", "Cancelled"),
-        ],
-        default="Pending",
-    )
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Pending")
+    payment=models.BooleanField(default=False)
+    # 🔹 Billing Details
+    customer_name = models.CharField(max_length=255,default="Default User")
+    customer_address = models.TextField(default="Unknown Address")
+    city = models.CharField(max_length=100,null=True)
+    postcode = models.CharField(max_length=20,null=True)
+    phone = models.CharField(max_length=20,null=True)
+    customer_email = models.EmailField(null=True)
+    order_note = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Order #{self.id} by {self.user.username}"
-
-
+        
 class OrderItem(models.Model):  # Changed from OrderItems to OrderItem
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE,related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -279,8 +291,36 @@ class UserProfile(models.Model):
     address = models.TextField(blank=True)
     phone_number = models.CharField(max_length=15, blank=True)
     profile_image = models.ImageField(
-        upload_to="profile_images/", null=True, blank=True
+        upload_to="profile_images/",
+        default='profile_pictures/defaultprofile.png' ,
+        null=True, 
+        blank=True
     )
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+class Transaction(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Success", "Success"),
+        ("Failed", "Failed"),
+    ]
+
+    PAYMENT_METHODS = [
+        ("Esewa", "Esewa"),
+        ("Khalti", "Khalti"),  # Add if supporting more gateways later
+        ("Cash on Delivery", "Cash on Delivery"),
+    ]
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="transactions")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="transactions")
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHODS, default="Esewa")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    esewa_transaction_id = models.CharField(max_length=50, blank=True, null=True, help_text="eSewa Txn ID")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Txn {self.esewa_transaction_id} - {self.status}"

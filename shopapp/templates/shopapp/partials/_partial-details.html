@@ -1,0 +1,34 @@
+<div class="custom-modal-content">
+    {% comment %} <span class="custom-modal-close" onclick="closeModal()">&times;</span> {% endcomment %}
+    <div id="product-modal-content">
+        <h5>{{ product.name }}</h5>
+        <img src="{{ product.image1.url }}" class="img-fluid" alt="{{ product.name }}">
+        <p>{{ product.description }}</p>
+        <p><strong>Price:</strong> {{ product.price }}</p>
+        <button 
+        class="btn btn-primary"
+        href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
+        hx-post="{% url "add-remove-cart" product.slug %}"
+        hx-target="body"
+        hx-swap="none"
+        hx-trigger="click"
+        data-product-slug="{{ product.slug }}"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+        aria-label="Add To Cart"
+     
+        
+    >
+    <i class="fi fi-rs-shopping-bag-add"></i>
+    Add to Cart
+    </button>
+    </div>
+
+</div>
+<script>
+    if (typeof openModal === "function") {
+        openModal();  // Ensure modal opens after content loads
+    } else {
+        console.error("openModal() function not found!");
+    }
+</script>
+

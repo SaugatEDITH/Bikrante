@@ -232,7 +232,7 @@ table {
 
   animation: glowing-shadow 4s infinite;
 }
-
+/* ######### nav,login signup ########## */
 @keyframes glowing-shadow {
   0% {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 10px hsl(176, 88%, 27%);
@@ -244,7 +244,6 @@ table {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 10px hsl(176, 88%, 27%);
   }
 }
-
 .nav__logo-img {
   width: 120px;
   min-width: 120px; /* Prevent logo from shrinking too much */
@@ -426,88 +425,88 @@ table {
 
 /* Search loading indicator */
 .search-indicator {
-    opacity: 1;
-    transition: opacity 0.2s ease-in-out;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .htmx-request .search-indicator {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 /* Make sure the search icon is visible */
 .search__btn img {
-    width: 18px;
-    height: 18px;
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
-    display: block;
+  width: 18px;
+  height: 18px;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+  display: block;
 }
 
 /* Search loading states */
 .htmx-request .search-indicator {
-    opacity: 0.5;
-    animation: pulse 1s infinite;
+  opacity: 0.5;
+  animation: pulse 1s infinite;
 }
 
 .htmx-request .products__container {
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
 }
 
 @keyframes pulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
 }
 
 /* Smooth transitions for search results */
 .products__container {
-    transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease;
 }
 
 .no-results {
-    padding: 2rem;
-    text-align: center;
-    color: var(--text-color-light);
-    background: var(--container-color);
-    border-radius: 0.5rem;
-    margin: 1rem 0;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-color-light);
+  background: var(--container-color);
+  border-radius: 0.5rem;
+  margin: 1rem 0;
 }
 
 /* Search Form Styles */
 .search-form {
-    width: 100%;
-    position: relative;
+  width: 100%;
+  position: relative;
 }
 
 .search-form .form__input {
     width: 100%;
     padding-right: 2.5rem;
     transition: all 0.3s ease;
-}
-
-.search-form .form__input:focus {
+  }
+  
+  .search-form .form__input:focus {
     border-color: var(--first-color);
     box-shadow: 0 0 0 2px var(--first-color-alt);
-}
-
-/* Search Loading States */
-.htmx-request .search-indicator {
+  }
+  
+  /* Search Loading States */
+  .htmx-request .search-indicator {
     opacity: 0.5;
     animation: pulse 1s infinite;
-}
-
-.htmx-request .products__container {
+  }
+  
+  .htmx-request .products__container {
     opacity: 0.7;
     transition: opacity 0.3s ease;
-}
-
-.search-results-wrapper {
+  }
+  
+  .search-results-wrapper {
     min-height: 200px;
     position: relative;
-}
-
-.search-results-wrapper.htmx-request::after {
+  }
+  
+  .search-results-wrapper.htmx-request::after {
     content: "";
     position: absolute;
     top: 0;
@@ -516,17 +515,17 @@ table {
     bottom: 0;
     background: rgba(255, 255, 255, 0.8);
     z-index: 1;
-}
-
-/*=============== HOME ===============*/
-.home__container {
-  grid-template-columns: 5fr 7fr;
-  align-items: center;
-}
-
-.home__subtitle,
-.home__description {
-  font-size: var(--large-font-size);
+  }
+  
+  /*=============== HOME ===============*/
+  .home__container {
+    grid-template-columns: 5fr 7fr;
+    align-items: center;
+  }
+  
+  .home__subtitle,
+  .home__description {
+    font-size: var(--large-font-size);
 }
 
 .home__subtitle {
@@ -602,39 +601,39 @@ table {
 
 /* Add these styles in your BUTTONS section */
 .btn.glow-effect {
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
-    transition: all 0.6s ease;
-    animation: button-glow 3s infinite;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  transition: all 0.6s ease;
+  animation: button-glow 3s infinite;
 }
 
 .btn.glow-effect:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(var(--first-color), 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(var(--first-color), 0.4);
 }
 
 @keyframes button-glow {
     0% {
-        box-shadow: 0 0 5px var(--first-color),
-                    0 0 10px var(--first-color),
-                    0 0 15px var(--first-color);
+      box-shadow: 0 0 5px var(--first-color),
+      0 0 10px var(--first-color),
+      0 0 15px var(--first-color);
     }
     50% {
-        box-shadow: 0 0 20px var(--first-color),
-                    0 0 25px var(--second-color),
-                    0 0 30px var(--third-color);
+      box-shadow: 0 0 20px var(--first-color),
+      0 0 25px var(--second-color),
+      0 0 30px var(--third-color);
     }
     100% {
-        box-shadow: 0 0 5px var(--first-color),
-                    0 0 10px var(--first-color),
-                    0 0 15px var(--first-color);
+      box-shadow: 0 0 5px var(--first-color),
+      0 0 10px var(--first-color),
+      0 0 15px var(--first-color);
     }
-}
-
-/*=============== CATEGORIES ===============*/
-.categories {
-  overflow: hidden;
+  }
+  
+  /*=============== CATEGORIES ===============*/
+  .categories {
+    overflow: hidden;
 }
 
 .category__item {
@@ -935,6 +934,13 @@ table {
 .product__title {
   font-size: var(--normal-font-size);
   margin-block: 0.75rem 0.5rem;
+  overflow: hidden;
+  margin-inline: auto;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis
 }
 
 .product__rating {
@@ -1183,6 +1189,9 @@ table {
 }
 
 .newsletter__title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   column-gap: 1rem;
   font-size: var(--large-font-size);
 }
@@ -1278,9 +1287,14 @@ table {
 
 .footer__social-icon {
   width: 20px;
+  font-size: 20px;
+  color: black;
   opacity: 0.7;
 }
 
+.footer__social-icon:hover{
+  color: red;
+}
 .footer__title {
   font-size: var(--large-font-size);
   margin-block: 1rem 1.25rem;
@@ -1333,21 +1347,21 @@ table {
 }
 
 .breadcrumb__list {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 0;
-    list-style: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+  list-style: none;
 }
 
 .breadcrumb__link {
-    display: inline-block;
-    white-space: nowrap;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .separator {
-    color: var(--text-color);
-    margin: 0 5px;
+  color: var(--text-color);
+  margin: 0 5px;
 }
 
 /*=============== SHOP ===============*/
@@ -1401,20 +1415,20 @@ table {
 
 /* Search Results Styles */
 .no-results {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-color-light);
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-color-light);
 }
 
 .pagination__link.active {
-    background-color: var(--first-color);
-    color: var(--body-color);
-    cursor: default;
+  background-color: var(--first-color);
+  color: var(--body-color);
+  cursor: default;
 }
 
 .pagination__link:not(.active):hover {
-    background-color: var(--first-color-alt);
-    color: var(--first-color);
+  background-color: var(--first-color-alt);
+  color: var(--first-color);
 }
 
 /*=============== DETAILS ===============*/
@@ -1444,7 +1458,7 @@ table {
 }
 
 .details__img:hover {
-  transform: scale(1.04);
+  transform: scale(1.03);
   box-shadow: 0 8px 16px var(--first-color);
 }
 
@@ -1531,6 +1545,7 @@ table {
 .size__list {
   display: flex;
   column-gap: 0.25rem;
+  padding-top:18px ;
 }
 
 .color__link {
@@ -1651,6 +1666,8 @@ table {
   -moz-border-radius: 50%;
   -ms-border-radius: 50%;
   -o-border-radius: 50%;
+  height: 70px;
+  object-fit: cover;
 }
 
 .review__title {
@@ -1680,9 +1697,6 @@ table {
   margin-bottom: 1rem;
 }
 
-.rate__product {
-  margin-bottom: 2rem;
-}
 
 /*=============== CART ===============*/
 .table__container {
@@ -1754,6 +1768,10 @@ table {
 .table__title,
 .table__stock {
   color: var(--first-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 300px;
 }
 
 .table__description {
@@ -1868,6 +1886,7 @@ table {
 /*=============== WISHLIST ===============*/
 
 /*=============== CHECKOUT ===============*/
+
 .checkout__container {
   grid-template-columns: repeat(2, 1fr);
 }
@@ -1916,8 +1935,8 @@ table {
   font-size: var(--large-font-size);
   font-weight: var(--weight-700);
 }
-
-.payment__methods {
+/* =======For payment======== */
+/* .payment__methods {
   margin-block: 2.5rem 2.75rem;
 }
 
@@ -1936,7 +1955,7 @@ table {
 .payment__label {
   font-size: var(--small-font-size);
   user-select: none;
-}
+} */
 
 /*=============== COMPARE ===============*/
 .compare__table tr th,
@@ -1978,6 +1997,9 @@ table {
   -moz-border-radius: 0.5rem;
   -ms-border-radius: 0.5rem;
   -o-border-radius: 0.5rem;
+  /* box-shadow:  0 8px 15px rgba(0, 0, 0, 0.3); */
+  animation: glowing-shadow 4s infinite;
+
 }
 
 /*=============== ACCOUNTS ===============*/
@@ -1992,6 +2014,9 @@ table {
   -moz-border-radius: 0.25rem;
   -ms-border-radius: 0.25rem;
   -o-border-radius: 0.25rem;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  height:fit-content;
 }
 
 .account__tab {
@@ -2023,13 +2048,68 @@ table {
 
 .tab__content {
   border: 1px solid var(--border-color-alt);
+  box-shadow:  0 8px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
 }
 
 .tab__header {
-  background-color: var(--container-color);
-  border-bottom: 1px solid var(--border-color-alt);
+  /* background-color: var(--container-color); */
   padding: 1rem;
-  font-size: var(--small-font-size);
+  font-size: 1.7rem;
+  font-weight: 500;
+  line-height: 2.5rem;
+  font-family: 'Trebuchet MS',Arial, sans-serif,-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica;
+  
+
+  letter-spacing: normal;
+
+  /* Refined Gradient */
+  background: linear-gradient(90deg, #4285F4, #6A73D8, #EA4335, #02b570, #34A853, #EA4335);
+  background-size: 300%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  animation: gradient-animation 3s ease infinite; 
+  display: block;
+  text-align: center;
+  
+}
+
+/* Dashboard profile pic CSS */
+#profile_pic_div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+ bottom: 20px;
+}
+
+.picture_wraper {
+  position: relative;
+  display: inline-block;
+  border-radius: 50%;
+  overflow: visible; /* Allow the gradient border to be visible */
+  padding: 4px; /* Creates spacing for the gradient border */
+  background: linear-gradient(90deg, #4285F4, #6A73D8, #EA4335, #02b570, #34A853, #EA4335);
+  background-size: 300% 300%;
+  animation: gradient-animation 3s ease infinite; /* Makes the gradient move */
+}
+
+#profile_pic {
+  display: block;
+  width: 20vh;
+  height: 20vh;
+  border-radius: 50%;
+  background: #fff; /* Optional fallback background for the image */
+  z-index: 1; /* Ensure the image is above the gradient */
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* Add a drop shadow around the image */
+  object-fit: contain;
+}
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .tab__body {
@@ -2352,7 +2432,7 @@ table {
     height: 100%;
     top: 0;
     left: 0;
-    background: url('../images/pattern.png') repeat;
+    /* background: url('../images/pattern.png') repeat; */
     opacity: 0.1;
 }
 
@@ -2874,6 +2954,7 @@ table {
 
   .account__tab {
     padding: 0.75rem 1rem;
+    
   }
 
   .checkout__group:nth-child(2) {

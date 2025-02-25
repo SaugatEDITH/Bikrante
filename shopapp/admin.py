@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Review, Order, OrderItem, UserProfile
+from .models import Category, Product, Review, Order, OrderItem, UserProfile,Transaction
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -18,6 +18,7 @@ class ProductAdmin(admin.ModelAdmin):
         'category',
         'description',
         'price',
+        'price_after_discount',
         'brand_name',
         'sku',
         'tags',
@@ -46,3 +47,4 @@ admin.site.register(Review)
 admin.site.register(Order)
 admin.site.register(OrderItem)
 admin.site.register(UserProfile)
+admin.site.register(Transaction)

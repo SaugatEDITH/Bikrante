@@ -16,5 +16,13 @@ urlpatterns = [
     path('product/<slug:slug>/', views.product_detail, name='product-detail'),
     path('search/',views.search,name="search"),
     path('add-remove-wishlist/<slug:slug>/', views.add_remove_wishlist, name='add_remove_wishlist'),
+    path('checkout/',view=views.checkout,name="checkout"),
+    path('review-count<slug:slug>/',views.product_review_count,name='product-review-count'),
+    path('esewa-checkout/<int:order_id>/', views.esewa, name='esewa_checkout'),
+    path("esewa-payment-success/<int:order_id>/", views.esewa_payment_success, name="esewa-payment-success"),
+    path('khalti-checkout/<int:order_id>/', views.khalti, name='khalti_checkout'),
+    path('paypal-checkout/<int:order_id>/', views.paypal, name='paypal_checkout'),
+  
+
     
 ]

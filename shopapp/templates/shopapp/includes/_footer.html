@@ -1,8 +1,9 @@
+{% load static %}
 <footer class="footer container">
     <div class="footer__container grid">
       <div class="footer__content">
         <a href="index.html" class="footer__logo">
-          <img src="./assets/img/logo.svg" alt="" class="footer__logo-img" />
+          <img src="{% static "images/logo.svg" %}" alt="" class="footer__logo-img" />
         </a>
         <h4 class="footer__subtitle">Contact</h4>
         <p class="footer__description">
@@ -18,39 +19,44 @@
           <h4 class="footer__subtitle">Follow Me</h4>
           <div class="footer__links flex">
             <a href="#">
-              <img
-                src="./assets/img/icon-facebook.svg"
+              {% comment %} <img
+                src=" {% static "images/icon-facebook.svg" %} "
                 alt=""
                 class="footer__social-icon"
-              />
+              /> {% endcomment %}
+              <i class="fa-brands fa-facebook footer__social-icon"></i>
             </a>
             <a href="#">
-              <img
-                src="./assets/img/icon-twitter.svg"
+              {% comment %} <img
+                src=" {% static "images/icon-twitter.svg" %} "
                 alt=""
                 class="footer__social-icon"
-              />
+              /> {% endcomment %}
+              <i class="fa-brands fa-x-twitter footer__social-icon"></i>
             </a>
             <a href="#">
-              <img
-                src="./assets/img/icon-instagram.svg"
+              {% comment %} <img
+                src=" {% static "images/icon-instagram.svg" %} "
                 alt=""
                 class="footer__social-icon"
-              />
+              /> {% endcomment %}
+              <i class="fa-brands fa-instagram footer__social-icon"></i>
             </a>
             <a href="#">
-              <img
-                src="./assets/img/icon-pinterest.svg"
+              {% comment %} <img
+                src=" {% static "images/icon-pinterest.svg" %}"
                 alt=""
                 class="footer__social-icon"
-              />
+              /> {% endcomment %}
+              <i class="fa-brands fa-pinterest footer__social-icon"></i>
             </a>
             <a href="#">
-              <img
-                src="./assets/img/icon-youtube.svg"
+              {% comment %} <img
+                src=" {% static "images/icon-youtube.svg" %}"
                 alt=""
                 class="footer__social-icon"
-              />
+              /> {% endcomment %}
+              <i class="fa-brands fa-youtube footer__social-icon"></i>
             </a>
           </div>
         </div>
@@ -80,7 +86,7 @@
       <div class="footer__content">
         <h3 class="footer__title">Secured Payed Gateways</h3>
         <img
-          src="./assets/img/payment-method.png"
+          src=" {% static "images/payment-method.png" %}"
           alt=""
           class="payment__img"
         />

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        font-family: sans-serif;
+        background-image: url('/static/images/charity.svg');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    .center{
+        height:100vh;
+        width: 100vw;
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        flex-direction: column; 
+        gap: 30px;
+    }
+</style>
+
+<body>
+
+
+   <div class="center"> 
+    
+
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <h3>The amount is: ${{amount}}</h3>
+        <h3>For: {{slug}}</h3>
+   
+    {{ form.render }}
+</div>
+    <script src="" async defer></script>
+</body>
+
+</html>

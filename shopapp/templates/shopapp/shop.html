@@ -2,7 +2,7 @@
 {% load static %}
 {% csrf_token %}
 {% block content %}
-<main class="main">
+<main class="main" id="shop-main">
   
   {% include "shopapp/includes/_breadcrumb.html" %}
 
@@ -27,11 +27,18 @@
                   {% endif %}
                 </a>
                 <div class="product__actions">
-                  <a href="#" class="action__btn" aria-label="Quick View">
+                  <a href="#" 
+                    class="action__btn" 
+                    aria-label="Quick View"
+                    hx-get="{% url 'product-detail' product.slug %}"
+                    hx-trigger="click"
+                    hx-target="#product-modal-content"
+                    hx-swap="innerHTML"
+                    >
                     <i class="fi fi-rs-eye"></i>
                   </a>
                   <a
-                    href="#"
+                    href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
                     hx-post="{% url 'add_remove_wishlist' product.slug %}"
                     hx-target="body"
                     hx-swap="none"
@@ -63,7 +70,7 @@
                   {% endif %}
                 </div>
                 <a
-                  href="#"
+                  href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
                   hx-post="{% url "add-remove-cart" product.slug %}"
                   hx-target="body"
                   hx-swap="none"
@@ -127,7 +134,17 @@ document.addEventListener('htmx:afterRequest', function(evt) {
             console.error('Error processing response:', e);
         }
     }
-}); 
+    if (evt.detail.xhr.status === 200) {
+        try {
+            let response = JSON.parse(evt.detail.xhr.response);
+            if (response.redirect) {
+                window.location.href = "/login/";  // Redirect to login page
+            }
+        } catch (e) {
+            console.error("Error processing response:", e);
+        }
+    }
+});
 
 </script>
 {% endblock content %}

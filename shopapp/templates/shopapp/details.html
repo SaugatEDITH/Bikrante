@@ -1,5 +1,5 @@
 {% extends "shopapp/base.html" %}
-
+{% load static %}
 {% block content %}
     <!--=============== MAIN ===============-->
     <main class="main">
@@ -53,7 +53,7 @@
             <h3 class="details__title">{{ product.name }}</h3>
             <p class="details__brand">Brand: <span>{{ product.brand_name }}</span></p>
             <div class="details__price flex">
-              <span class="new__price">${{ product.price }}</span>
+              <span class="new__price">रु{{ product.price_after_discount }}</span>
               <span class="old__price">रु{{ product.price }}</span>
               <span class="save__price">{{ product.category.discount_percentage }}% Off</span>
             </div>
@@ -129,9 +129,19 @@
               </ul>
             </div>
             <div class="details__action">
-              <input type="number" class="quantity" value="3" />
+              <input min="1" type="number" class="quantity" value="0"/>
               <a href="#" class="btn btn--sm">Add To Card</a>
-              <a href="#" class="details__action-btn">
+              <a href="#" class="details__action-btn" id="detail_cart_wishlist"
+              href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
+                    hx-post="{% url 'add_remove_wishlist' product.slug %}"
+                    hx-target="body"
+                    hx-swap="none"
+                    hx-trigger="click"
+                    data-wishlist-product-slug="{{ product.slug }}"
+                    class="action__btn wishlist-btn {% if request.user.is_authenticated and product in request.user.liked_products.all %}liked{% endif %}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    aria-label="Add to Wishlist"
+              >
                 <i class="fi fi-rs-heart"></i>
               </a>
             </div>
@@ -154,7 +164,14 @@
           <span class="detail__tab active-tab" data-target="#info">
             Additional Info
           </span>
-          <span class="detail__tab" data-target="#reviews">Reviews(3)</span>
+
+          <!-- Review Count -->
+          <span class="detail__tab" data-target="#reviews" 
+      hx-get="{% url 'product-review-count' product.slug %}" 
+      hx-trigger="revealed"
+      hx-target="#review-count">
+    Reviews(<span id="review-count">{{ reviews_count }}</span>)
+        </span>
         </div>
         <div class="details__tabs-content">
           <div class="details__tab-content active-tab" content id="info">
@@ -163,97 +180,60 @@
           </div>
           <div class="details__tab-content" content id="reviews">
             <div class="reviews__container grid">
+
+            {% for review in reviews %}
+            
               <div class="review__single">
                 <div>
                   <img
-                    src="./assets/img/avatar-1.jpg"
-                    alt=""
+                    src=" {{ review.user.profile.profile_image.url }} "
+                    alt="{{review.user.name}}"
                     class="review__img"
                   />
-                  <h4 class="review__title">Jacky Chan</h4>
+                  <h4 class="review__title">{{ review.user.username }}</h4>
                 </div>
                 <div class="review__data">
                   <div class="review__rating">
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
+               {% for star_icon in review.star_icons %}
+               {{ star_icon|safe }}
+               {% endfor %}
+            
                   </div>
                   <p class="review__description">
-                    Thank you, very fast shipping from Poland only 3days.
+                    {{ review.review_text }}
                   </p>
-                  <span class="review__date">December 4, 2022 at 3:12 pm</span>
+                  <span class="review__date">{{ review.created_at }}</span>
                 </div>
               </div>
-              <div class="review__single">
-                <div>
-                  <img
-                    src="./assets/img/avatar-2.jpg"
-                    alt=""
-                    class="review__img"
-                  />
-                  <h4 class="review__title">Meriem Js</h4>
-                </div>
-                <div class="review__data">
-                  <div class="review__rating">
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                  </div>
-                  <p class="review__description">
-                    Great low price and works well
-                  </p>
-                  <span class="review__date">August 23, 2022 at 19:45 pm</span>
-                </div>
-              </div>
-              <div class="review__single">
-                <div>
-                  <img
-                    src="./assets/img/avatar-3.jpg"
-                    alt=""
-                    class="review__img"
-                  />
-                  <h4 class="review__title">Moh Benz</h4>
-                </div>
-                <div class="review__data">
-                  <div class="review__rating">
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                    <i class="fi fi-rs-star"></i>
-                  </div>
-                  <p class="review__description">
-                    Authentic and beautiful, Love these ways more than ever
-                    expected, They are great earphones.
-                  </p>
-                  <span class="review__date">March 2, 2021 at 10:01 am</span>
-                </div>
-              </div>
+            {% endfor %}
+
             </div>
+
             <div class="review__form">
               <h4 class="review__form-title">Add a review</h4>
-              <div class="rate__product">
-                <i class="fi fi-rs-star"></i>
-                <i class="fi fi-rs-star"></i>
-                <i class="fi fi-rs-star"></i>
-                <i class="fi fi-rs-star"></i>
-                <i class="fi fi-rs-star"></i>
-              </div>
-              <form action="" class="form grid">
+              <form hx-post="{% url 'product-detail' product.slug %}" hx-target="#reviews" hx-swap="outerHTML" class="form grid" method="POST">
+                {% csrf_token %}
+                <div class="rating-stars">
+                  <input type="radio" required name="rating" id="rs0" value="0" checked hidden><label for="rs0"></label>
+                  <input type="radio" required name="rating" value="1" id="rs1"><label for="rs1"></label>
+                  <input type="radio" required name="rating" value="2" id="rs2"><label for="rs2"></label>
+                  <input type="radio" required name="rating" value="3" id="rs3"><label for="rs3"></label>
+                  <input type="radio" required name="rating" value="4" id="rs4"><label for="rs4"></label>
+                  <input type="radio" required name="rating" value="5" id="rs5"><label for="rs5"></label>
+                  <span class="rating-counter"></span>
+                </div>
+              
                 <textarea
                   class="form__input textarea"
-                  placeholder="Write Comment"
-                ></textarea>
-                <div class="form__group grid">
-                  <input type="text" placeholder="Name" class="form__input">
-                  <input type="email" placeholder="Email" class="form__input">
+                  placeholder="Write an Review"
+                  row="4"
+                  name="review"
+                ></textarea></br>
+                 <div class="captcha-container">
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8HzRvfB7oTzXFa"></div>
                 </div>
                 <div class="form__btn">
-                  <button class="btn">Submit Review</button>
+                  <button class="btn" type="submit">Submit Review</button>
                 </div>
               </form>
             </div>
@@ -326,4 +306,55 @@
         </div>
       </section>
     </main>
+    <script>
+document.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.successful) {
+        try {
+            const response = JSON.parse(evt.detail.xhr.response);
+            if (response.success) {
+              //changes count in cart
+              if(response.cart_count!==undefined){
+                navCartCount=document.getElementById('nav-cart-count')
+                if(navCartCount){
+                  navCartCount.textContent=response.cart_count;
+                }
+              }
+              //changes count on wishlist
+              if(response.wishlist_count !== undefined){
+                const navWishlistCount=document.getElementById('nav-wishlist-count');
+                if(navWishlistCount){
+                  navWishlistCount.textContent=response.wishlist_count;
+                }
+              }
+              if(response.wishlist_action=="wishlist_update"){
+                
+
+                 // Update wishlist buttons with the product slug
+                 const wishlistButtons = document.querySelectorAll(`[data-wishlist-product-slug="${response.product_slug}"]`);
+                 wishlistButtons.forEach(btn => {
+                     if (response.is_liked) {
+                         btn.classList.add('liked');
+                     } else {
+                         btn.classList.remove('liked');
+                     }
+                 });
+                }
+            }
+        } catch (e) {
+            console.error('Error processing response:', e);
+        }
+    }
+    if (evt.detail.xhr.status === 200) {
+        try {
+            let response = JSON.parse(evt.detail.xhr.response);
+            if (response.redirect) {
+                window.location.href = "/login/";  // Redirect to login page
+            }
+        } catch (e) {
+            console.error("Error processing response:", e);
+        }
+    }
+});
+
+</script>
 {% endblock content %}

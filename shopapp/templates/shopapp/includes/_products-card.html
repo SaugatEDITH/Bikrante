@@ -1,4 +1,5 @@
 {% load static %}
+<!-- product cards for home with different inbuilt data-target filter -->
 <section class="products container section">
 {% if is_home %}
 <div class="tab__btns">
@@ -8,8 +9,7 @@
   <span class="tab__btn" data-target="#popular">Popular</span>
   <span class="tab__btn" data-target="#new-added">New Added</span>
 </div>
-{% else %}
-  <p class="total__products">We found <span>688</span> items for you!</p>
+
 {% endif %}
 {% if hot_products %}
     <div class="tab__items">
@@ -31,7 +31,13 @@
                 />
               </a>
               <div class="product__actions">
-                <a href="#" class="action__btn" aria-label="Quick View">
+                <a href="#"
+                class="action__btn" 
+                    aria-label="Quick View"
+                    hx-get="{% url 'product-detail' hot_product.slug %}"
+                    hx-trigger="click"
+                    hx-target="#product-modal-content"
+                    hx-swap="innerHTML">
                   <i class="fi fi-rs-eye"></i>
                 </a>
                 <a
@@ -67,8 +73,8 @@
                 <i class="fi fi-rs-star"></i>
               </div>
               <div class="product__price flex">
-                <span class="new__price">{{ hot_product.price }}</span>
-                <span class="old__price">$245.8</span>
+                <span class="new__price">रु{{ hot_product.price_after_discount }}</span>
+                <span class="old__price">रु{{ hot_product.price }}</span>
               </div>
               <a
                 href="#"
@@ -107,7 +113,13 @@
                 />
               </a>
               <div class="product__actions">
-                <a href="#" class="action__btn" aria-label="Quick View">
+                <a href="#" class="action__btn" 
+                aria-label="Quick View"
+                hx-get="{% url 'product-detail' normal_product.slug %}"
+                hx-trigger="click"
+                hx-target="#product-modal-content"
+                hx-swap="innerHTML"
+                >
                   <i class="fi fi-rs-eye"></i>
                 </a>
                 <a
@@ -142,8 +154,8 @@
                 <i class="fi fi-rs-star"></i>
               </div>
               <div class="product__price flex">
-                <span class="new__price">{{ normal_product.price }}</span>
-                <span class="old__price">$245.8</span>
+                <span class="new__price">रु{{ normal_product.price_after_discount }}</span>
+                <span class="old__price">रु{{ normal_product.price }}</span>
               </div>
               <a
                 href="#"
@@ -184,7 +196,14 @@
                 />
               </a>
               <div class="product__actions">
-                <a href="#" class="action__btn" aria-label="Quick View">
+                <a href="#" 
+                class="action__btn" 
+                    aria-label="Quick View"
+                    hx-get="{% url 'product-detail' popular_product.slug %}"
+                    hx-trigger="click"
+                    hx-target="#product-modal-content"
+                    hx-swap="innerHTML"
+                >
                   <i class="fi fi-rs-eye"></i>
                 </a>
                 <a
@@ -219,8 +238,8 @@
                 <i class="fi fi-rs-star"></i>
               </div>
               <div class="product__price flex">
-                <span class="new__price">$238.85</span>
-                <span class="old__price">$245.8</span>
+                <span class="new__price">रु{{ popular_product.price_after_discount }}</span>
+                <span class="old__price">रु{{ popular_product.price }}</span>
               </div>
               <a
                 href="#"
@@ -262,7 +281,14 @@
                 />
               </a>
               <div class="product__actions">
-                <a href="#" class="action__btn" aria-label="Quick View">
+                <a href="#" 
+                class="action__btn" 
+                    aria-label="Quick View"
+                    hx-get="{% url 'product-detail' new_arrival.slug %}"
+                    hx-trigger="click"
+                    hx-target="#product-modal-content"
+                    hx-swap="innerHTML"
+                >
                   <i class="fi fi-rs-eye"></i>
                 </a>
                 <a
@@ -297,8 +323,8 @@
                 <i class="fi fi-rs-star"></i>
               </div>
               <div class="product__price flex">
-                <span class="new__price">$238.85</span>
-                <span class="old__price">$245.8</span>
+                <span class="new__price">रु{{ new_arrival.price_after_discount }}</span>
+                <span class="old__price">रु{{ new_arrival.price }}</span>
               </div>
               <a
                 href="#"
@@ -357,6 +383,16 @@
                 console.error('Error processing response:', e);
             }
         }
+        if (evt.detail.xhr.status === 200) {
+          try {
+              let response = JSON.parse(evt.detail.xhr.response);
+              if (response.redirect) {
+                  window.location.href = "/login/";  // Redirect to login page
+              }
+          } catch (e) {
+              console.error("Error processing response:", e);
+          }
+      }
     }); 
     
     </script>

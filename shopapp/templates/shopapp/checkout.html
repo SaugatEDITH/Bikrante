@@ -1,5 +1,5 @@
 {% extends "shopapp/base.html" %}
-
+{% load static %}
 {% block content %}
 <!--=============== MAIN ===============-->
 <main class="main">
@@ -10,20 +10,42 @@
         <div class="checkout__container container grid">
           <div class="checkout__group">
             <h3 class="section__title">Billing Details</h3>
-            <form class="form grid">
-              <input type="text" placeholder="Name" class="form__input" />
-              <input type="text" placeholder="Address" class="form__input" />
-              <input type="text" placeholder="City" class="form__input" />
-              <input type="text" placeholder="Country" class="form__input" />
-              <input type="text" placeholder="Postcode" class="form__input" />
-              <input type="text" placeholder="Phone" class="form__input" />
-              <input type="email" placeholder="Email" class="form__input" />
+            <form class="form grid" method="POST" >
+
+              {% csrf_token %}
+              <input type="text" value="{{ user }}" name="name" placeholder="Name" class="form__input" required />
+              <input type="text" name="address" placeholder="Address" class="form__input" required />
+              <input type="text" name="city" placeholder="City" class="form__input" required />
+              <input type="text" name="postcode" placeholder="Postcode" class="form__input" required />
+              <input type="text" name="phone" placeholder="Phone" class="form__input" required />
+              <input type="email" name="email" placeholder="Email" class="form__input" required />
+                <!--=============== PAYMENT METHODS ===============-->
+                <h3 class="checkout__title payment__title">Payment</h3>
+                <div class="payment__methods">
+                    <div class="payment__option" data-method="Esewa">
+                        <img src="{% static "images/eSewa.png" %}" alt="Esewa" class="payment__method-img" />
+                        <span class="payment__method-name">Esewa</span>
+                    </div>
+                    <div class="payment__option" data-method="Khalti">
+                        <img src="{% static "images/khalti-logo.png" %}" alt="Khalti" class="payment__method-img" />
+                        <span class="payment__method-name">Khalti</span>
+                    </div>
+                    <div class="payment__option" data-method="Paypal">
+                        <img src="{% static "images/paypal.webp" %}" alt="Paypal" class="payment__method-img" />
+                        <span class="payment__method-name">PayPal</span>
+                    </div>
+                    <div class="payment__option" data-method="COD">
+                        <img src="{% static "images/COD.png" %}" alt="Cash on Delivery" class="payment__method-img" />
+                        <span class="payment__method-name">Cash on Delivery</span>
+                    </div>
+                </div>
+
+                <!-- Hidden input to capture the selected payment method -->
+                <input type="hidden" name="payment_method" id="selected_payment_method" value="Esewa" />
+
               <h3 class="checkout__title">Additional Information</h3>
-              <textarea
-                name=""
-                placeholder="order note"
-                class="form__input textarea"
-              ></textarea>
+              <textarea name="order_note" placeholder="Order Note" class="form__input textarea"></textarea>
+              <button type="submit" class="btn btn--md">Place Order</button>
             </form>
           </div>
           <div class="checkout__group">
@@ -37,102 +59,63 @@
               </thead>
 
               <tbody>
+                {% for cart_item in cart_items %}
                 <tr>
                   <td>
                     <img
-                      src="./assets/img/product-1-2.jpg"
-                      alt=""
+                      src="{{ cart_item.product.image1.url }}"
+                      alt="{{ cart_item.product.name }}"
                       class="order__img"
                     />
                   </td>
                   <td>
-                    <h3 class="table__title">Yidarton Women Summer Blue</h3>
-                    <p class="table__quantity">x 2</p>
+                    <h3 class="table__title">{{ cart_item.product.name }}</h3>
+                    <p class="table__quantity">X {{ cart_item.quantity }} ,Discount({{ cart_item.product.category.discount_percentage }}%)</p>
                   </td>
-                  <td><span class="table__price">$180.00</span></td>
+                  <td><span class="table__price">{{ cart_item.product.price_after_discount }}</span></td>
                 </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="./assets/img/product-2-1.jpg"
-                      alt=""
-                      class="order__img"
-                    />
-                  </td>
-                  <td>
-                    <h3 class="table__title">LDB Moon Summer</h3>
-                    <p class="table__quantity">x 1</p>
-                  </td>
-                  <td><span class="table__price">$65.00</span></td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="./assets/img/product-7-1.jpg"
-                      alt=""
-                      class="order__img"
-                    />
-                  </td>
-                  <td>
-                    <h3 class="table__title">Women Short Sleeve Loose</h3>
-                    <p class="table__quantity">x 2</p>
-                  </td>
-                  <td><span class="table__price">$35.00</span></td>
-                </tr>
+                {% endfor %}
+               
                 <tr>
                   <td><span class="order__subtitle">Subtotal</span></td>
-                  <td colspan="2"><span class="table__price">$280.00</span></td>
+                  <td colspan="2"><span class="table__price">{{ cart_subtotal }}</span></td>
                 </tr>
                 <tr>
                   <td><span class="order__subtitle">Shipping</span></td>
                   <td colspan="2">
-                    <span class="table__price">Free Shipping</span>
+                    <span class="table__price">{{ shipping_price }}</span>
                   </td>
                 </tr>
                 <tr>
                   <td><span class="order__subtitle">Total</span></td>
                   <td colspan="2">
-                    <span class="order__grand-total">$280.00</span>
+                    <span class="order__grand-total">{{ total_price }}</span>
                   </td>
                 </tr>
               </tbody>
             </table>
-            <div class="payment__methods">
-              <h3 class="checkout__title payment__title">Payment</h3>
-              <div class="payment__option flex">
-                <input
-                  type="radio"
-                  name="radio"
-                  id="l1"
-                  checked
-                  class="payment__input"
-                />
-                <label for="l1" class="payment__label"
-                  >Direct Bank Transfer</label
-                >
-              </div>
-              <div class="payment__option flex">
-                <input
-                  type="radio"
-                  name="radio"
-                  id="l2"
-                  class="payment__input"
-                />
-                <label for="l2" class="payment__label">Check Payment</label>
-              </div>
-              <div class="payment__option flex">
-                <input
-                  type="radio"
-                  name="radio"
-                  id="l3"
-                  class="payment__input"
-                />
-                <label for="l3" class="payment__label">Paypal</label>
-              </div>
-            </div>
-            <button class="btn btn--md">Place Order</button>
           </div>
         </div>
       </section>
 </main>
+<script>
+// Select all payment option divs
+const paymentOptions = document.querySelectorAll('.payment__option');
+const selectedPaymentMethod = document.getElementById('selected_payment_method');
+
+// Add event listener to each option to handle selection
+paymentOptions.forEach(option => {
+    option.addEventListener('click', () => {
+        // Remove the 'selected' class from all options
+        paymentOptions.forEach(option => option.classList.remove('selected'));
+
+        // Add the 'selected' class to the clicked option
+        option.classList.add('selected');
+
+        // Set the selected payment method in the hidden input field
+        const paymentMethod = option.getAttribute('data-method');
+        selectedPaymentMethod.value = paymentMethod;
+    });
+});
+</script>
 {% endblock content %}

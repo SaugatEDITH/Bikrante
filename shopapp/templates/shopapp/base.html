@@ -3,64 +3,61 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Bikrante</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.png' %}">
     <!--=============== FLATICON ===============-->
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.0.0/uicons-regular-straight/css/uicons-regular-straight.css" />
-    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-straight/css/uicons-regular-straight.css'>
-    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-solid-straight/css/uicons-solid-straight.css'>
+    {% comment %} <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-straight/css/uicons-regular-straight.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-solid-straight/css/uicons-solid-straight.css'> {% endcomment %}
     
     <!--=============== SWIPER CSS ===============-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="{% static "css/styles.css" %}">
     <!--=============== FONT AWESOME ===============-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
-    
-    <!-- Add HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="{% static "css/htmxactions.css" %}"
     
     <!-- Optional: Add HTMX loading indicator styles -->
-    <style>
-        .htmx-indicator {
-            opacity: 1;
-            transition: opacity 200ms ease-in;
-        }
-        .htmx-indicator.htmx-request {
-            opacity: 0.5;
-        }
 
-        /* Heart icon styles */
-        .fi-rs-heart {
-            color: #666;
-            transition: color 0.3s ease;
-        }
-        
-        /* Wishlist button state */
-        .wishlist-btn.liked {
-            background-color: #ff0000 !important;
-        }
-        
-        /* Heart icon color when button is liked */
-        .wishlist-btn.liked .fi-rs-heart {
-            color: #fff;
-        }
-
-        .action__btn {
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 40px; /* Adjust as needed */
-        }
-    </style>
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
         });
     </script>
+   <!-- for the popup -->
+    <script>
+    document.addEventListener("htmx:afterSwap", function(event) {
+        if (event.detail.target.id === "product-modal-content") {
+            openModal();
+        }
+    });
+    
+    function openModal() {
+        let modal = document.getElementById("product-modal");
+        modal.classList.add("active");
+    }
+    
+    function closeModal() {
+        let modal = document.getElementById("product-modal");
+        modal.classList.remove("active");
+    }
+    
+    window.onclick = function(event) {
+        let modal = document.getElementById("product-modal");
+        if (event.target === modal) {
+            closeModal();
+        }
+    };
+</script>
+{% block extracss %}
+
+{% endblock extracss %}
   </head>
   <body class="{% if user.is_authenticated %}user-authenticated{% endif %}">
      <!--=============== HEADER ===============-->
@@ -77,10 +74,29 @@
      <!--=============== FOOTER ===============-->
     {% include "shopapp/includes/_news-letter.html" %}
     {% include "shopapp/includes/_footer.html" %}
-    
+
+    <!-- Custom Modal -->
+    <div id="product-modal" class="custom-modal">
+        <div class="custom-modal-content">
+            <span class="custom-modal-close" onclick="closeModal()">&times;</span>
+            <div id="product-modal-content">
+                <!-- HTMX will inject product details here -->
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("htmx:afterSwap", function(event) {
+            if (event.detail.target.id === "product-modal-content") {
+                openModal();
+            }
+        });
+        </script>
+        
       <!--=============== SWIPER JS ===============-->
       <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
+      <!--=============== CloudFlare Captcha ===============-->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
       <!--=============== MAIN JS ===============-->
       <script src="{% static 'js/main.js' %}"></script>
 

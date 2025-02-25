@@ -21,7 +21,7 @@
             </thead>
             <tbody>
 {% for cart_item in cart_items %}
-              <tr id="cart-item-{{cart_item.product.slug}}">
+              <tr id="cart-item-{{ cart_item.product.slug }}">
                 <td>
                   <img
                     src="{{ cart_item.product.image1.url }}"
@@ -38,10 +38,24 @@
                   </p>
                 </td>
                 <td>
-                  <span class="table__price">$110</span>
+                  <span class="table__price">रु{{ cart_item.product.price_after_discount }}</span>
                 </td>
-                <td><input type="number" min="1" value="1" class="quantity" /></td>
-                <td><span class="subtotal">$220</span></td>
+                <td>
+                  <input 
+                  name="quantity-{{ cart_item.product.slug }}"
+                  type="number"
+                  min="1"
+                  value="{{cart_item.quantity}}"
+                  class="quantity" 
+                  hx-post="{% url 'add-remove-cart' cart_item.product.slug %}"
+                  hx-trigger="change delay:200ms"
+                  hx-swap="none"
+                  hx-include="#quantity-{{cart_item.product.slug}}"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  id="quantity-{{ cart_item.product.slug }}"
+                  />
+                </td>
+                <td><span class="subtotal">रु{{ cart_item.subtotal }}</span></td>
                 <td>
                   <a
                   href="#"
@@ -63,10 +77,10 @@
         </div>
 
         <div class="cart__actions">
-          <a href="#" class="btn flex btn__md">
-            <i class="fi-rs-shuffle"></i> Update Cart
+          <a href="{% url 'wishlist' %}" class="btn flex btn__md">
+            <i class="fi-rs-shuffle"></i> Go to Wishlist
           </a>
-          <a href="#" class="btn flex btn__md">
+          <a href="{% url 'shop' %}" class="btn flex btn__md">
             <i class="fi-rs-shopping-bag"></i> Continue Shopping
           </a>
         </div>
@@ -80,6 +94,11 @@
             <div class="cart__shippinp">
               <h3 class="section__title">Calculate Shipping</h3>
               <form action="" class="form grid">
+                <input
+                  type="text"
+                  class="form__input"
+                  placeholder="State / City"
+                />
                 <input
                   type="text"
                   class="form__input"
@@ -119,65 +138,121 @@
             </div>
           </div>
 
-          <div class="cart__total">
+          <div class="cart__total" id="cart-summary">
             <h3 class="section__title">Cart Totals</h3>
             <table class="cart__total-table">
                 <tr>
                   <td><span class="cart__total-title">Cart Subtotal</span></td>
-                  <td><span class="cart__total-price">$240.00</span></td>
+                  <td><span class="cart__total-price" id="SubTotal">रु{{ subtotal }}</span></td>
                 </tr>
                 <tr>
                   <td><span class="cart__total-title">Shipping</span></td>
-                  <td><span class="cart__total-price">$10.00</span></td>
+                  <td><span class="cart__total-price" id="totalShippingAmount">रु10.00</span></td>
                 </tr>
                 <tr>
                   <td><span class="cart__total-title">Total</span></td>
-                  <td><span class="cart__total-price">$250.00</span></td>
+                  <td><span class="cart__total-price" id="totalPrice">रु{{total_price}}</span></td>
                 </tr>
             </table>
-            <a href="checkout.html" class="btn flex btn--md">
+            {% if cart_items %}
+            <a href="{% url 'checkout' %}" class="btn flex btn--md">
               <i class="fi fi-rs-box-alt"></i> &nbsp  Proceed To Checkout
             </a>
+            {% endif %}
           </div>
         </div>
       </section>
       <script>
         document.addEventListener('htmx:afterRequest', function(evt) {
-            if (evt.detail.successful) {
-                try {
-                    const response = JSON.parse(evt.detail.xhr.response);
-                    if (response.success) {
-                        // Remove the product item from wishlist
-                        const itemToRemove = document.getElementById(`cart-item-${response.product_slug}`);
-                        if (itemToRemove) {
-                            itemToRemove.remove();
-                        }
-    
-                        // Update wishlist count in navbar
-                        const navCount = document.getElementById('nav-cart-count');
-                        if (navCount) {
-                            navCount.textContent = response.cart_count;
-                        }
-    
-                        // If no items left, show empty message
-                        const wishlistContainer = document.querySelector('.products__container');
-                        if (response.count === 0 && cartContainer) {
-                            cartContainer.innerHTML = '<div class="no-items">Your wishlist is empty</div>';
-                        }
-    
-                        console.log('Product removed from wishlist:', response.product_slug);
-                    }
-                } catch (e) {
-                    console.error('Error processing response:', e);
+          if (evt.detail.successful) {
+            try {
+              const response = JSON.parse(evt.detail.xhr.response);
+              console.log("✅ HTMX Response:", response);  // Debugging log
+              console.log(response.cart_count);
+      
+              if (response.cart_count !== undefined) {
+                const navCartCount = document.getElementById('nav-cart-count');  // ✅ Ensure consistency
+                if (navCartCount) {
+                  navCartCount.textContent = response.cart_count;
                 }
+              }
+      
+              if (response.success) {
+                if (response.action === 'updated' || response.action === 'added') {
+                  // Update quantity and subtotal for the updated item
+                  const itemRow = document.querySelector(`#cart-item-${response.product_slug}`);
+                  if (itemRow) {
+                    const quantityInput = itemRow.querySelector(`#quantity-${response.product_slug}`);
+                    const subtotalElement = itemRow.querySelector('.subtotal');
+      
+                    if (quantityInput) {
+                      quantityInput.value = response.item_quantity;
+                    }
+                    if (subtotalElement) {
+                      subtotalElement.textContent = 'रु' + response.item_subtotal;
+                    }
+                  }
+                }
+      
+                if (response.action === 'removed') {
+                  // Remove item row from the cart
+                  const itemToRemove = document.getElementById(`cart-item-${response.product_slug}`);
+                  if (itemToRemove) {
+                    itemToRemove.remove();
+                  }
+                }
+      
+                // ✅ Update cart totals & navigation count  
+                updateCartTotals(response);
+      
+                // ✅ If cart is empty, show message
+                if (response.cart_count === 0) {
+                  document.querySelector('.products__container').innerHTML = '<div class="no-items">Your cart is empty</div>';
+                }
+              }
+            } catch (e) {
+              console.error('Error processing response:', e);
             }
+          }
         });
-    
+      
+        // ✅ Function to update cart totals & navigation
+        function updateCartTotals(response) {
+          console.log("🔄 Updating Cart Totals:", response);
+      
+          // Update Subtotal
+          const subTotalPriceElement = document.querySelector('#SubTotal');
+          if (subTotalPriceElement) {
+            subTotalPriceElement.textContent = 'रु' + response.cart_subtotal;
+          }
+      
+          // Update Total Price
+          const totalPriceElement = document.querySelector('#totalPrice');
+          if (totalPriceElement) {
+            totalPriceElement.textContent = 'रु' + response.total_price;
+          }
+      
+          // Update Shipping Price
+          const shippingPriceElement = document.querySelector('#totalShippingAmount');
+          if (shippingPriceElement) {
+            shippingPriceElement.textContent = 'रु' + response.shipping_price;
+          }
+      
+          // ✅ Update cart count in the navigation
+          const navCartCount = document.getElementById('nav-cart-count');  // ✅ Ensure consistency
+          if (navCartCount) {
+            navCartCount.textContent = response.cart_count;
+          }
+        }
+      
+        // Handle HTMX response errors (like 403)
         document.addEventListener('htmx:responseError', function(evt) {
-            if (evt.detail.xhr.status === 403 && !document.body.classList.contains('user-authenticated')) {
-                window.location.href = "{% url 'login' %}";
-            }
+          if (evt.detail.xhr.status === 403 && !document.body.classList.contains('user-authenticated')) {
+            window.location.href = "{% url 'login' %}";
+          }
         });
-        </script> 
+      </script>
+      
+    
         <main>
       {% endblock content %}

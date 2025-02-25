@@ -1,0 +1,170 @@
+{% extends "shopapp/base.html" %}
+{% block content %}
+{% block extracss %}
+<style>
+#main{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+  
+  .playbtn {
+    background:#088179;
+    position: relative;
+    display: inline-block;
+    padding: 25px 30px;
+    margin: 40px 0;
+    color:rgb(0, 0, 0);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: 0.5s;
+    font-weight: bold;
+    letter-spacing: 4px;
+    overflow: hidden;
+  }
+  .playbtn:hover {
+    background:rgb(0, 0, 0);
+    color:rgb(254, 253, 253);
+    box-shadow: 0 0 5px #fff, 0 0 25px #fff, 0 0 50px #fff, 0 0 200px #fff;
+    -webkit-box-reflect: below 1px linear-gradient(transparent, #0005);
+  }
+  
+  .playbtn span {
+    position: absolute;
+    display: block;
+  }
+  
+  .playbtn span:nth-child(1) {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(90deg, transparent, #fff);
+    animation: animate1 1s linear infinite;
+  }
+  
+  @keyframes animate1 {
+    0% {
+      left: -100%;
+    }
+    50%,
+    100% {
+      left: 100%;
+    }
+  }
+  
+  .playbtn span:nth-child(2) {
+    top: -100%;
+    right: 0;
+    width: 10px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, #fff);
+    animation: animate2 1s linear infinite;
+    animation-delay: 0.25s;
+  }
+  
+  @keyframes animate2 {
+    0% {
+      top: -100%;
+    }
+    50%,
+    100% {
+      top: 100%;
+    }
+  }
+  
+  .playbtn span:nth-child(3) {
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(270deg, transparent, #fff);
+    animation: animate3 1s linear infinite;
+    animation-delay: 0.5s;
+  }
+  
+  @keyframes animate3 {
+    0% {
+      right: -100%;
+    }
+    50%,
+    100% {
+      right: 100%;
+    }
+  }
+  
+  .playbtn span:nth-child(4) {
+    bottom: -100%;
+    left: 0;
+    width: 10px;
+    height: 100%;
+    background: linear-gradient(360deg, transparent, #fff);
+    animation: animate4 1s linear infinite;
+    animation-delay: 0.75s;
+  }
+  
+  @keyframes animate4 {
+    0% {
+      bottom: -100%;
+    }
+    50%,
+    100% {
+      bottom: 100%;
+    }
+  }
+  
+  /* Subscribe button styles */
+  .subscribe-btn {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    color: var(--accent-color);
+  }
+  
+  /* SVG inside subscribe button */
+  .subscribe-btn svg {
+    height: 60px;
+    width: 60px;
+  }
+  
+</style>
+{% endblock extracss %}
+<!-- ham -->
+<div id="main">
+    <center>
+    <h2>Are you Sure Want to Proceed?</h2>
+    <h4>Mr/Mrs. {{user}}</h4>
+    <form id="esewa-form" method="POST" action="https://rc-epay.esewa.com.np/api/epay/main/v2/form">
+        <input type="hidden" id="amount" name="amount" value="{{total_amount}}" required>
+        <input type="hidden" id="tax_amount" name="tax_amount" value="0" required>
+        <input type="hidden" id="total_amount" name="total_amount" value="{{total_amount}}" required>
+        <!--dynamic uuid-->
+        <input type="hidden" id="transaction_uuid" name="transaction_uuid" value="{{uid}}" required>
+        <input type="hidden" id="product_code" name="product_code" value="EPAYTEST" required>
+        <input type="hidden" id="product_service_charge" name="product_service_charge" value="0" required>
+        <input type="hidden" id="product_delivery_charge" name="product_delivery_charge" value="0   " required>
+        <input type="hidden" id="success_url" name="success_url" value="{{ success_url }}" required>
+        <input type="hidden" id="failure_url" name="failure_url" value="https://google.com" required>
+        <input type="hidden" id="signed_field_names" name="signed_field_names"
+            value="total_amount,transaction_uuid,product_code" required>
+        <input type="hidden" id="signature" name="signature" value="{{signature}}" required>
+        {% comment %} <input value="Submit" type="submit" class="buttonconfirm"> {% endcomment %}
+        <a class="playbtn" href="#" onclick="submitForm(event)">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Proceed Payment
+          </a>
+    </form>
+    <script>
+        function submitForm(event) {
+          event.preventDefault(); // Prevent default anchor action
+          document.getElementById("esewa-form").submit(); // Submit the form
+        }
+      </script>
+    <center>
+</div>
+
+{% endblock content %}

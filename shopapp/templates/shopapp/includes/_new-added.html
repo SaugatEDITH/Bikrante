@@ -3,37 +3,56 @@
     <h3 class="section__title"><span>New</span> Arrivals</h3>
     <div class="new__container swiper">
       <div class="swiper-wrapper">
+      {% if new_arrivals %}
+        {% for new_arrival in new_arrivals %}
         <div class="product__item swiper-slide">
           <div class="product__banner">
-            <a href="details.html" class="product__images">
+            <a href="{% url "product-detail" new_arrival.slug %}" class="product__images">
               <img
-                src="{% static "images/product-1-1.jpg" %}"
-                alt=""
+                src="{{ new_arrival.image1.url }} "
+                alt="{{ new_arrival.name }}"
                 class="product__img default"
               />
               <img
-                src="{% static "images/product-1-2.jpg" %}"
-                alt=""
+                src="{{ new_arrival.image2.url }}"
+                alt="{{ new_arival.name }}"
                 class="product__img hover"
               />
             </a>
             <div class="product__actions">
-              <a href="#" class="action__btn" aria-label="Quick View">
+              <a href="#" 
+              class="action__btn" 
+                    aria-label="Quick View"
+                    hx-get="{% url 'product-detail' new_arrival.slug %}"
+                    hx-trigger="click"
+                    hx-target="#product-modal-content"
+                    hx-swap="innerHTML"
+              >
                 <i class="fi fi-rs-eye"></i>
               </a>
-              <a href="#" class="action__btn" aria-label="Add to Wishlist">
+              <a href="#" 
+              href="#"
+              hx-post="{% url 'add_remove_wishlist' new_arrival.slug %}"
+              hx-target="body"
+              hx-swap="none"
+              hx-trigger="click"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+              class="action__btn wishlist-btn {% if request.user.is_authenticated and new_arrival in request.user.liked_products.all %}liked{% endif %}"
+              aria-label="Add to Wishlist"
+              data-product-slug="{{ new_arrival.slug }}"
+              >
                 <i class="fi fi-rs-heart"></i>
               </a>
               <a href="#" class="action__btn" aria-label="Compare">
                 <i class="fi fi-rs-shuffle"></i>
               </a>
             </div>
-            <div class="product__badge light-pink">Hot</div>
+            <div class="product__badge light-pink">{% if new_arrival.is_hot %}Hot{% else %}{{new_arrival.category.discount_percentage }} {% endif %}</div>
           </div>
           <div class="product__content">
-            <span class="product__category">Clothing</span>
-            <a href="details.html">
-              <h3 class="product__title">Colorful Pattern Shirts</h3>
+            <span class="product__category">{{ new_arrival.category.name }}</span>
+            <a href="{% url 'product-detail' new_arrival.slug %}">
+              <h3 class="product__title">{{ new_arrival.name }}</h3>
             </a>
             <div class="product__rating">
               <i class="fi fi-rs-star"></i>
@@ -43,8 +62,8 @@
               <i class="fi fi-rs-star"></i>
             </div>
             <div class="product__price flex">
-              <span class="new__price">$238.85</span>
-              <span class="old__price">$245.8</span>
+              <span class="new__price">{{ new_arrival.price_after_discount }}</span>
+              <span class="old__price">{{ new_arrival.price }}</span>
             </div>
             <a
               href="#"
@@ -55,318 +74,8 @@
             </a>
           </div>
         </div>
-        <div class="product__item swiper-slide">
-          <div class="product__banner">
-            <a href="details.html" class="product__images">
-              <img
-                src="assets/img/product-2-1.jpg"
-                alt=""
-                class="product__img default"
-              />
-              <img
-                src="assets/img/product-2-2.jpg"
-                alt=""
-                class="product__img hover"
-              />
-            </a>
-            <div class="product__actions">
-              <a href="#" class="action__btn" aria-label="Quick View">
-                <i class="fi fi-rs-eye"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Add to Wishlist">
-                <i class="fi fi-rs-heart"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Compare">
-                <i class="fi fi-rs-shuffle"></i>
-              </a>
-            </div>
-            <div class="product__badge light-green">Hot</div>
-          </div>
-          <div class="product__content">
-            <span class="product__category">Clothing</span>
-            <a href="details.html">
-              <h3 class="product__title">Colorful Pattern Shirts</h3>
-            </a>
-            <div class="product__rating">
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-            </div>
-            <div class="product__price flex">
-              <span class="new__price">$238.85</span>
-              <span class="old__price">$245.8</span>
-            </div>
-            <a
-              href="#"
-              class="action__btn cart__btn"
-              aria-label="Add To Cart"
-            >
-              <i class="fi fi-rs-shopping-bag-add"></i>
-            </a>
-          </div>
-        </div>
-        <div class="product__item swiper-slide">
-          <div class="product__banner">
-            <a href="details.html" class="product__images">
-              <img
-                src="assets/img/product-3-1.jpg"
-                alt=""
-                class="product__img default"
-              />
-              <img
-                src="assets/img/product-3-2.jpg"
-                alt=""
-                class="product__img hover"
-              />
-            </a>
-            <div class="product__actions">
-              <a href="#" class="action__btn" aria-label="Quick View">
-                <i class="fi fi-rs-eye"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Add to Wishlist">
-                <i class="fi fi-rs-heart"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Compare">
-                <i class="fi fi-rs-shuffle"></i>
-              </a>
-            </div>
-            <div class="product__badge light-orange">Hot</div>
-          </div>
-          <div class="product__content">
-            <span class="product__category">Clothing</span>
-            <a href="details.html">
-              <h3 class="product__title">Colorful Pattern Shirts</h3>
-            </a>
-            <div class="product__rating">
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-            </div>
-            <div class="product__price flex">
-              <span class="new__price">$238.85</span>
-              <span class="old__price">$245.8</span>
-            </div>
-            <a
-              href="#"
-              class="action__btn cart__btn"
-              aria-label="Add To Cart"
-            >
-              <i class="fi fi-rs-shopping-bag-add"></i>
-            </a>
-          </div>
-        </div>
-        <div class="product__item swiper-slide">
-          <div class="product__banner">
-            <a href="details.html" class="product__images">
-              <img
-                src="assets/img/product-4-1.jpg"
-                alt=""
-                class="product__img default"
-              />
-              <img
-                src="assets/img/product-4-2.jpg"
-                alt=""
-                class="product__img hover"
-              />
-            </a>
-            <div class="product__actions">
-              <a href="#" class="action__btn" aria-label="Quick View">
-                <i class="fi fi-rs-eye"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Add to Wishlist">
-                <i class="fi fi-rs-heart"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Compare">
-                <i class="fi fi-rs-shuffle"></i>
-              </a>
-            </div>
-            <div class="product__badge light-blue">Hot</div>
-          </div>
-          <div class="product__content">
-            <span class="product__category">Clothing</span>
-            <a href="details.html">
-              <h3 class="product__title">Colorful Pattern Shirts</h3>
-            </a>
-            <div class="product__rating">
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-            </div>
-            <div class="product__price flex">
-              <span class="new__price">$238.85</span>
-              <span class="old__price">$245.8</span>
-            </div>
-            <a
-              href="#"
-              class="action__btn cart__btn"
-              aria-label="Add To Cart"
-            >
-              <i class="fi fi-rs-shopping-bag-add"></i>
-            </a>
-          </div>
-        </div>
-        <div class="product__item swiper-slide">
-          <div class="product__banner">
-            <a href="details.html" class="product__images">
-              <img
-                src="assets/img/product-5-1.jpg"
-                alt=""
-                class="product__img default"
-              />
-              <img
-                src="assets/img/product-5-2.jpg"
-                alt=""
-                class="product__img hover"
-              />
-            </a>
-            <div class="product__actions">
-              <a href="#" class="action__btn" aria-label="Quick View">
-                <i class="fi fi-rs-eye"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Add to Wishlist">
-                <i class="fi fi-rs-heart"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Compare">
-                <i class="fi fi-rs-shuffle"></i>
-              </a>
-            </div>
-            <div class="product__badge light-blue">-30%</div>
-          </div>
-          <div class="product__content">
-            <span class="product__category">Clothing</span>
-            <a href="details.html">
-              <h3 class="product__title">Colorful Pattern Shirts</h3>
-            </a>
-            <div class="product__rating">
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-            </div>
-            <div class="product__price flex">
-              <span class="new__price">$238.85</span>
-              <span class="old__price">$245.8</span>
-            </div>
-            <a
-              href="#"
-              class="action__btn cart__btn"
-              aria-label="Add To Cart"
-            >
-              <i class="fi fi-rs-shopping-bag-add"></i>
-            </a>
-          </div>
-        </div>
-        <div class="product__item swiper-slide">
-          <div class="product__banner">
-            <a href="details.html" class="product__images">
-              <img
-                src="assets/img/product-6-1.jpg"
-                alt=""
-                class="product__img default"
-              />
-              <img
-                src="assets/img/product-6-2.jpg"
-                alt=""
-                class="product__img hover"
-              />
-            </a>
-            <div class="product__actions">
-              <a href="#" class="action__btn" aria-label="Quick View">
-                <i class="fi fi-rs-eye"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Add to Wishlist">
-                <i class="fi fi-rs-heart"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Compare">
-                <i class="fi fi-rs-shuffle"></i>
-              </a>
-            </div>
-            <div class="product__badge light-blue">-22%</div>
-          </div>
-          <div class="product__content">
-            <span class="product__category">Clothing</span>
-            <a href="details.html">
-              <h3 class="product__title">Colorful Pattern Shirts</h3>
-            </a>
-            <div class="product__rating">
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-            </div>
-            <div class="product__price flex">
-              <span class="new__price">$238.85</span>
-              <span class="old__price">$245.8</span>
-            </div>
-            <a
-              href="#"
-              class="action__btn cart__btn"
-              aria-label="Add To Cart"
-            >
-              <i class="fi fi-rs-shopping-bag-add"></i>
-            </a>
-          </div>
-        </div>
-        <div class="product__item swiper-slide">
-          <div class="product__banner">
-            <a href="details.html" class="product__images">
-              <img
-                src="assets/img/product-7-1.jpg"
-                alt=""
-                class="product__img default"
-              />
-              <img
-                src="assets/img/product-7-2.jpg"
-                alt=""
-                class="product__img hover"
-              />
-            </a>
-            <div class="product__actions">
-              <a href="#" class="action__btn" aria-label="Quick View">
-                <i class="fi fi-rs-eye"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Add to Wishlist">
-                <i class="fi fi-rs-heart"></i>
-              </a>
-              <a href="#" class="action__btn" aria-label="Compare">
-                <i class="fi fi-rs-shuffle"></i>
-              </a>
-            </div>
-            <div class="product__badge light-green">-22%</div>
-          </div>
-          <div class="product__content">
-            <span class="product__category">Clothing</span>
-            <a href="details.html">
-              <h3 class="product__title">Colorful Pattern Shirts</h3>
-            </a>
-            <div class="product__rating">
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-            </div>
-            <div class="product__price flex">
-              <span class="new__price">$238.85</span>
-              <span class="old__price">$245.8</span>
-            </div>
-            <a
-              href="#"
-              class="action__btn cart__btn"
-              aria-label="Add To Cart"
-            >
-              <i class="fi fi-rs-shopping-bag-add"></i>
-            </a>
-          </div>
-        </div>
+        {% endfor %}
+        {% endif %}
       </div>
 
       <div class="swiper-button-prev">
