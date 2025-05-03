@@ -1,0 +1,139 @@
+{% load static %}
+<div class="chatbot__wrapper">
+    <button class="chatbot__button">
+        <span class="chatbot__tooltip">Chat with Assistant</span>
+        <i class="fa-solid fa-robot"></i>
+    </button>
+
+    <div class="chatbot__box">
+        <div class="chat__header">
+            <h4 class="chat__title">Shopping Assistant</h4>
+            <button class="chat__close">
+                <i class="far fa-window-close"></i>
+            </button>
+        </div>
+
+    {% comment %} 
+        <div class="chat__messages">
+            <div class="chat__message bot__message">
+                <div class="message__content">
+                    <p>👋 Hi! I'm your shopping assistant. How can I help you today?</p>
+                </div>
+                <span class="message__time">Just now</span>
+            </div>
+        </div>
+        <form class="chat__input-form" hx-post="{% url 'chat-bot' %}" hx-target=".chat__messages" hx-swap="beforeend">
+            {% csrf_token %}
+            <div class="input__container">
+                <input type="text" 
+                       id="chat-input"
+                       name="message" 
+                       placeholder="Type your message..." 
+                       required
+                       autocomplete="off">
+                <button type="submit" id="send-button">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </form> {% endcomment %}
+        <iframe src='https://interfaces.zapier.com/embed/chatbot/cm8yh3h2m000vhigud6pxxv7p' height='600px' width='350px' allow='clipboard-write *' style="border: none;"></iframe>  
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatButton = document.querySelector('.chatbot__button');
+    const chatBox = document.querySelector('.chatbot__box');
+    const closeButton = document.querySelector('.chat__close');
+    const messagesList = document.querySelector('.chat__messages');
+    const chatForm = document.querySelector('.chat__input-form');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+
+    // Function to handle message sending
+    function handleMessageSend(e) {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        
+        if (message) {
+            // Show user message
+            const userMessage = `
+                <div class="chat__message user__message">
+                    <div class="message__content">
+                        <p>${message}</p>
+                    </div>
+                    <span class="message__time">Just now</span>
+                </div>
+            `;
+            messagesList.insertAdjacentHTML('beforeend', userMessage);
+            
+            // Show loading animation
+            const loadingMessage = `
+                <div class="chat__message bot__message loading">
+                    <div class="message__content">
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesList.insertAdjacentHTML('beforeend', loadingMessage);
+            
+            // Clear input and scroll
+            chatInput.value = '';
+            scrollToBottom();
+            
+            // Trigger HTMX request manually
+            htmx.trigger(chatForm, 'submit');
+        }
+    }
+
+    // Function to scroll to bottom
+    function scrollToBottom() {
+        messagesList.scrollTop = messagesList.scrollHeight;
+    }
+
+    // Chat button toggle
+    chatButton.addEventListener('click', () => {
+        chatBox.classList.toggle('show');
+        chatButton.classList.toggle('active');
+        scrollToBottom();
+    });
+
+    closeButton.addEventListener('click', () => {
+        chatBox.classList.remove('show');
+        chatButton.classList.remove('active');
+    });
+
+    // Handle form submission (both click and enter)
+    chatForm.addEventListener('submit', handleMessageSend);
+
+    // Handle enter key
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendButton.click();
+        }
+    });
+
+    // Reset input after HTMX request
+    chatForm.addEventListener('htmx:afterRequest', function() {
+        chatInput.value = '';
+        scrollToBottom();
+    });
+});
+
+// Handle HTMX events
+document.addEventListener('htmx:afterSwap', function() {
+    const messagesList = document.querySelector('.chat__messages');
+    const loadingMessages = messagesList.querySelectorAll('.loading');
+    
+    // Remove loading animations
+    loadingMessages.forEach(msg => msg.remove());
+    
+    // Scroll to bottom
+    messagesList.scrollTop = messagesList.scrollHeight;
+});
+</script>

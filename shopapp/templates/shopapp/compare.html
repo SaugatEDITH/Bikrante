@@ -1,187 +1,222 @@
+{% extends "shopapp/base.html" %}
+{% load static %}
+{% block content %}
+<main class="main">
+  {% include "shopapp/includes/_breadcrumb.html" %}
 
+  <div class="compare section--lg">
+    <div class="container">
+      {% if products %}
+        <div class="compare__table">
+          <table>
+            <tbody>
+              <tr>
+                <th>Product Info</th>
+                {% for product in products %}
+                <td>
+                  <a href="{% url 'add-remove-compare' product.slug %}" class="remove__btn">
+                    <i class="fi-rs-trash"></i>
+                  </a>
+                  <a href="{% url 'product-detail' product.slug %}" class="product__name">
+                    <img src="{{ product.image1.url }}" alt="{{ product.name }}" />
+                    <h4>{{ product.name }}</h4>
+                  </a>
+                </td>
+                {% endfor %}
+              </tr>
+              <tr>
+                <th>Price</th>
+                {% for product in products %}
+                <td>रु{{ product.price }}</td>
+                {% endfor %}
+              </tr>
+              
+              <tr>
+                <th>Description</th>
+                {% for product in products %}
+                <td>{{ product.description|truncatewords:30 }}</td>
+                {% endfor %}
+              </tr>
 
-    <!--=============== MAIN ===============-->
-    <main class="main">
-      <!--=============== BREADCRUMB ===============-->
-      <section class="breadcrumb">
-        <ul class="breadcrumb__list flex container">
-          <li><a href="index.html" class="breadcrumb__link">Home</a></li>
-          <li><span class="breadcrumb__link">></span></li>
-          <li><span class="breadcrumb__link">Shop</span></li>
-          <li><span class="breadcrumb__link">></span></li>
-          <li><span class="breadcrumb__link">Compare</span></li>
-        </ul>
-      </section>
+              <tr>
+                <th>Brand</th>
+                {% for product in products %}
+                <td>{{ product.brand_name }}</td>
+                {% endfor %}
+              </tr>
+              
+              <tr>
+                <th>SKU</th>
+                {% for product in products %}
+                <td>{{ product.sku }}</td>
+                {% endfor %}
+              </tr>
+              
+              <tr>
+                <th>Stock</th>
+                {% for product in products %}
+                <td>{{ product.stock }}</td>
+                {% endfor %}
+              </tr>
 
-      <!--=============== COMPARE ===============-->
-      <section class="compare container section--lg">
-        <table class="compare__table">
-          <tr>
-            <th>Image</th>
-            <td>
-              <img
-                src="./assets/img/product-2-1.jpg"
-                alt=""
-                class="compare__img"
-              />
-            </td>
-            <td>
-              <img
-                src="./assets/img/product-4-1.jpg"
-                alt=""
-                class="compare__img"
-              />
-            </td>
-            <td>
-              <img
-                src="./assets/img/product-7-1.jpg"
-                alt=""
-                class="compare__img"
-              />
-            </td>
-          </tr>
-          <tr>
-            <th>Name</th>
-            <td><h3 class="table__title">Plain Striola Shirts</h3></td>
-            <td><h3 class="table__title">Chen Cardigan</h3></td>
-            <td><h3 class="table__title">Henley Shirt</h3></td>
-          </tr>
-          <tr>
-            <th>Price</th>
-            <td><span class="table__price">$35</span></td>
-            <td><span class="table__price">$67</span></td>
-            <td><span class="table__price">$24</span></td>
-          </tr>
-          <tr>
-            <th>Description</th>
-            <td>
-              <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis
-                perferendis nam, fuga reiciendis libero doloremque distinctio.
-              </p>
-            </td>
-            <td>
-              <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis
-                perferendis nam, fuga reiciendis libero doloremque distinctio.
-              </p>
-            </td>
-            <td>
-              <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis
-                perferendis nam, fuga reiciendis libero doloremque distinctio.
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <th>Colors</th>
-            <td>
-              <ul class="color__list compare__colors">
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(37, 100%, 65%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(353, 100%, 65%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(49, 100%, 60%)"
-                  ></a>
-                </li>
-              </ul>
-            </td>
-            <td>
-              <ul class="color__list compare__colors">
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(37, 100%, 65%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(353, 100%, 65%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(49, 100%, 60%)"
-                  ></a>
-                </li>
-              </ul>
-            </td>
-            <td>
-              <ul class="color__list compare__colors">
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(37, 100%, 65%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(353, 100%, 65%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(49, 100%, 60%)"
-                  ></a>
-                </li>
-              </ul>
-            </td>
-          </tr>
-          <tr>
-            <th>Stock</th>
-            <td><span class="table__stock">Out of stock</span></td>
-            <td><span class="table__stock">Out of stock</span></td>
-            <td><span class="table__stock">Out of stock</span></td>
-          </tr>
-          <tr>
-            <th>Weight</th>
-            <td><span class="table__weight">150 gram</span></td>
-            <td><span class="table__weight">150 gram</span></td>
-            <td><span class="table__weight">150 gram</span></td>
-          </tr>
-          <tr>
-            <th>Dimensions</th>
-            <td><span class="table__dimension">N/A</span></td>
-            <td><span class="table__dimension">N/A</span></td>
-            <td><span class="table__dimension">N/A</span></td>
-          </tr>
-          <tr>
-            <th>Buy</th>
-            <td><a href="#" class="btn btm--sm">Add to Cart</a></td>
-            <td><a href="#" class="btn btm--sm">Add to Cart</a></td>
-            <td><a href="#" class="btn btm--sm">Add to Cart</a></td>
-          </tr>
-          <tr>
-            <th>Remove</th>
-            <td><i class="fi fi-rs-trash table__trash"></i></td>
-            <td><i class="fi fi-rs-trash table__trash"></i></td>
-            <td><i class="fi fi-rs-trash table__trash"></i></td>
-          </tr>
-        </table>
-      </section>
+              <tr>
+                <th>Colors</th>
+                {% for product in products %}
+                <td>
+                  {% if product.get_colors %}
+                    <div class="color__options">
+                      {% for color in product.get_colors %}
+                        <div class="color__option">{{ color }}</div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                {% endfor %}
+              </tr>
+              <tr>
+                <th>Sizes</th>
+                {% for product in products %}
+                <td>
+                  {% if product.get_sizes %}
+                    <div class="size__options">
+                      {% for size in product.get_sizes %}
+                        <div class="size__option">{{ size }}</div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                {% endfor %}
+              </tr>
+              <tr>
+                <th>Add to Cart</th>
+                {% for product in products %}
+                <td>
+                  <form hx-post="{% url 'add-remove-cart' product.slug %}"
+                        hx-target="body"
+                        hx-swap="none"
+                        class="cart-form">
+                    {% csrf_token %}
+                    {% if product.get_colors %}
+                    <select name="selected_color" required>
+                      <option value="">Select Color</option>
+                      {% for color in product.get_colors %}
+                        <option value="{{ color }}">{{ color }}</option>
+                      {% endfor %}
+                    </select>
+                    {% endif %}
+                    
+                    {% if product.get_sizes %}
+                    <select name="selected_size" required>
+                      <option value="">Select Size</option>
+                      {% for size in product.get_sizes %}
+                        <option value="{{ size }}">{{ size }}</option>
+                      {% endfor %}
+                    </select>
+                    {% endif %}
+                    
+                    <input type="number" 
+                           name="quantity-{{ product.slug }}" 
+                           value="1" 
+                           min="1" 
+                           max="{{ product.stock }}"
+                           required>
+                    <button type="submit" class="btn">Add to Cart</button>
+                  </form>
+                </td>
+                {% endfor %}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-compare">
+          <h3>No products added to compare</h3>
+          <a href="{% url 'shop' %}" class="btn">Go to Shop</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</main>
 
-    </main>
+<script>
+document.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.successful) {
+        try {
+            const response = JSON.parse(evt.detail.xhr.response);
+            if (response.success) {
+                // Update cart count
+                const cartCount = document.getElementById('nav-cart-count');
+                if (cartCount && response.cart_count !== undefined) {
+                    cartCount.textContent = response.cart_count;
+                }
+                
+                // Show success message
+                alert('Product added to cart successfully!');
+                
+                // Reset form
+                evt.detail.elt.reset();
+            }
+        } catch (e) {
+            console.error('Error processing response:', e);
+        }
+    }
+});
+</script>
+
+<style>
+.compare__table img {
+    width: 150px;  /* Fixed width */
+    height: 150px; /* Fixed height */
+    object-fit: cover; /* Maintain aspect ratio */
+    margin: 0 auto; /* Center image */
+    display: block;
+}
+
+.product__name {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+}
+
+.product__name h4 {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.color__options, .size__options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.color__option, .size__option {
+    padding: 0.25rem 0.5rem;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.cart-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cart-form select, 
+.cart-form input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.cart-form button {
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock content %}

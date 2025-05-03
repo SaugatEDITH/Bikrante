@@ -1,0 +1,122 @@
+{% load static %}
+<link rel="stylesheet" href="{% static "css/chatbot.css" %}">
+
+<div class="chatbot__wrapper">
+    <!-- Chat Button -->
+    <button class="chatbot__button">
+        <span class="chatbot__tooltip">Chat with Assistant</span>
+        <i class="fi fi-rr-comment-dots"></i>
+    </button>
+
+    <!-- Chat Window -->
+    <div class="chatbot__box">
+        <!-- Chat Header -->
+        <div class="chat__header">
+            <h4 class="chat__title">Shopping Assistant</h4>
+            <button class="chat__close">
+                <i class="fi fi-rr-cross"></i>
+            </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat__messages">
+            <!-- Welcome Message -->
+            <div class="chat__message bot__message">
+                <div class="message__content">
+                    <p>👋 Hi! I'm your shopping assistant. How can I help you today?</p>
+                </div>
+                <span class="message__time">Just now</span>
+            </div>
+        </div>
+        {% comment %} hx-post="{% url 'chat-response' %}" {% endcomment %}
+        <!-- Chat Input -->
+        <form class="chat__input-form"   hx-target=".chat__messages" hx-swap="beforeend">
+            {% csrf_token %}
+            <div class="input__container">
+                <input type="text" 
+                       name="message" 
+                       placeholder="Type your message..." 
+                       required
+                       autocomplete="off">
+                <button type="submit">
+                    <i class="fi fi-rr-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatButton = document.querySelector('.chatbot__button');
+    const chatBox = document.querySelector('.chatbot__box');
+    const closeButton = document.querySelector('.chat__close');
+
+    chatButton.addEventListener('click', () => {
+        chatBox.classList.toggle('show');
+        chatButton.classList.toggle('active');
+    });
+
+    closeButton.addEventListener('click', () => {
+        chatBox.classList.remove('show');
+        chatButton.classList.remove('active');
+    });
+
+    // Add user message to chat
+    document.querySelector('.chat__input-form').addEventListener('submit', function(e) {
+        const input = this.querySelector('input');
+        const message = input.value.trim();
+        
+        if (message) {
+            const userMessage = `
+                <div class="chat__message user__message">
+                    <div class="message__content">
+                        <p>${message}</p>
+                    </div>
+                    <span class="message__time">Just now</span>
+                </div>
+            `;
+            document.querySelector('.chat__messages').insertAdjacentHTML('beforeend', userMessage);
+            input.value = '';
+        }
+    });
+
+    const chatForm = document.querySelector('.chat__input-form');
+    const messagesContainer = document.querySelector('.chat__messages');
+    
+    chatForm.addEventListener('submit', function(e) {
+        const input = this.querySelector('input');
+        const message = input.value.trim();
+        
+        if (message) {
+            // Show loading indicator
+            messagesContainer.insertAdjacentHTML('beforeend', `
+                <div class="chat__message bot__message loading">
+                    <div class="message__content">
+                        <p>
+                            <span class="loading-dots">
+                                <span>.</span><span>.</span><span>.</span>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            `);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    });
+
+    // Handle HTMX after request
+    document.addEventListener('htmx:afterRequest', function(evt) {
+        // Remove loading message
+        const loadingMsg = document.querySelector('.chat__message.loading');
+        if (loadingMsg) {
+            loadingMsg.remove();
+        }
+        
+        // Scroll to bottom after new message
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+});
+</script>

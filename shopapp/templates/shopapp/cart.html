@@ -1,4 +1,5 @@
 {% extends "shopapp/base.html" %}
+{% load static %}
 {% block content %}
     <!--=============== MAIN ===============-->
     <main class="main">
@@ -93,39 +94,42 @@
           <div>
             <div class="cart__shippinp">
               <h3 class="section__title">Calculate Shipping</h3>
-              <form action="" class="form grid">
-                <input
-                  type="text"
-                  class="form__input"
-                  placeholder="State / City"
-                />
-                <input
-                  type="text"
-                  class="form__input"
-                  placeholder="State / Country"
-                />
+
+              <form action="" class="form grid" id="location-form" hx-post="{% url 'cart' %}" hx-swap="none" >
+                {% csrf_token %}
+                <input type="hidden" name="formtype" value="location">
+                <select id="province" class="form__input" placeholder="Province" name="province">
+                  <option value="">Select Province</option>
+                </select>
+              
+                <select id="district" class="form__input" placeholder="District" name="district">
+                  <option value="">Select District</option>
+                </select>
+              
                 <div class="form__group grid">
-                  <input type="text" class="form__input" placeholder="City" />
-                  <input
-                    type="text"
-                    class="form__input"
-                    placeholder="PostCode"
-                  />
+                  <select id="city" class="form__input" placeholder="City" name="city">
+                    <option value="">Select City</option>
+                  </select>
+                  <input type="text" class="form__input" placeholder="PostCode" id="postcode" readonly name="postcode" />
                 </div>
+              
                 <div class="form__btn">
                   <button class="btn flex btn--sm">
                     <i class="fi-rs-shuffle"></i> Update
                   </button>
                 </div>
               </form>
+              
             </div>
             <div class="cart__coupon">
               <h3 class="section__title">Apply Coupon</h3>
               <form action="" class="coupon__form form grid">
+                <input type="hidden" name="formtype" value="coupon">
                 <div class="form__group grid">
                   <input
                     type="text"
                     class="form__input"
+                    name="couponcode"
                     placeholder="Enter Your Coupon"
                   />
                   <div class="form__btn">
@@ -147,7 +151,7 @@
                 </tr>
                 <tr>
                   <td><span class="cart__total-title">Shipping</span></td>
-                  <td><span class="cart__total-price" id="totalShippingAmount">रु10.00</span></td>
+                  <td><span class="cart__total-price" id="totalShippingAmount">रु{{shipping_price}}</span></td>
                 </tr>
                 <tr>
                   <td><span class="cart__total-title">Total</span></td>
@@ -162,6 +166,7 @@
           </div>
         </div>
       </section>
+      <script src={% static 'js/shipping-locations.js' %}></script>
       <script>
         document.addEventListener('htmx:afterRequest', function(evt) {
           if (evt.detail.successful) {
@@ -252,7 +257,78 @@
           }
         });
       </script>
-      
+      <script>
+        const provinceSelect = document.getElementById('province');
+        const districtSelect = document.getElementById('district');
+        const citySelect = document.getElementById('city');
+        const postcodeInput = document.getElementById('postcode');
+
+        // Ensure `nepalShippingData` is loaded from `shipping-location.js`
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof nepalShippingData === 'undefined') {
+                console.error('Error: nepalShippingData is not defined. Ensure shipping-location.js is loaded.');
+                return;
+            }
+
+            // Populate provinces
+            Object.keys(nepalShippingData).forEach(province => {
+                const option = document.createElement('option');
+                option.value = province;
+                option.textContent = province;
+                provinceSelect.appendChild(option);
+            });
+        });
+
+        // Populate districts when province changes
+        provinceSelect.addEventListener('change', () => {
+            const province = provinceSelect.value;
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+            citySelect.innerHTML = '<option value="">Select City</option>';
+            postcodeInput.value = '';
+
+            if (province && nepalShippingData[province]) {
+                const districts = Object.keys(nepalShippingData[province]);
+                districts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district;
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+            }
+        });
+
+        // Populate cities when district changes
+        districtSelect.addEventListener('change', () => {
+            const province = provinceSelect.value;
+            const district = districtSelect.value;
+            citySelect.innerHTML = '<option value="">Select City</option>';
+            postcodeInput.value = '';
+
+            if (province && district && nepalShippingData[province]?.[district]) {
+                const cities = Object.keys(nepalShippingData[province][district].cities);
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+            }
+        });
+
+        // Update postcode when city changes
+        citySelect.addEventListener('change', () => {
+            const province = provinceSelect.value;
+            const district = districtSelect.value;
+            const city = citySelect.value;
+
+            if (province && district && city && nepalShippingData[province]?.[district]?.cities[city]) {
+                postcodeInput.value = nepalShippingData[province][district].cities[city].postalCode || '';
+            } else {
+                postcodeInput.value = '';
+            }
+        });
+    </script>
+
     
         <main>
       {% endblock content %}

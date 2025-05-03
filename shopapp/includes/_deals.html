@@ -1,0 +1,73 @@
+<section class="deals section">
+  <div class="deals__container container grid">
+    <div class="deals__item">
+      <div class="deals__group">
+        {% if active_deal %}
+          <h3 class="deals__subtitle">Deals on {{ active_deal.category.name }}</h3>
+          <h2 class="deals__title">Save up to {{ active_deal.category.discount_percentage }}%</h2>
+
+          <div class="countdown">
+            <div class="countdown__amount">
+              <p class="countdown__period" id="days">0</p>
+              <span>Days</span>
+            </div>
+            <div class="countdown__amount">
+              <p class="countdown__period" id="hours">00</p>
+              <span>Hours</span>
+            </div>
+            <div class="countdown__amount">
+              <p class="countdown__period" id="minutes">00</p>
+              <span>Minutes</span>
+            </div>
+            <div class="countdown__amount">
+              <p class="countdown__period" id="seconds">00</p>
+              <span>Seconds</span>
+            </div>
+          </div>
+
+          <a href="{% url 'category-detail' active_deal.category.slug %}" class="btn btn--md">Shop Now</a>
+          
+          <input type="hidden" id="deal_end_date" value="{{ active_deal.end_date|date:'Y-m-d H:i:s' }}">
+        {% else %}
+          <h2 class="deals__title">No Active Deals</h2>
+        {% endif %}
+      </div>
+
+      <div class="deals__img">
+        <img src="{% if active_deal %}{{ active_deal.category.image.url }}{% else %}{% static 'images/default-deal.jpg' %}{% endif %}" alt="" class="deals__image">
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+if (document.getElementById('deal_end_date')) {
+    function updateCountdown() {
+        const endDate = new Date(document.getElementById('deal_end_date').value).getTime();
+        const now = new Date().getTime();
+        const timeLeft = endDate - now;
+
+        if (timeLeft <= 0) {
+            document.getElementById('days').textContent = '0';
+            document.getElementById('hours').textContent = '00';
+            document.getElementById('minutes').textContent = '00';
+            document.getElementById('seconds').textContent = '00';
+            return;
+        }
+
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        document.getElementById('days').textContent = days;
+        document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+    }
+
+    // Update countdown every second
+    setInterval(updateCountdown, 1000);
+    updateCountdown(); // Initial call
+}
+</script>

@@ -1,0 +1,82 @@
+{% extends "shopapp/base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/payment-button.css' %}">
+
+<div class="container section--lg">
+    <div class="payment-details">
+        <h2>PayPal Payment</h2>
+        <div class="amount-details">
+            <p>Order Total (NPR): रु{{ amount_npr }}</p>
+            <p>Amount in USD: ${{ amount_usd }}</p>
+            <small class="text-muted">*Amount converted to USD as PayPal doesn't support NPR</small>
+        </div>
+        
+        <div class="paypal-form">
+            <form method="post" action="https://www.sandbox.paypal.com/cgi-bin/webscr">
+                {% csrf_token %}
+                {% for field in form %}{{ field }}{% endfor %}
+                <a href="#" onclick="this.closest('form').submit(); return false;" class="playbtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    Pay with PayPal
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-details {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        border-radius: 20px;
+        background: var(--body-color);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .payment-details h2 {
+        text-align: center;
+        color: var(--first-color);
+        margin-bottom: 2rem;
+    }
+    
+    .amount-details {
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background: var(--container-color);
+        border-radius: 15px;
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .amount-details p {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .paypal-form {
+        position: relative;
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    .paypal-form form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .paypal-form p {
+        display: none;
+    }
+    
+    /* Hide PayPal's default button */
+    .paypal-form input[type="image"] {
+        display: none;
+    }
+</style>
+{% endblock %}

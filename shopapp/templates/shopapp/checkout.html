@@ -14,11 +14,11 @@
 
               {% csrf_token %}
               <input type="text" value="{{ user }}" name="name" placeholder="Name" class="form__input" required />
-              <input type="text" name="address" placeholder="Address" class="form__input" required />
-              <input type="text" name="city" placeholder="City" class="form__input" required />
-              <input type="text" name="postcode" placeholder="Postcode" class="form__input" required />
-              <input type="text" name="phone" placeholder="Phone" class="form__input" required />
-              <input type="email" name="email" placeholder="Email" class="form__input" required />
+              <input type="text" value="{{ address }}" name="address" placeholder="Address" class="form__input" required />
+              <input type="text" value="{{ city }}" name="city" placeholder="City" class="form__input" required />
+              <input type="text" value="{{ postcode }}" name="postcode" placeholder="Postcode" class="form__input" required />
+              <input type="text" value="{{ profile.phone_number }}" name="phone" placeholder="Phone" class="form__input" required />
+              <input type="email" value="{{ user.email }}" name="email" placeholder="Email" class="form__input" required />
                 <!--=============== PAYMENT METHODS ===============-->
                 <h3 class="checkout__title payment__title">Payment</h3>
                 <div class="payment__methods">

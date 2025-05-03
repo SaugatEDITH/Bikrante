@@ -1,0 +1,57 @@
+<div id="reviews-section">
+    <div class="reviews__container grid">
+
+        {% for review in reviews %}
+            <div class="review__single">
+                <div>
+                    <img src="{{ review.user.profile.profile_image.url }}" 
+                         alt="{{review.user.username}}" 
+                         class="review__img"/>
+                    <h4 class="review__title">{{ review.user.username }}</h4>
+                </div>
+                <div class="review__data">
+                    <div class="review__rating">
+                        {% for star_icon in review.star_icons %}
+                            {{ star_icon|safe }}
+                        {% endfor %}
+                    </div>
+                    <p class="review__description">{{ review.review_text }}</p>
+                    <span class="review__date">{{ review.created_at|date:"M. d, Y, g:i a" }}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="review__form">
+        <h4 class="review__form-title">Add a review</h4>
+        <form hx-post="{% url 'product-detail' product.slug %}"
+              hx-target="body"
+              hx-swap="none"
+              class="form grid">
+            {% csrf_token %}
+            <input type="hidden" name="review" value="true">
+            <div class="rating-stars">
+                <input type="radio" required name="rating" id="rs0" value="0" checked hidden>
+                <label for="rs0"></label>
+                <input type="radio" required name="rating" value="1" id="rs1">
+                <label for="rs1"></label>
+                <input type="radio" required name="rating" value="2" id="rs2">
+                <label for="rs2"></label>
+                <input type="radio" required name="rating" value="3" id="rs3">
+                <label for="rs3"></label>
+                <input type="radio" required name="rating" value="4" id="rs4">
+                <label for="rs4"></label>
+                <input type="radio" required name="rating" value="5" id="rs5">
+                <label for="rs5"></label>
+                <span class="rating-counter"></span>
+            </div>
+            
+            <textarea class="form__input textarea"
+                      placeholder="Write your review"
+                      name="review"
+                      required></textarea>
+            
+            <button type="submit" class="btn btn--sm">Submit Review</button>
+        </form>
+    </div>
+</div>

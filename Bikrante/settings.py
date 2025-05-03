@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,8 +46,11 @@ INSTALLED_APPS = [
     'ckeditor',  #!for django_ckeditor
     'ckeditor_uploader', 
     "django_htmx",##!for django-htmx
+    'paypal.standard.ipn',  # Add this line for PayPal IPN
 ]
-
+JAZZMIN_SETTINGS = {
+    "theme": "darkly",  # Enable Dark Mode
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -164,5 +168,26 @@ CKEDITOR_CONFIGS = {
         'table_default_attributes': {
             'class': 'info__table'
         }
+    },
+}
+
+# PayPal Settings
+PAYPAL_TEST = True
+PAYPAL_BUSINESS_EMAIL = 'sb-jkhmq29131294@business.example.com'  # Business account
+PAYPAL_RECEIVER_EMAIL = 'sb-jkhmq29131294@business.example.com'  # Same as business email
+PAYPAL_CURRENCY = "USD"
+NPR_TO_USD_RATE = 132.50
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
     },
 }

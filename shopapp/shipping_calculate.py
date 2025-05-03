@@ -202,7 +202,4 @@ def Shipping_Price(province, district, city):
     try:
         return nepal_shipping_data[province][district]["cities"][city]["shipping_cost"]
     except KeyError:
-        return "Invalid province, district, or city!"
-
-# Corrected function call
-print(Shipping_Price("Bagmati Province", "Dhading", "Dhading Besi"))
+        return 400

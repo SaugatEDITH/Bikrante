@@ -47,7 +47,7 @@
                 <i class="fi fi-rs-shuffle"></i>
               </a>
             </div>
-            <div class="product__badge light-pink">{% if new_arrival.is_hot %}Hot{% else %}{{new_arrival.category.discount_percentage }} {% endif %}</div>
+            <div class="product__badge {{ new_arrival.class_color }}">{% if new_arrival.is_hot %}Hot{% else %}{{new_arrival.category.discount_percentage }} % Off {% endif %}</div>
           </div>
           <div class="product__content">
             <span class="product__category">{{ new_arrival.category.name }}</span>
@@ -55,11 +55,9 @@
               <h3 class="product__title">{{ new_arrival.name }}</h3>
             </a>
             <div class="product__rating">
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
-              <i class="fi fi-rs-star"></i>
+              {% for rating in new_arrival.average_rating %}
+              {{ rating|safe }}
+              {% endfor %}
             </div>
             <div class="product__price flex">
               <span class="new__price">{{ new_arrival.price_after_discount }}</span>

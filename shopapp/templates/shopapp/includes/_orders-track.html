@@ -1,0 +1,40 @@
+<div class="tab__content" content id="orders">
+    <h3 class="tab__header">Your Orders</h3>
+    <div class="tab__body">
+      <table class="placed__order-table">
+        <thead>
+          <tr>
+            <th>Orders</th>
+            <th>Date</th>
+            <th>Payment Status</th>
+            <th>Totals</th>
+            <th>Order Status</th>
+            <th>Bill</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.created_at }}</td>
+            <td>{{ order.get_payment_status }}</td>
+            <td>{{ order.total_price }}</td>
+            <td>{{ order.status }}</td>
+            <td>
+              {% if order.et_payment_status is "Success"  %}
+                <a href="{% url 'generate-bill' order.id %}" 
+                   class="view__order"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                  <i class="fi fi-rs-document-signed"></i> Bill
+                </a>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>

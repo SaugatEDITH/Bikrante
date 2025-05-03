@@ -162,6 +162,17 @@ table {
   -ms-border-radius: 0.25rem;
   -o-border-radius: 0.25rem;
 }
+/*added later*/
+select.form__input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1rem;
+}
 
 .new__price {
   color: var(--first-color);
@@ -835,6 +846,7 @@ table {
   -moz-border-radius: 50%;
   -ms-border-radius: 50%;
   -o-border-radius: 50%;
+  overflow:visible !important;
 }
 
 .action__btn::before,
@@ -1639,6 +1651,29 @@ table {
 }
 .info__table tr td {
   color: var(--text-color-light);
+}
+
+/* Add this to fix CKEditor table styles */
+.info__table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.info__table table {
+    width: 100%;
+}
+
+.info__table td, 
+.info__table th {
+    border: 1px solid var(--border-color-alt);
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.info__table th {
+    background-color: var(--container-color);
+    font-weight: var(--weight-600);
 }
 
 .reviews__container {

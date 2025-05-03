@@ -74,84 +74,72 @@
             <div class="details__color flex">
               <span class="details__color-title">Color</span>
               <ul class="color__list">
+                {% for color in product.get_colors %}
                 <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(37, 100%, 65%)"
-                  ></a>
+                  <a href="#"
+                     class="color__link"
+                     data-color="{{ color }}"
+                     style="background-color: {{ color }}"
+                     onclick="selectColor(this, event)"></a>
                 </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(353, 100%, 65%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(49, 100%, 60%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(304, 100%, 78%)"
-                  ></a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    class="color__link"
-                    style="background-color: hsl(126, 61%, 52%)"
-                  ></a>
-                </li>
+                {% endfor %}
               </ul>
             </div>
+
             <div class="details__size flex">
               <span class="details__size-title">Size</span>
               <ul class="size__list">
+                {% for size in product.get_sizes %}
                 <li>
-                  <a href="#" class="size__link size-active">M</a>
+                  <a href="#"
+                     class="size__link"
+                     data-size="{{ size }}"
+                     onclick="selectSize(this, event)">{{ size }}</a>
                 </li>
-                <li>
-                  <a href="#" class="size__link">L</a>
-                </li>
-                <li>
-                  <a href="#" class="size__link">XL</a>
-                </li>
-                <li>
-                  <a href="#" class="size__link">XXL</a>
-                </li>
+                {% endfor %}
               </ul>
             </div>
+
             <div class="details__action">
-              <input min="1" type="number" class="quantity" value="0"/>
-              <a href="#" class="btn btn--sm">Add To Card</a>
-              <a href="#" class="details__action-btn" id="detail_cart_wishlist"
-              href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
+                <form hx-post="{% url 'add-remove-cart' product.slug %}"
+                    hx-target="body"
+                    hx-swap="none"
+                    class="details__action-form"
+                    style="display: flex; gap: 0.5rem;">
+                {% csrf_token %}
+                <input type="number" 
+                       min="1" 
+                       class="quantity" 
+                       value="1" 
+                       name="quantity-{{ product.slug }}"/>
+                <input type="hidden" name="selected_color" id="form_selected_color">
+                <input type="hidden" name="selected_size" id="form_selected_size">
+                <button type="submit" class="btn btn--sm">Add To Cart</button>
+              </form>
+              <button type="button"
                     hx-post="{% url 'add_remove_wishlist' product.slug %}"
                     hx-target="body"
                     hx-swap="none"
-                    hx-trigger="click"
-                    data-wishlist-product-slug="{{ product.slug }}"
-                    class="action__btn wishlist-btn {% if request.user.is_authenticated and product in request.user.liked_products.all %}liked{% endif %}"
+                    data-product-slug="{{ product.slug }}"
+                    class="details__action-btn action__btn wishlist-btn {% if request.user.is_authenticated and product in request.user.liked_products.all %}liked{% endif %}"
                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                     aria-label="Add to Wishlist"
               >
                 <i class="fi fi-rs-heart"></i>
-              </a>
+              </button>
             </div>
             <ul class="details__meta">
-              <li class="meta__list flex"><span>SKU:</span>{{product.sku}}</li>
               <li class="meta__list flex">
-                <span>Tags:</span>{{product.tags}}
+                <span>SKU:</span> 
+                <span class="meta-value">{{ product.sku }}</span>
               </li>
               <li class="meta__list flex">
-                <span>Availability:</span>{{ product.stock }} Items in Stock
+                <span>Tags:</span>
+                <span class="meta-value">{{ product.tags }}</span>
+              </li>
+              <li class="meta__list flex">
+                <span>Availability:</span>
+                <span class="meta-value">{{ product.stock }} Items in Stock</span>
               </li>
             </ul>
           </div>
@@ -175,67 +163,13 @@
         </div>
         <div class="details__tabs-content">
           <div class="details__tab-content active-tab" content id="info">
-            {% comment %} table generated code  {% endcomment %}
-            {{ product.specifications|safe }}
+            <div class="info__table">
+                {{ product.specifications|safe }}
+            </div>
           </div>
           <div class="details__tab-content" content id="reviews">
-            <div class="reviews__container grid">
-
-            {% for review in reviews %}
-            
-              <div class="review__single">
-                <div>
-                  <img
-                    src=" {{ review.user.profile.profile_image.url }} "
-                    alt="{{review.user.name}}"
-                    class="review__img"
-                  />
-                  <h4 class="review__title">{{ review.user.username }}</h4>
-                </div>
-                <div class="review__data">
-                  <div class="review__rating">
-               {% for star_icon in review.star_icons %}
-               {{ star_icon|safe }}
-               {% endfor %}
-            
-                  </div>
-                  <p class="review__description">
-                    {{ review.review_text }}
-                  </p>
-                  <span class="review__date">{{ review.created_at }}</span>
-                </div>
-              </div>
-            {% endfor %}
-
-            </div>
-
-            <div class="review__form">
-              <h4 class="review__form-title">Add a review</h4>
-              <form hx-post="{% url 'product-detail' product.slug %}" hx-target="#reviews" hx-swap="outerHTML" class="form grid" method="POST">
-                {% csrf_token %}
-                <div class="rating-stars">
-                  <input type="radio" required name="rating" id="rs0" value="0" checked hidden><label for="rs0"></label>
-                  <input type="radio" required name="rating" value="1" id="rs1"><label for="rs1"></label>
-                  <input type="radio" required name="rating" value="2" id="rs2"><label for="rs2"></label>
-                  <input type="radio" required name="rating" value="3" id="rs3"><label for="rs3"></label>
-                  <input type="radio" required name="rating" value="4" id="rs4"><label for="rs4"></label>
-                  <input type="radio" required name="rating" value="5" id="rs5"><label for="rs5"></label>
-                  <span class="rating-counter"></span>
-                </div>
-              
-                <textarea
-                  class="form__input textarea"
-                  placeholder="Write an Review"
-                  row="4"
-                  name="review"
-                ></textarea></br>
-                 <div class="captcha-container">
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8HzRvfB7oTzXFa"></div>
-                </div>
-                <div class="form__btn">
-                  <button class="btn" type="submit">Submit Review</button>
-                </div>
-              </form>
+            <div id="reviews-section">
+                {% include 'shopapp/partials/_reviews_section.html' %}
             </div>
           </div>
         </div>
@@ -308,53 +242,102 @@
     </main>
     <script>
 document.addEventListener('htmx:afterRequest', function(evt) {
+    // Remove this check to prevent double handling in base.html
+    if (evt.detail.xhr.getResponseHeader('HX-Location')) {
+        window.location.href = evt.detail.xhr.getResponseHeader('HX-Location');
+        return;
+    }
+
+    // Only handle cart/wishlist updates here, let base.html handle the rest
     if (evt.detail.successful) {
         try {
             const response = JSON.parse(evt.detail.xhr.response);
-            if (response.success) {
-              //changes count in cart
-              if(response.cart_count!==undefined){
-                navCartCount=document.getElementById('nav-cart-count')
-                if(navCartCount){
-                  navCartCount.textContent=response.cart_count;
+            if (response.success) { // Handle only cart/wishlist updates
+                if(response.cart_count !== undefined) {
+                    const navCartCount = document.getElementById('nav-cart-count');
+                    if(navCartCount) {
+                        navCartCount.textContent = response.cart_count;
+                    }
                 }
-              }
-              //changes count on wishlist
-              if(response.wishlist_count !== undefined){
-                const navWishlistCount=document.getElementById('nav-wishlist-count');
-                if(navWishlistCount){
-                  navWishlistCount.textContent=response.wishlist_count;
+                if(response.wishlist_count !== undefined) {
+                    const navWishlistCount = document.getElementById('nav-wishlist-count');
+                    if(navWishlistCount) {
+                        navWishlistCount.textContent = response.wishlist_count;
+                    }
                 }
-              }
-              if(response.wishlist_action=="wishlist_update"){
-                
-
-                 // Update wishlist buttons with the product slug
-                 const wishlistButtons = document.querySelectorAll(`[data-wishlist-product-slug="${response.product_slug}"]`);
-                 wishlistButtons.forEach(btn => {
-                     if (response.is_liked) {
-                         btn.classList.add('liked');
-                     } else {
-                         btn.classList.remove('liked');
-                     }
-                 });
+                // Update wishlist button appearance
+                if(response.wishlist_action === "wishlist_update") {
+                    const buttons = document.querySelectorAll(`[data-product-slug="${response.product_slug}"]`);
+                    buttons.forEach(btn => {
+                        if (response.is_liked) {
+                            btn.classList.add('liked');
+                        } else {
+                            btn.classList.remove('liked');
+                        }
+                    });
                 }
             }
         } catch (e) {
             console.error('Error processing response:', e);
         }
     }
-    if (evt.detail.xhr.status === 200) {
-        try {
-            let response = JSON.parse(evt.detail.xhr.response);
-            if (response.redirect) {
-                window.location.href = "/login/";  // Redirect to login page
-            }
-        } catch (e) {
-            console.error("Error processing response:", e);
-        }
-    }
-});
+}); 
 
+function selectColor(element, event) {
+    event.preventDefault();
+    const color = element.dataset.color;
+    
+    // Remove active class from all colors
+    document.querySelectorAll('.color__link').forEach(el => {
+        el.style.border = 'none';
+    });
+    
+    // Add active style to selected color
+    element.style.border = '2px solid var(--first-color)';
+    
+    // Update hidden input in form
+    document.getElementById('form_selected_color').value = color;
+}
+
+function selectSize(element, event) {
+    event.preventDefault();
+    const size = element.dataset.size;
+    
+    // Remove active class from all sizes
+    document.querySelectorAll('.size__link').forEach(el => {
+        el.classList.remove('size-active');
+    });
+    
+    // Add active class to selected size
+    element.classList.add('size-active');
+    
+    // Update hidden input in form
+    document.getElementById('form_selected_size').value = size;
+}
 </script>
+<style>
+.details__meta .meta__list {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color-alt);
+}
+
+.details__meta .meta__list span:first-child {
+    min-width: 100px;
+    font-weight: var(--weight-600);
+    color: var(--title-color);
+}
+
+.details__meta .meta-value {
+    color: var(--text-color);
+}
+
+.wishlist-btn.liked {
+    background-color: var(--first-color) !important;
+    color: white !important;
+}
+
+.wishlist-btn.liked i {
+    color: white !important;
+}
+</style>
 {% endblock content %}

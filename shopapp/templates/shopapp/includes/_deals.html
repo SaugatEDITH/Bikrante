@@ -1,74 +1,85 @@
+{% load static %}
 <section class="deals section">
-    <div class="deals__container container grid">
+  <div class="deals__container container grid">
+    {% if active_deals %}
+      {% for deal in active_deals|slice:":2" %}
       <div class="deals__item">
         <div class="deals__group">
-          <h3 class="deals__brand">Deals of the Day</h3>
+          <h3 class="deals__brand">Deals on {{ deal.category.name }}</h3>
           <span class="deals__category">Limited quantities</span>
         </div>
-        <h4 class="deals__title">Summer Collection New Modern Design</h4>
-        <div class="deals__price flex">
-          <span class="new__price">$139.00</span>
-          <span class="old__price">$160.99</span>
-        </div>
+        
+        <h4 class="deals__title">Save up to {{ deal.category.discount_percentage }}%</h4>
+        
         <div class="deals__group">
           <p class="deals__countdown-text">Hurry Up! Offer Ends In:</p>
-          <div class="countdown">
+          <div class="countdown" data-end-date="{{ deal.end_date|date:'Y-m-d H:i:s' }}">
             <div class="countdown__amount">
-              <p class="countdown__period">02</p>
+              <p class="countdown__period days">0</p>
               <span class="unit">Days</span>
             </div>
             <div class="countdown__amount">
-              <p class="countdown__period">22</p>
+              <p class="countdown__period hours">00</p>
               <span class="unit">Hours</span>
             </div>
             <div class="countdown__amount">
-              <p class="countdown__period">57</p>
+              <p class="countdown__period minutes">00</p>
               <span class="unit">Mins</span>
             </div>
             <div class="countdown__amount">
-              <p class="countdown__period">28</p>
+              <p class="countdown__period seconds">00</p>
               <span class="unit">Sec</span>
             </div>
           </div>
         </div>
+
         <div class="deals__btn">
-          <a href="details.html" class="btn btn--md">Shop Now</a>
+          <a href="{% url 'category-detail' deal.category.slug %}" class="btn btn--md">Shop Now</a>
         </div>
+        
+        {% if forloop.counter == 2 %}
+        <div class="deals__img">
+          <div class="deals__image" style="background-image: url('{{ deal.category.image.url }}'); background-size: cover; background-position: center;"></div>
+        </div>
+        {% endif %}
       </div>
+      {% endfor %}
+    {% else %}
       <div class="deals__item">
-        <div class="deals__group">
-          <h3 class="deals__brand">Women Clothing</h3>
-          <span class="deals__category">Shirts & Bag</span>
-        </div>
-        <h4 class="deals__title">Try Something new on vacation</h4>
-        <div class="deals__price flex">
-          <span class="new__price">$178.00</span>
-          <span class="old__price">$256.99</span>
-        </div>
-        <div class="deals__group">
-          <p class="deals__countdown-text">Hurry Up! Offer Ends In:</p>
-          <div class="countdown">
-            <div class="countdown__amount">
-              <p class="countdown__period">02</p>
-              <span class="unit">Days</span>
-            </div>
-            <div class="countdown__amount">
-              <p class="countdown__period">22</p>
-              <span class="unit">Hours</span>
-            </div>
-            <div class="countdown__amount">
-              <p class="countdown__period">57</p>
-              <span class="unit">Mins</span>
-            </div>
-            <div class="countdown__amount">
-              <p class="countdown__period">28</p>
-              <span class="unit">Sec</span>
-            </div>
-          </div>
-        </div>
-        <div class="deals__btn">
-          <a href="details.html" class="btn btn--md">Shop Now</a>
-        </div>
+        <h2 class="deals__title">No Active Deals</h2>
       </div>
-    </div>
-  </section>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+document.querySelectorAll('.countdown').forEach(countdown => {
+    const endDate = new Date(countdown.dataset.endDate).getTime();
+    
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const timeLeft = endDate - now;
+
+        if (timeLeft <= 0) {
+            countdown.querySelector('.days').textContent = '0';
+            countdown.querySelector('.hours').textContent = '00';
+            countdown.querySelector('.minutes').textContent = '00';
+            countdown.querySelector('.seconds').textContent = '00';
+            return;
+        }
+
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        countdown.querySelector('.days').textContent = days;
+        countdown.querySelector('.hours').textContent = hours.toString().padStart(2, '0');
+        countdown.querySelector('.minutes').textContent = minutes.toString().padStart(2, '0');
+        countdown.querySelector('.seconds').textContent = seconds.toString().padStart(2, '0');
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+});
+</script>

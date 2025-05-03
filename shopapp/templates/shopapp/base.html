@@ -17,6 +17,7 @@
     <!--=============== SWIPER CSS ===============-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="{% static "css/styles.css" %}">
+    <link rel="stylesheet" href="{% static "css/chatbot.css" %}">
     <!--=============== FONT AWESOME ===============-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -24,6 +25,9 @@
     <link rel="stylesheet" href="{% static "css/htmxactions.css" %}"
     
     <!-- Optional: Add HTMX loading indicator styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {
@@ -60,6 +64,77 @@
 {% endblock extracss %}
   </head>
   <body class="{% if user.is_authenticated %}user-authenticated{% endif %}">
+    {% if messages %}
+{% for message in messages %}
+<script>
+	showToast("{{ message|escapejs }}", "{% if 'Success' in message %}success{% else %}error{% endif %}");
+	// Toaster
+	function showToast(message, type = "success") {
+		const toastContainer = document.querySelector(".toast-container");
+
+		const toast = document.createElement("div");
+		toast.classList.add("toast", type);
+
+		toast.innerHTML = `
+	<div class="toast-content">
+		<i class="fa-solid ${getIcon(type)}"></i>  <!-- Ensure fa-solid is used -->
+		<div class="message">
+			<span class="text text-1">${capitalize(type)}</span>
+			<span class="text text-2">${message}</span>
+		</div>
+	</div>
+	<i class="fa-solid fa-xmark close"></i>
+	<div class="progress active"></div>
+`;
+
+		toastContainer.appendChild(toast);
+		let showToast = setTimeout(() => {
+			void toast.offsetHeight;
+			toast.classList.add("active");
+		}, 1);
+
+		const progress = toast.querySelector(".progress");
+		const closeIcon = toast.querySelector(".close");
+
+		// Auto-remove toast after 5s
+		const timer1 = setTimeout(() => {
+			toast.classList.remove("active");
+		}, 5000);
+
+		const timer2 = setTimeout(() => {
+			progress.classList.remove("active");
+			setTimeout(() => toast.remove(), 400);
+		}, 5300);
+
+		// Manual close
+		closeIcon.addEventListener("click", () => {
+			toast.classList.remove("active");
+			clearTimeout(timer1);
+			clearTimeout(timer2);
+			clearTimeout(showToast);
+			setTimeout(() => toast.remove(), 400);
+		});
+	}
+
+	function getIcon(type) {
+		switch (type) {
+			case "success": return "fa-circle-check";
+			case "error": return "fa-circle-xmark";
+			case "warning": return "fa-triangle-exclamation";
+			case "info": return "fa-circle-info";
+			default: return "fa-circle-check";
+		}
+	}
+
+	function capitalize(str) {
+		return str.charAt(0).toUpperCase() + str.slice(1);
+	}
+
+
+</script>
+{% endfor %}
+{% endif %}
+
      <!--=============== HEADER ===============-->
     {% include "shopapp/includes/_navbar.html" %}
     
@@ -84,6 +159,7 @@
             </div>
         </div>
     </div>
+    {% include 'shopapp/includes/_chatbot.html' %}
     <script>
         document.addEventListener("htmx:afterSwap", function(event) {
             if (event.detail.target.id === "product-modal-content") {
@@ -100,5 +176,36 @@
       <!--=============== MAIN JS ===============-->
       <script src="{% static 'js/main.js' %}"></script>
 
-  </body>
+    <!-- Add this before </body> -->
+    <script>
+    // Configure toastr
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "timeOut": "3000"
+    }
+
+    // Listen for HTMX response and show notifications
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.successful) {
+            try {
+                const response = JSON.parse(evt.detail.xhr.response);
+                if (response.status) { // Handle status messages (like form submissions)
+                    if (response.status === 'success') {
+                        toastr.success(response.message);
+                        if (response.redirect) {
+                            setTimeout(() => window.location.href = response.redirect, 1500);
+                        }
+                    } else if (response.status === 'error') {
+                        toastr.error(response.message);
+                    }
+                }
+            } catch (e) {
+                // Not JSON or no message - ignore
+            }
+        }
+    });
+    </script>
+</body>
 </html>

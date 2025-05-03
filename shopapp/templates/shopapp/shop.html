@@ -26,6 +26,7 @@
                   <img src="{{ product.image2.url }}" alt="{{ product.name }}" class="product__img hover" />
                   {% endif %}
                 </a>
+        
                 <div class="product__actions">
                   <a href="#" 
                     class="action__btn" 
@@ -50,19 +51,27 @@
                   >
                     <i class="fi fi-rs-heart"></i>
                   </a>
-                  <a href="#" class="action__btn" aria-label="Compare">
-                    <i class="fi fi-rs-shuffle"></i>
+                  <!-- Change the compare button -->
+                  <a href="{% url 'add-remove-compare' product.slug %}" 
+                     class="action__btn {% if product.slug in compare_items %}active{% endif %}"
+                     aria-label="Compare">
+                      <i class="fi fi-rs-shuffle"></i>
                   </a>
                 </div>
-                {% if product.is_hot %}
-                  <div class="product__badge {{ product.class_color|default:'light-blue' }}">Hot</div>
-                {% endif %}
+                
+                  <div class="product__badge {{ product.class_color|default:'light-blue' }}">{% if product.is_hot %}Hot{% else %}{{ product.category.discount_percentage }} % Off {% endif %}</div>
+      
               </div>
               <div class="product__content">
                 <span class="product__category">{{ product.category.name }}</span>
                 <a href="{% url 'product-detail' product.slug %}">
                   <h3 class="product__title">{{ product.name }}</h3>
                 </a>
+                <div class="product__rating">
+                  {% for rating in product.average_rating %}
+                  {{ rating|safe }}
+                  {% endfor %}
+                </div>
                 <div class="product__price flex">
                   <span class="new__price">रु{{ product.price }}</span>
                   {% if product.old_price %}
@@ -102,49 +111,54 @@ document.addEventListener('htmx:afterRequest', function(evt) {
         try {
             const response = JSON.parse(evt.detail.xhr.response);
             if (response.success) {
-              //changes count in cart
-              if(response.cart_count!==undefined){
-                navCartCount=document.getElementById('nav-cart-count')
-                if(navCartCount){
-                  navCartCount.textContent=response.cart_count;
+                // Handle compare updates
+                if (response.redirect) {
+                    window.location.href = response.redirect;
+                    return;
                 }
-              }
-              //changes count on wishlist
-              if(response.wishlist_count !== undefined){
-                const navWishlistCount=document.getElementById('nav-wishlist-count');
-                if(navWishlistCount){
-                  navWishlistCount.textContent=response.wishlist_count;
+                //changes count in cart
+                if(response.cart_count!==undefined){
+                  navCartCount=document.getElementById('nav-cart-count')
+                  if(navCartCount){
+                    navCartCount.textContent=response.cart_count;
+                  }
                 }
-              }
-              if(response.wishlist_action=="wishlist_update"){
-                
+                //changes count on wishlist
+                if(response.wishlist_count !== undefined){
+                  const navWishlistCount=document.getElementById('nav-wishlist-count');
+                  if(navWishlistCount){
+                    navWishlistCount.textContent=response.wishlist_count;
+                  }
+                }
+                if(response.wishlist_action=="wishlist_update"){
+                  
 
-                 // Update wishlist buttons with the product slug
-                 const wishlistButtons = document.querySelectorAll(`[data-wishlist-product-slug="${response.product_slug}"]`);
-                 wishlistButtons.forEach(btn => {
-                     if (response.is_liked) {
-                         btn.classList.add('liked');
-                     } else {
-                         btn.classList.remove('liked');
-                     }
-                 });
-                }
-            }
-        } catch (e) {
-            console.error('Error processing response:', e);
-        }
-    }
-    if (evt.detail.xhr.status === 200) {
-        try {
-            let response = JSON.parse(evt.detail.xhr.response);
-            if (response.redirect) {
-                window.location.href = "/login/";  // Redirect to login page
-            }
-        } catch (e) {
-            console.error("Error processing response:", e);
-        }
-    }
-});
+                   // Update wishlist buttons with the product slug
+                   const wishlistButtons = document.querySelectorAll(`[data-wishlist-product-slug="${response.product_slug}"]`);
+                   wishlistButtons.forEach(btn => {
+                       if (response.is_liked) {
+                           btn.classList.add('liked');
+                       } else {
+                           btn.classList.remove('liked');
+                       }
+                   });
+                  }
+              }
+          } catch (e) {
+              console.error('Error processing response:', e);
+          }
+      }
+      if (evt.detail.xhr.status === 200) {
+          try {
+              let response = JSON.parse(evt.detail.xhr.response);
+              if (response.redirect) {
+                  window.location.href = "/login/";  // Redirect to login page
+              }
+          } catch (e) {
+              console.error("Error processing response:", e);
+          }
+      }
+  });
 
 </script>
 {% endblock content %}

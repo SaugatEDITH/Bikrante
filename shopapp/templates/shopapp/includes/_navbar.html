@@ -53,29 +53,67 @@
             </a>
           </li>
           <li class="nav__item">
-            <a href="{% url 'signup' %}" class="nav__link {% if request.resolver_match.url_name == 'signup' %}active-link{% endif %}">
+            <a href="{% url 'signup' %}?next={{ 'profile-onboarding'|urlencode }}" class="nav__link {% if request.resolver_match.url_name == 'signup' %}active-link{% endif %}">
                 <i class="fas fa-user-plus"></i> Signup 
             </a>
           </li>
           {% endif %}
         </ul>
         <div class="header__search">
-          <form class="search-form">
-            <input
-              type="text"
-              placeholder="Search For Items..."
-              class="form__input"
-              name="search_text"
-              autocomplete="off"
-              hx-get="{% url 'search' %}"
-              hx-trigger="input changed delay:300ms"
-              hx-target="#main-content"
-              hx-swap="innerHTML"
-            />
-            <button type="submit" class="search__btn">
-              <img src="{% static 'images/search.png' %}" alt="search icon" class="search-indicator" />
-            </button>
+          <form class="search-form" action="{% url "search" %}">
+            <div class="search-input-wrapper">
+              <button type="button" class="filter__btn" onclick="toggleFilter()">
+                <i class="fas fa-filter"></i>
+              </button>
+              <input
+                type="text"
+                placeholder="Search For Items..."
+                class="form__input"
+                name="search_text"
+                autocomplete="off"
+                hx-get="{% url 'search' %}"
+                hx-trigger="input changed delay:300ms"
+                hx-target="#main-content"
+                hx-swap="innerHTML"
+              />
+              <button type="submit" class="search__btn">
+                <img src="{% static 'images/search.png' %}" alt="search icon" class="search-indicator" />
+              </button>
+              <div id="filterDropdown" class="filter-content">
+                <div class="filter-group">
+                  <label>Price Range:</label>
+                  <input type="number" placeholder="Min Price" name="min_price">
+                  <input type="number" placeholder="Max Price" name="max_price">
+                </div>
+                <div class="filter-group">
+                  <label>Sort By:</label>
+                  <select name="sort">
+                    <option value="">Default</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                  </select>
+                </div>
+                <button type="submit" class="filter-apply">Apply Filters</button>
+              </div>
+            </div>
           </form>
+          <script>
+            function toggleFilter() {
+              const dropdown = document.getElementById('filterDropdown');
+              dropdown.classList.toggle('show');
+            }
+            
+            // Close dropdown when clicking outside
+            window.onclick = function(event) {
+              const dropdown = document.getElementById('filterDropdown');
+              const filterBtn = document.querySelector('.filter__btn');
+              
+              // Check if click is outside both the dropdown and filter button
+              if (!dropdown.contains(event.target) && !filterBtn.contains(event.target)) {
+                dropdown.classList.remove('show');
+              }
+            }
+          </script>
         </div>
       </div>
       <div class="header__user-actions">

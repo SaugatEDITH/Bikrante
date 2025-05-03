@@ -2,13 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 import re
+from django.forms import ValidationError
 from django.utils import timezone
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Avg
 from datetime import timedelta
 from django.core.files.storage import default_storage
 from django.core.files import File
 import os
 from django.urls import reverse
+from django.db import transaction  # Make sure this import is at the top
 ##! for word like gui type text typing (if also image upload required un comment below and comment up one)
 from ckeditor.fields import RichTextField
 ## from ckeditor_uploader.fields import RichTextUploadingField
@@ -35,9 +37,8 @@ class Category(models.Model):
     name = models.CharField(max_length=255)
     image = models.ImageField(
         upload_to='categories',
-        null=True,
-        blank=True,
-        help_text="Upload category image (Recommended: 300x300px)"
+        help_text="Upload category image (Recommended: 300x300px)",
+        default='categories/default.jpeg'  # Provide a default image
     )
     slug = models.SlugField(
         unique=True,
@@ -95,7 +96,7 @@ class Product(models.Model):
         blank=True,
         help_text="Comma-separated tags e.g.(tech, makeup, education, etc..)",
     )
-    stock = models.IntegerField()
+    stock = models.PositiveBigIntegerField()
     availability = models.BooleanField(default=True)
     colors = models.CharField(
         max_length=255, blank=True, help_text="Comma seperated colors e.g.()"
@@ -150,47 +151,65 @@ class Product(models.Model):
             
         super().save(*args, **kwargs)
 
-    
+    def calculate_star_rating(self):
+        """Helper method to calculate star rating for a single product"""
+        avg_rating = self.reviews.aggregate(avg=Avg('rating'))['avg']
+        stars = int(round(avg_rating)) if avg_rating is not None else 0
+        return ["⭐" for _ in range(0, stars)]
+
+    @classmethod
+    def add_star_ratings(cls, products):
+        """Helper method to add star ratings to a list of products"""
+        for product in products:
+            product.average_rating = product.calculate_star_rating()
+        return products
+
     @classmethod
     def get_trending_products(cls, days=7, limit=4):
         """Products with most views in last 7 days"""
         date_threshold = timezone.now() - timedelta(days=days)
-        return cls.objects.filter(
+        products = list(cls.objects.filter(
             last_viewed__gte=date_threshold
-        ).order_by('-views_count')[:limit]
+        ).order_by('-views_count')[:limit])
+        return cls.add_star_ratings(products)
 
     @classmethod
     def get_new_arrivals(cls, days=30, limit=4):
         """Products added in last 30 days"""
         date_threshold = timezone.now() - timedelta(days=days)
-        return cls.objects.filter(
+        products = list(cls.objects.filter(
             created_at__gte=date_threshold
-        ).order_by('-created_at')[:limit]
+        ).order_by('-created_at')[:limit])
+        return cls.add_star_ratings(products)
 
     @classmethod
     def get_top_selling(cls, limit=4):
         """Products with highest sales count"""
-        return cls.objects.order_by('-sales_count')[:limit]
+        products = list(cls.objects.order_by('-sales_count')[:limit])
+        return cls.add_star_ratings(products)
 
     @classmethod
     def get_popular_products(cls, limit=4):
         """Products with most likes"""
-        return cls.objects.annotate(
+        products = list(cls.objects.annotate(
             like_count=Count('likes')
-        ).order_by('-like_count')[:limit]
+        ).order_by('-like_count')[:limit])
+        return cls.add_star_ratings(products)
 
     def get_cross_sell_products(self, limit=4):
         """Products from same category that others bought"""
-        return Product.objects.filter(
+        products = list(Product.objects.filter(
             category=self.category
-        ).exclude(id=self.id).order_by('-sales_count')[:limit]
+        ).exclude(id=self.id).order_by('-sales_count')[:limit])
+        return Product.add_star_ratings(products)
 
     def get_upsell_products(self, limit=4):
         """More expensive products in same category"""
-        return Product.objects.filter(
+        products = list(Product.objects.filter(
             category=self.category,
             price__gt=self.price
-        ).order_by('price')[:limit]
+        ).order_by('price')[:limit])
+        return Product.add_star_ratings(products)
 
     def increment_views(self):
         """Increment view count when product is viewed"""
@@ -202,6 +221,18 @@ class Product(models.Model):
         """Record a sale of the product"""
         self.sales_count += quantity
         self.save()
+
+    def get_colors(self):
+        """Returns list of colors, handling empty values"""
+        if not self.colors:
+            return []
+        return [c.strip() for c in self.colors.split(',') if c.strip()]
+
+    def get_sizes(self):
+        """Returns list of sizes, handling empty values"""
+        if not self.sizes:
+            return []
+        return [s.strip() for s in self.sizes.split(',') if s.strip()]
 
 
 #  Reviews
@@ -263,7 +294,47 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.id} by {self.user.username}"
+
+    def save(self, *args, **kwargs):
+        if self.pk:  # Only check existing orders
+            old_order = Order.objects.get(pk=self.pk)
+            
+            # Check if order is being marked as completed and wasn't previously completed
+            if (old_order.status != 'Completed' and self.status == 'Completed'):
+                
+                with transaction.atomic():  # Use Django's transaction, not the Transaction model
+                    # First verify all items have sufficient stock
+                    for order_item in self.items.all():
+                        if order_item.product.stock < order_item.quantity:
+                            raise ValueError(
+                                f"Insufficient stock for {order_item.product.name}. "
+                                f"Available: {order_item.product.stock}, "
+                                f"Required: {order_item.quantity}"
+                            )
+                    
+                    # If all stock checks pass, then deduct stock
+                    for order_item in self.items.all():
+                        product = order_item.product
+                        product.stock -= order_item.quantity
+                        product.record_sale(order_item.quantity)
+                        product.save()
         
+        super().save(*args, **kwargs)
+
+    def get_payment_status(self):
+        """Returns the payment status from associated transaction"""
+        transaction = self.transactions.first()
+        if transaction:
+            return transaction.status
+        return "No Payment Info"
+
+    def get_payment_method(self):
+        """Returns the payment method from associated transaction"""
+        transaction = self.transactions.first()
+        if transaction:
+            return transaction.payment_method
+        return "Not Specified"
+
 class OrderItem(models.Model):  # Changed from OrderItems to OrderItem
     order = models.ForeignKey(Order, on_delete=models.CASCADE,related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -274,10 +345,12 @@ class OrderItem(models.Model):  # Changed from OrderItems to OrderItem
         return f"{self.quantity} x {self.product.name}"
 
 class CartItem(models.Model):
-    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name="cart_items")
-    product=models.ForeignKey(Product,on_delete=models.CASCADE)
-    quantity=models.PositiveIntegerField(default=1)
-    added_at=models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart_items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    color = models.CharField(max_length=50, blank=True)
+    size = models.CharField(max_length=10, blank=True)
+    added_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
@@ -324,3 +397,43 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"Txn {self.esewa_transaction_id} - {self.status}"
+
+class CategoryDeal(models.Model):
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='deals')
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Deal for {self.category.name} - Ends {self.end_date}"
+    
+    def is_expired(self):
+        return timezone.now() > self.end_date
+
+    def time_remaining(self):
+        if self.is_expired():
+            return None
+        now = timezone.now()
+        delta = self.end_date - now
+        return {
+            'days': delta.days,
+            'hours': delta.seconds // 3600,
+            'minutes': (delta.seconds % 3600) // 60,
+            'seconds': delta.seconds % 60
+        }
+        
+    def clean(self):
+        if self.is_active:
+            active_deals = CategoryDeal.objects.filter(is_active=True)
+            if active_deals.count() >= 2 and not self.pk:
+                raise ValidationError({
+                    'is_active': "Cannot have more than 2 active deals at a time. Please deactivate an existing deal first."
+                })
+        if self.end_date and self.end_date < timezone.now():
+            raise ValidationError({
+                'end_date': "End date cannot be in the past."
+            })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # This will run validation including our clean method
+        super().save(*args, **kwargs)

@@ -42,9 +42,9 @@
                 name="password"
                 required
               />
-              <div class="captcha-container">
+            <div class="captcha-container">
               <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8HzRvfB7oTzXFa"></div>
-              </div>
+              </div>  
               <div class="form__btn">
                 <button type="submit" class="btn">Login</button>
               </div>
@@ -58,7 +58,7 @@
             {% endfor %}
         {% endif %}
             <h3 class="section__title">Create an Account</h3>
-            <form class="form grid" method="POST" action="{% url 'signup' %}">
+            <form class="form grid" method="POST" action="{% url 'signup' %}?next={% url 'profile-onboarding' %}">
               {% csrf_token %}
               <input
                 type="text"
@@ -90,9 +90,9 @@
               />
               <div class="captcha-container">
                 <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8HzRvfB7oTzXFa"></div>
-                </div>
+                </div>  
               <div class="form__btn">
-                <button type="submit" class="btn">Submit & Register</button>
+                <button  type="submit" class="btn">Submit & Register</button>
               </div>
             </form>
           </div>

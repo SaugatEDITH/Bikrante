@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -8,12 +8,16 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('shop/', views.shop, name='shop'),
     path('cart/',views.cart,name='cart'),
+    # path('chat/',views.chat,name='chat'),
+    path('chat-bot/',views.chat_bot,name='chat-bot'),
     path('add-remove-cart/<slug:slug>/', views.add_remove_cart,name='add-remove-cart'),
     path('contact/', views.contact, name='contact'),
     path('wishlist/',views.wishlist,name="wishlist"),
     path('user-dashboard/',views.user_dashboard,name='user-dashboard'),
+    path('profile-onboarding/', views.profile_onboarding, name='profile-onboarding'),
     path('category/<slug:slug>/', views.category_detail, name='category-detail'),
     path('product/<slug:slug>/', views.product_detail, name='product-detail'),
+    path('product/<slug:slug>/review-count/', views.product_review_count, name='product-review-count'),
     path('search/',views.search,name="search"),
     path('add-remove-wishlist/<slug:slug>/', views.add_remove_wishlist, name='add_remove_wishlist'),
     path('checkout/',view=views.checkout,name="checkout"),
@@ -22,7 +26,9 @@ urlpatterns = [
     path("esewa-payment-success/<int:order_id>/", views.esewa_payment_success, name="esewa-payment-success"),
     path('khalti-checkout/<int:order_id>/', views.khalti, name='khalti_checkout'),
     path('paypal-checkout/<int:order_id>/', views.paypal, name='paypal_checkout'),
-  
-
-    
+    path('paypal-success/<int:order_id>/', views.paypal_success, name='paypal-success'),
+    path('paypal/', include('paypal.standard.ipn.urls')),
+    path('compare/', views.compare_view, name='compare'),
+    path('add-remove-compare/<slug:slug>/', views.add_remove_compare, name='add-remove-compare'),
+    path('generate-bill/<int:order_id>/', views.generate_bill, name='generate-bill'),
 ]

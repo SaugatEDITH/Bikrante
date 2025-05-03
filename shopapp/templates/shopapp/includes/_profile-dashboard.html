@@ -1,0 +1,54 @@
+
+<div class="tab__content" content id="update-profile">
+  {% if onboarding %}
+  <h3 class="tab__header">Create Profile</h3>
+  {% else %}
+  <h3 class="tab__header">Update Profile</h3>
+  {% endif %}
+    <div class="tab__body">
+      <form class="form grid" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="update_profile" />
+        
+        {% if profile.profile_image %}
+        <div id="profile_pic_div">
+          <div class="picture_wraper">
+            <img src="{{ profile.profile_image.url }}" alt="Profile" id="profile_pic">
+          </div>  
+        </div>
+        {% endif %}
+      
+        <div class="form__group">
+          <label><i class="fa-solid fa-image"></i> Profile Image</label>
+          <input type="file" name="profile_image" class="form__input" accept="image/*">
+        </div>
+      
+        <div class="form__group">
+          <label><i class="fa-solid fa-user"></i> Username</label>
+          <input type="text" name="username" class="form__input" value="{{ user.username }}">
+          <i class="fa-solid fa-user"></i>
+        </div>
+      
+        <div class="form__group">
+          <label><i class="fa-solid fa-location-dot"></i> Address</label>
+          <textarea name="address" class="form__input">{{ profile.address }}</textarea>
+          <i class="fa-solid fa-location-dot"></i>
+        </div>
+      
+        <div class="form__group">
+          <label><i class="fa-solid fa-phone"></i> Phone Number</label>
+          <input type="tel" name="phone_number" class="form__input" value="{{ profile.phone_number }}">
+          <i class="fa-solid fa-phone"></i>
+        </div>
+        {% comment %} <div class="captcha-container">
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8HzRvfB7oTzXFa"></div>
+          </div> {% endcomment %}
+        <div class="form__btn">
+          <button type="submit" class="btn btn--md"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+          {% if onboarding %}
+          <a href='{% url "home" %}'>Skip</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
