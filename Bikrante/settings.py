@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+load_dotenv()
+EMAIL = os.getenv("EMAIL")
+PASSKEY=os.getenv("PASSKEY")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +31,10 @@ SECRET_KEY = 'django-insecure-v+7!67j=x!e!xhfg(csz271#z@w1(td$^10y%_z(m$9g8p@&xk
 DEBUG = True
 
 ALLOWED_HOSTS = [
- 
+ "192.168.1.66",
+ "localhost",
+ "127.0.0.1"
+ "*"
     
 ]
 
@@ -191,3 +198,11 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = EMAIL  # your Gmail address
+EMAIL_HOST_PASSWORD = PASSKEY  # the 16-character app password from Google
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL

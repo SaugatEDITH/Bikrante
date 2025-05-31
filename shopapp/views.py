@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 import re, random,os,requests 
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed
-from .models import Category, CategoryDeal, Product,CartItem,Review,Order,OrderItem,Transaction, UserProfile
+from .models import Category, CategoryDeal, Product,CartItem,Review,Order,OrderItem,Transaction, UserProfile,Contact
 from django.urls import reverse
 ##! for create custom highend search querys
 from django.db.models import Q
@@ -52,7 +52,11 @@ from xhtml2pdf import pisa
 from django.http import HttpResponse
 from io import BytesIO
 from django.utils import timezone
-
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.utils.crypto import get_random_string
+from django.conf import settings
+from django.urls import reverse
+from django.contrib.auth.tokens import default_token_generator
 ##! home page view
 def home(request):
     colors=['light-pink','light-orange','light-green','light-blue','light-red', 'light-purple', 'light-yellow', 'light-cyan']
@@ -176,7 +180,6 @@ def search(request):
     max_price = request.GET.get("max_price")
     sort = request.GET.get("sort")  # Match the form name from the filter dropdown
     page_num = int(request.GET.get('page', 1))
-    print(search_text,min_price,max_price,sort,page_num)
 
     context = {
         'is_home': False,
@@ -214,6 +217,9 @@ def search(request):
             products = products.order_by('price')
         elif sort == "price_desc":
             products = products.order_by('-price')
+    else:
+        # Ensure default ordering to avoid UnorderedObjectListWarning
+        products = products.order_by('id')
 
     # Pagination
     paginator = Paginator(products, 12)
@@ -335,23 +341,45 @@ def user_logout(request):
     return redirect('home')
 
 def contact(request):
+    messages=[]
     breadcrumb_items = [
         {'title': 'Home', 'url': reverse('home')},
-        {'title': 'Contact', 'url': None}  # Current page doesn't need URL
+        {'title': 'Contact', 'url': None},
+        {'messages':messages}
+        # Current page doesn't need URL
     ]
+    if request.method=="POST":
+        name=request.POST.get('name')
+        email=request.POST.get('email')
+        subject=request.POST.get('subject')
+        message=request.POST.get('message')
+        if not name or len(name) < 3: 
+            messages.append("Name must be at least 3 characters long.") 
+        if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email): 
+            messages.append("Enter a valid email address.") 
+        if not subject or len(subject) < 5: 
+            messages.append("Subject must be at least 5 characters long.") 
+        if not message or len(message) < 10: 
+            messages.append("Message must be at least 10 characters long.") 
+        else:
+            tosave=Contact(name=name,email=email,subject=subject,message=message)
+            tosave.save()
+            messages.append('form submitted sucessfully')
+        
     return render(request, 'shopapp/contact.html', {'breadcrumb_items': breadcrumb_items})
 
 @login_required(login_url='login')
 def user_dashboard(request):
     orders = Order.objects.filter(user=request.user)[::-1][:10]
     profile, created = UserProfile.objects.get_or_create(user=request.user)
-    
-    
+    address_parts = profile.address.split(',') if profile.address else []
+    city = address_parts[-1].strip() if address_parts else "Unknown"
     context = {
         'message': [],
         'orders': orders,
         'profile': profile,
-        "onboarding":False
+        'city': city,  # Pass city separately
+        "onboarding": False
     }
     
     if request.method == "POST":
@@ -374,16 +402,37 @@ def user_dashboard(request):
             if new_address:
                 profile.address = new_address
             if new_phone:
-                profile.phone_number = new_phone
+                mobile_regex = r"^(97|98)\d{7,8}$"
+                landline_regex = r"^(01|04|05|06|07)\d{6,7}$"
+                if not (re.match(mobile_regex, new_phone) or re.match(landline_regex, new_phone)):
+                    context['message'].append("Enter a valid phone number.")
+                    return JsonResponse({
+                        "status": "error",
+                        "message": "Enter a valid nepali phone number.",
+                        "redirect": "/user-dashboard/"
+                    })
+                else:
+                    profile.phone_number = new_phone
             if new_image:
-                profile.profile_image = new_image
+                if not new_image.name.lower().endswith(('jpeg', 'png', 'jpg')):
+                    context['message'].append("Only JPEG, PNG, and JPG image formats are allowed.")
+                    return JsonResponse({
+                "status": "error",
+                "message": "Only JPEG, PNG, and JPG image formats are allowed.",
+                "redirect": "/user-dashboard/"
+            })
+                else:
+                    profile.profile_image = new_image
             
             profile.save()
             
             if any([new_address, new_phone, new_image]):
                 context['message'].append("Profile updated successfully")
-            return redirect('user-dashboard')
-            
+            return JsonResponse({
+                "status": "success",
+                "message": "Profile updated successfully.",
+                "redirect": "/user-dashboard/"
+            })
         elif 'change_password' in request.POST:
             current_password = request.POST.get("current_password")
             new_password = request.POST.get("new_password")
@@ -393,20 +442,28 @@ def user_dashboard(request):
             if user:
                 if new_password == confirm_password:
                     if not re.fullmatch(r'(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}', new_password):
-                         context['message'].append("Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.")
-                         
-                         return redirect("user-dashboard#change-password")
+                        return JsonResponse({
+                            "status": "error",
+                            "message": "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character."
+                        })
                     user.set_password(new_password)
                     user.save()
-                    auth_login(request, user) #re-log user after password change
-                    context['message'].append("Your password has been successfully updated")
-                  
-                    return redirect("user-dashboard")
+                    auth_login(request, user)
+                    return JsonResponse({
+                        "status": "success",
+                        "message": "Your password has been successfully updated.",
+                        "redirect": "/user-dashboard/"
+                    })
                 else:
-                    context['message'].append("New password and confirm password don't match.")
+                    return JsonResponse({
+                        "status": "error",
+                        "message": "New password and confirm password don't match."
+                    })
             else:
-                context['message'].append("Current password is incorrect.")
-   
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Current password is incorrect."
+                })
     return render(request, 'shopapp/user-dashboard.html', context)
 
 def category_detail(request, slug):
@@ -591,7 +648,6 @@ def cart(request):
             district = request.POST.get("district")
             city = request.POST.get("city")
             postcode=request.POST.get("postcode")
-            print(province,district,city,postcode)
             if province and district and city and postcode:
                 request.session['shipping_data'] = {
                     'province': province,
@@ -601,7 +657,9 @@ def cart(request):
                 }
                 set_shipping_price_in_session(request,province,district,city)
             request.session.modified = True
-            
+            response = JsonResponse({"reload": True})
+            response["HX-Refresh"] = "true"
+            return response
         elif form_type=="coupon":
             coupon_code=request.POST.get("couponcode")
         
@@ -716,7 +774,7 @@ def checkout(request):
     # Calculate prices
     cart_subtotal = sum(Decimal(item.total_price()) for item in cart_items)
     shipping_price = request.session.get('shipping_price', 400)
- # Add logic for dynamic shipping
+# Add logic for dynamic shipping
     total_price = cart_subtotal + shipping_price
     
     
@@ -1109,17 +1167,15 @@ def add_remove_compare(request, slug):
 @login_required(login_url='login')
 def generate_bill(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    
-    # Ensure the payment status is 'Success' before generating the bill
-    if not Transaction.objects.filter(order=order, status='Success').exists():
+    # Allow bill generation only if there is a successful transaction for this order
+    if not order.can_generate_bill():
         messages.error(request, "Bill can only be generated for orders with successful payment.")
         return redirect('user-dashboard')
-    
+
     context = {
         'order': order,
         'show_print': True  # Flag to show print button
     }
-    
     return render(request, 'shopapp/bill.html', context)
 
 
@@ -1141,11 +1197,19 @@ def profile_onboarding(request):
             request.user.email = email
             request.user.save()
         if phone_number:
-            profile.phone_number = phone_number
+            mobile_regex = r"^(97|98)\d{7,8}$"
+            landline_regex = r"^(01|04|05|06|07)\d{6,7}$"
+            if not (re.match(mobile_regex, phone_number) or re.match(landline_regex, phone_number)):
+                messages.error(request, "Enter a valid phone number.")
+            else:
+                profile.phone_number = phone_number
         if address:
             profile.address = address
         if profile_image:
-            profile.profile_image = profile_image
+            if not profile_image.name.lower().endswith(('jpeg', 'png', 'jpg')):
+                messages.error(request, "Only JPEG, PNG, and JPG image formats are allowed.")
+            else:
+                profile.profile_image = profile_image
         profile.save()
 
         messages.success(request, "Profile setup completed successfully!")
@@ -1154,6 +1218,73 @@ def profile_onboarding(request):
     context = {
         "user": request.user,
         "profile": profile,
-        "onboarding":True
+        "onboarding": True
     }
     return render(request, "shopapp/profilesetup.html", context)
+
+def forgot_password(request):
+    message = []
+    if request.method == "POST":
+        email = request.POST.get("email")
+        try:
+            user = User.objects.get(email=email)
+            token = default_token_generator.make_token(user)
+            reset_url = request.build_absolute_uri(
+                reverse("reset-password") + f"?uid={user.pk}&token={token}"
+            )
+            subject = "Password Reset Request"
+            text_content = f"Click the link to reset your password: {reset_url}"
+            html_content = f"""
+                <div style="text-align:center;">
+                  <h2>BIKRANTE</h2>
+                </div>
+                <h2>Password Reset Request</h2>
+                <p>Hello <b>{user.username}</b>,</p>
+                <p>We received a request to reset your password. Click the button below to reset it:</p>
+                <p>
+                  <a href="{reset_url}" style="background:#4a90e2;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;">
+                    Reset Password
+                  </a>
+                </p>
+                <p>If you did not request this, you can safely ignore this email.</p>
+                <br>
+                <small>This link will expire soon for your security.</small>
+            """
+            email_msg = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            email_msg.attach_alternative(html_content, "text/html")
+            email_msg.send()
+            message.append("If an account with that email exists, a password reset link has been sent.")
+        except User.DoesNotExist:
+            # Do not reveal if the email exists for security reasons
+            message.append("If an account with that email exists, a password reset link has been sent.")
+    return render(request, "shopapp/forgot-password.html", {"message": message})
+
+def reset_password(request):
+    from django.contrib.auth.hashers import make_password
+    uid = request.GET.get("uid")
+    token = request.GET.get("token")
+    message = []
+    user = None
+    if uid and token:
+        try:
+            user = User.objects.get(pk=uid)
+            if not default_token_generator.check_token(user, token):
+                user = None
+        except User.DoesNotExist:
+            user = None
+    if request.method == "POST" and user:
+        password = request.POST.get("password")
+        cpassword = request.POST.get("cpassword")
+        if password == cpassword and len(password) >= 8:
+            user.password = make_password(password)
+            user.save()
+            message.append("Password reset successful. You can now log in.")
+            return redirect("login")
+        else:
+            message.append("Passwords do not match or are too short.")
+    return render(request, "shopapp/reset-password.html", {"user": user, "message": message})

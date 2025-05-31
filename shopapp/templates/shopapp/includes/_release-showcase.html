@@ -4,7 +4,7 @@
       {% if hot_products %}
       <div class="showcase__wrapper">
         <h3 class="section__title">Hot Releases</h3>
-        {% for hot_product  in hot_products|slice:":3" %}
+        {% for hot_product in hot_products|slice:":3" %}
         <div class="showcase__item">
           <a href="{% url "product-detail" hot_product.slug %}" class="showcase__img-box">
             <img
@@ -16,11 +16,11 @@
           <div class="showcase__content">
             <a href="{% url "product-detail" hot_product.slug %}">
               <h4 class="showcase__title">
-                {{ hot_product.name }}
+                {{ hot_product.name|truncatechars:30 }}
               </h4>
             </a>
             <div class="showcase__price flex">
-              <span class="new__price">{{hot_product.price_after_discount}}</span>
+              <span class="new__price">{{ hot_product.price_after_discount }}</span>
               <span class="old__price">{{ hot_product.price }}</span>
             </div>
           </div>
@@ -28,7 +28,7 @@
         {% endfor %}
       </div>
       {% endif %}
-{% if popular_products %}
+      {% if popular_products %}
       <div class="showcase__wrapper">
         <h3 class="section__title">Deals & Outlet</h3>
         {% for popular_product in popular_products|slice:":3" %}
@@ -42,7 +42,7 @@
           </a>
           <div class="showcase__content">
             <a href="{% url 'product-detail' popular_product.slug %}">
-              <h4 class="showcase__title">{{ popular_product.name }}</h4>
+              <h4 class="showcase__title">{{ popular_product.name|truncatechars:30 }}</h4>
             </a>
             <div class="showcase__price flex">
               <span class="new__price">{{ popular_product.price_after_discount }}</span>
@@ -52,8 +52,8 @@
         </div>
         {% endfor %}
       </div>
-    {% endif %}
-      {% if top_sellings  %}
+      {% endif %}
+      {% if top_sellings %}
       <div class="showcase__wrapper">
         <h3 class="section__title">Top Selling</h3>
         {% for top_selling in top_sellings|slice:":3" %}
@@ -68,33 +68,33 @@
           <div class="showcase__content">
             <a href="{% url 'product-detail' top_selling.slug %}">
               <h4 class="showcase__title">
-               {{top_selling.name}}
+                {{ top_selling.name|truncatechars:30 }}
               </h4>
             </a>
             <div class="showcase__price flex">
-              <span class="new__price">{{top_selling.price_after_discount}}</span>
-              <span class="old__price">{{top_selling.price}}</span>
+              <span class="new__price">{{ top_selling.price_after_discount }}</span>
+              <span class="old__price">{{ top_selling.price }}</span>
             </div>
           </div>
         </div>
         {% endfor %}
       </div>
       {% endif %}
-      {% if trending_product %}
+      {% if trending_products %}
       <div class="showcase__wrapper">
         <h3 class="section__title">Trendy</h3>
-{% for trending_product in trending_products|slice:":3"  %}
+        {% for trending_product in trending_products|slice:":3" %}
         <div class="showcase__item">
           <a href="{% url 'product-detail' trending_product.slug %}" class="showcase__img-box">
             <img
               src="{{ trending_product.image1.url }}"
-              alt="{{trending_product.name}}"
+              alt="{{ trending_product.name }}"
               class="showcase__img"
             />
           </a>
           <div class="showcase__content">
             <a href="{% url 'product-detail' trending_product.slug %}">
-              <h4 class="showcase__title">{{ trending_product.name }}</h4>
+              <h4 class="showcase__title">{{ trending_product.name|truncatechars:30 }}</h4>
             </a>
             <div class="showcase__price flex">
               <span class="new__price">{{ trending_product.price_after_discount }}</span>

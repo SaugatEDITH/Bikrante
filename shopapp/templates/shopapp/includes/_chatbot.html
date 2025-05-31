@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
 
-    // Function to handle message sending
+/*
     function handleMessageSend(e) {
         e.preventDefault();
         const message = chatInput.value.trim();
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Trigger HTMX request manually
             htmx.trigger(chatForm, 'submit');
         }
-    }
+    } */
 
     // Function to scroll to bottom
     function scrollToBottom() {
@@ -136,4 +136,4 @@ document.addEventListener('htmx:afterSwap', function() {
     // Scroll to bottom
     messagesList.scrollTop = messagesList.scrollHeight;
 });
-</script>
+</script> 

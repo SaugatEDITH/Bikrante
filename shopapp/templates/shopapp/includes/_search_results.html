@@ -64,9 +64,9 @@
                 <h3 class="product__title">{{ product.name }}</h3>
               </a>
               <div class="product__price flex">
-                <span class="new__price">रु{{ product.price }}</span>
-                {% if product.old_price %}
-                <span class="old__price">रु{{ product.old_price }}</span>
+                <span class="new__price">रु{{ product.price_after_discount }}</span>
+                {% if product.price %}
+                <span class="old__price">रु{{ product.price }}</span>
                 {% endif %}
               </div>
               <a

@@ -195,7 +195,116 @@ const nepalShippingData = {
             }
         }
     },
-    
+    "Gandaki Province": {
+        "Kaski": {
+            "cities": {
+                "Pokhara": {"postal_code": 33700, "shipping_cost": 150},
+                "Lekhnath": {"postal_code": 33701, "shipping_cost": 140}
+            }
+        },
+        "Lamjung": {
+            "cities": {
+                "Besisahar": {"postal_code": 33600, "shipping_cost": 160}
+            }
+        },
+        "Gorkha": {
+            "cities": {
+                "Gorkha": {"postal_code": 33500, "shipping_cost": 170}
+            }
+        },
+        "Tanahun": {
+            "cities": {
+                "Damauli": {"postal_code": 33400, "shipping_cost": 150}
+            }
+        },
+        "Syangja": {
+            "cities": {
+                "Putalibazar": {"postal_code": 33800, "shipping_cost": 160}
+            }
+        }
+    },
+    "Lumbini Province": {
+        "Rupandehi": {
+            "cities": {
+                "Butwal": {"postal_code": 32900, "shipping_cost": 140},
+                "Bhairahawa": {"postal_code": 32800, "shipping_cost": 130}
+            }
+        },
+        "Kapilvastu": {
+            "cities": {
+                "Taulihawa": {"postal_code": 32700, "shipping_cost": 150}
+            }
+        },
+        "Dang": {
+            "cities": {
+                "Ghorahi": {"postal_code": 32500, "shipping_cost": 160}
+            }
+        },
+        "Banke": {
+            "cities": {
+                "Nepalgunj": {"postal_code": 32400, "shipping_cost": 140}
+            }
+        },
+        "Bardiya": {
+            "cities": {
+                "Gulariya": {"postal_code": 32600, "shipping_cost": 150}
+            }
+        }
+    },
+    "Karnali Province": {
+        "Surkhet": {
+            "cities": {
+                "Birendranagar": {"postal_code": 21700, "shipping_cost": 180}
+            }
+        },
+        "Dailekh": {
+            "cities": {
+                "Narayan": {"postal_code": 21600, "shipping_cost": 190}
+            }
+        },
+        "Jumla": {
+            "cities": {
+                "Khalanga": {"postal_code": 21500, "shipping_cost": 200}
+            }
+        },
+        "Mugu": {
+            "cities": {
+                "Gamgadhi": {"postal_code": 21400, "shipping_cost": 210}
+            }
+        },
+        "Dolpa": {
+            "cities": {
+                "Dunai": {"postal_code": 21300, "shipping_cost": 220}
+            }
+        }
+    },
+    "Sudurpashchim Province": {
+        "Kailali": {
+            "cities": {
+                "Dhangadhi": {"postal_code": 10900, "shipping_cost": 140}
+            }
+        },
+        "Kanchanpur": {
+            "cities": {
+                "Mahendranagar": {"postal_code": 10800, "shipping_cost": 130}
+            }
+        },
+        "Doti": {
+            "cities": {
+                "Silgadhi": {"postal_code": 10700, "shipping_cost": 150}
+            }
+        },
+        "Achham": {
+            "cities": {
+                "Mangalsen": {"postal_code": 10600, "shipping_cost": 160}
+            }
+        },
+        "Baitadi": {
+            "cities": {
+                "Dasharathchand": {"postal_code": 10500, "shipping_cost": 170}
+            }
+        }
+    }
 }
 
 // Validation function

@@ -31,4 +31,6 @@ urlpatterns = [
     path('compare/', views.compare_view, name='compare'),
     path('add-remove-compare/<slug:slug>/', views.add_remove_compare, name='add-remove-compare'),
     path('generate-bill/<int:order_id>/', views.generate_bill, name='generate-bill'),
+    path('forgot-password/', views.forgot_password, name='forgot-password'),
+    path('reset-password/', views.reset_password, name='reset-password'),
 ]

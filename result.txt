@@ -1,0 +1,29 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.9, pytest-8.3.5, pluggy-1.6.0 -- C:\Users\acer\Desktop\Bikrante\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\acer\Desktop\Bikrante
+plugins: django-4.11.1
+collecting ... collected 20 items
+
+tests/test_models.py::test_category_slug_generation PASSED               [  5%]
+tests/test_models.py::test_category_discount_and_image_url PASSED        [ 10%]
+tests/test_models.py::test_product_creation_and_discount PASSED          [ 15%]
+tests/test_models.py::test_product_star_rating_and_methods PASSED        [ 20%]
+tests/test_models.py::test_review_str_and_ip PASSED                      [ 25%]
+tests/test_models.py::test_order_and_orderitem_save_and_str PASSED       [ 30%]
+tests/test_models.py::test_cartitem_total_price PASSED                   [ 35%]
+tests/test_models.py::test_userprofile_str PASSED                        [ 40%]
+tests/test_models.py::test_transaction_str PASSED                        [ 45%]
+tests/test_models.py::test_categorydeal_validation PASSED                [ 50%]
+tests/test_views.py::test_home_view PASSED                               [ 55%]
+tests/test_views.py::test_shop_view PASSED                               [ 60%]
+tests/test_views.py::test_login_view_get PASSED                          [ 65%]
+tests/test_views.py::test_signup_view_get PASSED                         [ 70%]
+tests/test_views.py::test_contact_view PASSED                            [ 75%]
+tests/test_views.py::test_profile_onboarding_view_authenticated PASSED   [ 80%]
+tests/test_views.py::test_user_dashboard_view_authenticated PASSED       [ 85%]
+tests/test_views.py::test_logout_view PASSED                             [ 90%]
+tests/test_views.py::test_wishlist_requires_login PASSED                 [ 95%]
+tests/test_views.py::test_search_view PASSED                             [100%]
+
+============================= 20 passed in 5.52s ==============================

@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
 
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {
@@ -175,6 +176,7 @@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
       <!--=============== MAIN JS ===============-->
       <script src="{% static 'js/main.js' %}"></script>
+      <script src="{% static 'js/form-validation.js' %}"></script>
 
     <!-- Add this before </body> -->
     <script>
@@ -191,7 +193,7 @@
         if (evt.detail.successful) {
             try {
                 const response = JSON.parse(evt.detail.xhr.response);
-                if (response.status) { // Handle status messages (like form submissions)
+                if (response.status) {
                     if (response.status === 'success') {
                         toastr.success(response.message);
                         if (response.redirect) {
@@ -202,10 +204,23 @@
                     }
                 }
             } catch (e) {
-                // Not JSON or no message - ignore
+                console.error("Error parsing HTMX response:", e);
             }
         }
     });
+
+   
+   var typed = new Typed('#element', {
+    strings: [
+        'Collection'
+        {% for category in categories %}
+            , '{{ category.name }}'
+        {% endfor %}
+    ],
+    typeSpeed: 95,
+    loop: true,
+});
+
     </script>
 </body>
 </html>

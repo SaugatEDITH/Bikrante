@@ -1,8 +1,11 @@
-asgiref==3.8.1
 Django==5.1.5
 django-ckeditor==6.7.2
 django-htmx==1.21.0
+django-jazzmin==3.0.1
 django-js-asset==3.0.1
+django-paypal==2.1
 pillow==11.1.0
-sqlparse==0.5.3
-tzdata==2025.1
+python-dotenv==1.0.1
+requests==2.32.3
+qrcode==8.0
+reportlab==4.3.1

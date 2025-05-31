@@ -165,12 +165,11 @@ class Product(models.Model):
         return products
 
     @classmethod
-    def get_trending_products(cls, days=7, limit=4):
-        """Products with most views in last 7 days"""
-        date_threshold = timezone.now() - timedelta(days=days)
-        products = list(cls.objects.filter(
-            last_viewed__gte=date_threshold
-        ).order_by('-views_count')[:limit])
+    def get_trending_products(cls, limit=10):
+        """Fetch trending products based on views_count and sales_count."""
+        products = cls.objects.annotate(
+            trending_score=models.F('views_count') + models.F('sales_count')
+        ).order_by('-trending_score')[:limit]
         return cls.add_star_ratings(products)
 
     @classmethod
@@ -322,8 +321,8 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def get_payment_status(self):
-        """Returns the payment status from associated transaction"""
-        transaction = self.transactions.first()
+        """Returns the payment status from associated transaction."""
+        transaction = self.transactions.filter(status="Success").first()
         if transaction:
             return transaction.status
         return "No Payment Info"
@@ -334,6 +333,11 @@ class Order(models.Model):
         if transaction:
             return transaction.payment_method
         return "Not Specified"
+
+    def can_generate_bill(self):
+        """Returns True if there is a transaction with status 'Success' for this order."""
+        has_successful_transaction = self.transactions.filter(status="Success").exists()
+        return has_successful_transaction
 
 class OrderItem(models.Model):  # Changed from OrderItems to OrderItem
     order = models.ForeignKey(Order, on_delete=models.CASCADE,related_name="items")
@@ -437,3 +441,13 @@ class CategoryDeal(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()  # This will run validation including our clean method
         super().save(*args, **kwargs)
+
+
+class Contact(models.Model):
+    name=models.CharField(max_length=255)
+    email=models.EmailField(max_length=255,default=None)    
+    subject=models.CharField(max_length=300)
+    message=models.TextField(max_length=1000)
+    created_at=models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.name

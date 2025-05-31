@@ -297,3 +297,50 @@
         bottom: 1rem;
     }
 } 
+
+/* Chatbot message container for mobile */
+@media (max-width: 600px) {
+  .chat__message {
+    max-width: 95vw;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+  }
+  .chat__message .message__content {
+    max-width: 80vw;
+    overflow-x: auto;
+    white-space: pre-line;
+  }
+}
+
+/* Desktop and default */
+.chat__message {
+  max-width: 420px;
+  width: fit-content;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+}
+.chat__message .message__content {
+  max-width: 350px;
+  overflow-x: auto;
+  white-space: pre-line;
+}
+
+@media screen and (max-width: 480px) {
+    .chatbot__box {
+        width: 340px;
+        max-width: 98vw;
+        height: 420px;
+        max-height: 75vh;
+        right: 1rem;
+        bottom: 80px;
+    }
+    .chat__message {
+        max-width: 90vw;
+    }
+    .chat__message .message__content {
+        max-width: 75vw;
+    }
+}
+

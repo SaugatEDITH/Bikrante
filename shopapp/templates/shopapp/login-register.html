@@ -41,6 +41,8 @@
                 class="form__input"
                 name="password"
                 required
+                style="--ms-reveal: block;"
+                autocomplete="current-password"
               />
             <div class="captcha-container">
               <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8HzRvfB7oTzXFa"></div>
@@ -49,6 +51,9 @@
                 <button type="submit" class="btn">Login</button>
               </div>
             </form>
+             <div style="text-align:right; margin-top:10px;">
+              <a href="{% url 'forgot-password' %}" style="color:#4a90e2;">Forgot Password?</a>
+            </div>
           </div>
           {% else %}
           <div class="register" style="max-width: 500px; margin: 0 auto;">
@@ -80,6 +85,8 @@
                 class="form__input"
                 name="password"
                 required
+                style="--ms-reveal: block;"
+                autocomplete="new-password"
               />
               <input
                 type="password"
@@ -87,6 +94,8 @@
                 class="form__input"
                 name="cpassword"
                 required
+                style="--ms-reveal: block;"
+                autocomplete="new-password"
               />
               <div class="captcha-container">
                 <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8HzRvfB7oTzXFa"></div>

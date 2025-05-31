@@ -7,55 +7,35 @@
         </a>
         <h4 class="footer__subtitle">Contact</h4>
         <p class="footer__description">
-          <span>Address:</span> 13 Tlemcen Road, Street 32, Beb-Wahren
+          <span>Address:</span> Hetauda-4,Schoolroad,Makwanpur-Bagmati,Nepal
         </p>
         <p class="footer__description">
-          <span>Phone:</span> +01 2222 365 /(+91) 01 2345 6789
+          <span>Phone:</span> +977 9876543621 /(+977) 9887654321
         </p>
         <p class="footer__description">
-          <span>Hours:</span> 10:00 - 18:00, Mon - Sat
+          <span>Hours:</span> 12:00 - 12:00, Sun - Sat(24/7/365)
         </p>
         <div class="footer__social">
           <h4 class="footer__subtitle">Follow Me</h4>
           <div class="footer__links flex">
             <a href="#">
-              {% comment %} <img
-                src=" {% static "images/icon-facebook.svg" %} "
-                alt=""
-                class="footer__social-icon"
-              /> {% endcomment %}
+          
               <i class="fa-brands fa-facebook footer__social-icon"></i>
             </a>
             <a href="#">
-              {% comment %} <img
-                src=" {% static "images/icon-twitter.svg" %} "
-                alt=""
-                class="footer__social-icon"
-              /> {% endcomment %}
+       
               <i class="fa-brands fa-x-twitter footer__social-icon"></i>
             </a>
             <a href="#">
-              {% comment %} <img
-                src=" {% static "images/icon-instagram.svg" %} "
-                alt=""
-                class="footer__social-icon"
-              /> {% endcomment %}
+           
               <i class="fa-brands fa-instagram footer__social-icon"></i>
             </a>
             <a href="#">
-              {% comment %} <img
-                src=" {% static "images/icon-pinterest.svg" %}"
-                alt=""
-                class="footer__social-icon"
-              /> {% endcomment %}
+   
               <i class="fa-brands fa-pinterest footer__social-icon"></i>
             </a>
             <a href="#">
-              {% comment %} <img
-                src=" {% static "images/icon-youtube.svg" %}"
-                alt=""
-                class="footer__social-icon"
-              /> {% endcomment %}
+            
               <i class="fa-brands fa-youtube footer__social-icon"></i>
             </a>
           </div>
@@ -75,16 +55,16 @@
       <div class="footer__content">
         <h3 class="footer__title">My Account</h3>
         <ul class="footer__links">
-          <li><a href="#" class="footer__link">Sign In</a></li>
-          <li><a href="#" class="footer__link">View Cart</a></li>
-          <li><a href="#" class="footer__link">My Wishlist</a></li>
-          <li><a href="#" class="footer__link">Track My Order</a></li>
+          <li><a href="{% url 'signup' %}" class="footer__link">Sign In</a></li>
+          <li><a href="{% url 'cart' %}" class="footer__link">View Cart</a></li>
+          <li><a href="{% url 'wishlist' %}" class="footer__link">My Wishlist</a></li>
+          <li><a href="" class="footer__link">Track My Order</a></li>
           <li><a href="#" class="footer__link">Help</a></li>
           <li><a href="#" class="footer__link">Order</a></li>
         </ul>
       </div>
       <div class="footer__content">
-        <h3 class="footer__title">Secured Payed Gateways</h3>
+        <h3 class="footer__title">Secured Payment Gateways</h3>
         <img
           src=" {% static "images/payment-method.png" %}"
           alt=""
