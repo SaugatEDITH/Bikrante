@@ -264,4 +264,227 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   }
+
+  // Checkout form validation
+  const checkoutForm = document.querySelector('#checkout-form'); // Ensure the form is selected using its ID
+  if (checkoutForm) {
+    const name = checkoutForm.querySelector('input[name="name"]');
+    const address = checkoutForm.querySelector('input[name="address"]');
+    const city = checkoutForm.querySelector('input[name="city"]');
+    const postcode = checkoutForm.querySelector('input[name="postcode"]');
+    const phone = checkoutForm.querySelector('input[name="phone"]');
+    const email = checkoutForm.querySelector('input[name="email"]');
+    const orderNote = checkoutForm.querySelector('textarea[name="order_note"]');
+
+    if (name) {
+      name.addEventListener("blur", function () {
+        if (name.value.trim().length < 3) {
+          name.setCustomValidity("Name must be at least 3 characters.");
+          name.style.borderColor = "red";
+        } else {
+          name.setCustomValidity("");
+          name.style.borderColor = "";
+        }
+      });
+    }
+
+    if (address) {
+      address.addEventListener("blur", function () {
+        if (address.value.trim().length < 3) {
+          address.setCustomValidity("Address must be at least 3 characters.");
+          address.style.borderColor = "red";
+        } else {
+          address.setCustomValidity("");
+          address.style.borderColor = "";
+        }
+      });
+    }
+
+    if (city) {
+      city.addEventListener("blur", function () {
+        if (city.value.trim().length < 3) {
+          city.setCustomValidity("City must be at least 3 characters.");
+          city.style.borderColor = "red";
+        } else {
+          city.setCustomValidity("");
+          city.style.borderColor = "";
+        }
+      });
+    }
+
+    if (postcode) {
+      postcode.addEventListener("blur", function () {
+        const postcodeRegex = /^\d{5}$/; // Example: 5-digit postal code
+        if (!postcodeRegex.test(postcode.value)) {
+          postcode.setCustomValidity("Postcode must be a valid 5-digit number.");
+          postcode.style.borderColor = "red";
+        } else {
+          postcode.setCustomValidity("");
+          postcode.style.borderColor = "";
+        }
+      });
+    }
+
+    if (phone) {
+      phone.addEventListener("blur", function () {
+        const mobileRegex = /^(97|98)\d{7,8}$/;
+        const landlineRegex = /^(01|04|05|06|07)\d{6,7}$/;
+        if (!phone.value.trim() || !(mobileRegex.test(phone.value) || landlineRegex.test(phone.value))) {
+          phone.setCustomValidity("Enter a valid Nepali phone number.");
+          phone.style.borderColor = "red";
+        } else {
+          phone.setCustomValidity("");
+          phone.style.borderColor = "";
+        }
+      });
+    }
+
+    if (email) {
+      email.addEventListener("blur", function () {
+        const emailRegex = /^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        if (!emailRegex.test(email.value)) {
+          email.setCustomValidity("Email must start with a letter and be valid.");
+          email.style.borderColor = "red";
+        } else {
+          email.setCustomValidity("");
+          email.style.borderColor = "";
+        }
+      });
+    }
+
+    if (orderNote) {
+      orderNote.addEventListener("blur", function () {
+        if (orderNote.value.trim().length > 0 && orderNote.value.trim().length < 10) {
+          orderNote.setCustomValidity("Order note must be at least 10 characters if provided.");
+          orderNote.style.borderColor = "red";
+        } else {
+          orderNote.setCustomValidity("");
+          orderNote.style.borderColor = "";
+        }
+      });
+    }
+  }
+
+  // Shipping form validation
+  const shippingForm = document.querySelector('#location-form');
+  if (shippingForm) {
+    const province = shippingForm.querySelector('select[name="province"]');
+    const district = shippingForm.querySelector('select[name="district"]');
+    const city = shippingForm.querySelector('select[name="city"]');
+    const submitButton = shippingForm.querySelector('button[type="submit"]');
+
+    function validateShippingForm() {
+      let isValid = true;
+
+      if (province.value === "" || province.value === "Select Province") {
+        province.setCustomValidity("Please select a valid province.");
+        province.style.borderColor = "red";
+        isValid = false;
+      } else {
+        province.setCustomValidity("");
+        province.style.borderColor = "";
+      }
+
+      if (district.value === "" || district.value === "Select District") {
+        district.setCustomValidity("Please select a valid district.");
+        district.style.borderColor = "red";
+        isValid = false;
+      } else {
+        district.setCustomValidity("");
+        district.style.borderColor = "";
+      }
+
+      if (city.value === "" || city.value === "Select City") {
+        city.setCustomValidity("Please select a valid city.");
+        city.style.borderColor = "red";
+        isValid = false;
+      } else {
+        city.setCustomValidity("");
+        city.style.borderColor = "";
+      }
+
+      // Toggle submit button state
+      if (submitButton) {
+        submitButton.disabled = !isValid;
+        submitButton.classList.toggle('out-of-stock', !isValid);
+      }
+    }
+
+    // Add event listeners for validation
+    province.addEventListener("change", validateShippingForm);
+    district.addEventListener("change", validateShippingForm);
+    city.addEventListener("change", validateShippingForm);
+
+    shippingForm.addEventListener("submit", function (event) {
+      validateShippingForm();
+      if (submitButton.disabled) {
+        event.preventDefault(); // Prevent form submission if validation fails
+        alert("Please select valid options for Province, District, and City.");
+      }
+    });
+  }
+
+  // Bad words list
+  const badWords = [
+    "ass", "asshole", "bastard", "bitch", "bollocks", "bugger", "bullshit", "crap", "cunt",
+    "damn", "dick", "douche", "fag", "faggot", "fuck", "fucker", "fucking", "goddamn", "hell",
+    "jerk", "motherfucker", "nigger", "nigga", "piss", "prick", "pussy", "shit", "shitty", "slut",
+    "twat", "wank", "whore"
+  ];
+
+  function maskBadWords(text) {
+    return text.split(" ").map(word => {
+      if (badWords.includes(word.toLowerCase())) {
+        return word[0] + "*".repeat(word.length - 2)+word[word.length-1];
+      }
+      return word;
+    }).join(" ");
+  }
+
+  // Review form validation
+  const reviewForm = document.querySelector('.review__form form');
+  if (reviewForm) {
+    const reviewTextarea = reviewForm.querySelector('textarea[name="review"]');
+    const ratingInputs = reviewForm.querySelectorAll('input[name="rating"]');
+    const errorMsg = document.querySelector('.error-msg');
+
+    // Apply styles to error-msg
+    if (errorMsg) {
+      errorMsg.style.color = "red";
+      errorMsg.style.fontSize = "0.9em";
+      errorMsg.style.marginTop = "0.5em";
+      errorMsg.style.display = "block";
+    }
+
+    function validateRating() {
+      const isRatingSelected = Array.from(ratingInputs).some(input => input.checked && input.value !== "0");
+      if (!isRatingSelected) {
+        errorMsg.textContent = "Please select at least one star for your review.";
+        return false;
+      }
+      errorMsg.textContent = ""; // Clear error message
+      return true;
+    }
+
+    reviewTextarea.addEventListener("blur", function () {
+      if (reviewTextarea.value.trim().length < 4) {
+        reviewTextarea.setCustomValidity("Review must be at least 4 characters.");
+        reviewTextarea.style.borderColor = "red";
+        errorMsg.textContent = "Review must be at least 4 characters.";
+      } else {
+        reviewTextarea.setCustomValidity("");
+        reviewTextarea.style.borderColor = "";
+        errorMsg.textContent = ""; // Clear error message
+      }
+
+      // Mask bad words
+      reviewTextarea.value = maskBadWords(reviewTextarea.value);
+    });
+
+    reviewForm.addEventListener("submit", function (event) {
+      if (reviewTextarea.value.trim().length < 4 || !validateRating()) {
+        event.preventDefault(); // Prevent form submission if validation fails
+      }
+    });
+  }
 });

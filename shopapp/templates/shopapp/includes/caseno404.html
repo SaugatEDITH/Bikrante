@@ -1,66 +1,112 @@
-{% extends "shopapp/base.html" %}
-{% block extracss %}
-<style>
-    .page_404 {
-        padding: 40px 0;
-        background: #fff;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found</title>
+  <style>
+    body {
+        margin: 0;
+        padding: 0;
         font-family: "Arvo", serif;
-      }
-      
-      .page_404 img {
-        width: 100%;
-      }
-      
-      .four_zero_four_bg {
+        color: #333;
+        text-align: center;
+        overflow: hidden;
+        position: relative;
+        background: #fff; /* White background */
+    }
+    .page_404 {
+        position: relative;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .four_zero_four_bg {
+        width: 300px; /* Fixed width */
+        height: 300px; /* Fixed height */
         background-image: url(https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif);
-        height: 400px;
+        background-size: cover;
         background-position: center;
-      }
-      
-      .four_zero_four_bg h1 {
-        font-size: 80px;
-      }
-      
-      .four_zero_four_bg h3 {
-        font-size: 80px;
-      }
-      
-      .link_404 {
+        background-repeat: no-repeat;
+        margin-bottom: 20px; /* Space below the image */
+    }
+    .contant_box_404 {
+        margin-top: 20px;
+        text-align: center;
+    }
+    .contant_box_404 h3 {
+        font-size: 36px;
+        margin: 10px 0;
+        color: #333; /* Dark text for contrast */
+    }
+    .contant_box_404 p {
+        font-size: 18px;
+        margin: 10px 0;
+        color: #666; /* Slightly lighter text */
+    }
+    .link_404 {
         color: #fff !important;
-        padding: 10px 20px;
+        padding: 15px 30px;
         background: #39ac31;
+        border-radius: 50px;
         margin: 20px 0;
         display: inline-block;
-      }
-      .contant_box_404 {
-        margin-top: -50px;
-      }
-      
-</style>
-{% endblock extracss %}
-{% block content %}
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: bold;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+        transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .link_404:hover {
+        background: #2e8b2d;
+        transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
 <section class="page_404">
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-12 ">
-          <div class="col-sm-10 col-sm-offset-1  text-center">
-            <div class="four_zero_four_bg">
-              <h1 class="text-center ">404</h1>
-  
-            </div>
-  
-            <div class="contant_box_404">
-              <h3 class="h2">
-                Look like you're lost
-              </h3>
-  
-              <p>the page you are looking for not avaible!</p>
-  
-              <a href="" class="link_404">Go to Home</a>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="four_zero_four_bg"></div>
+    <div class="contant_box_404">
+        <h3>Oops! You seem lost.</h3>
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        <a href="/" class="link_404">Return to Home</a>
     </div>
-  </section>
-  {% endblock content %}
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    // GSAP animations
+    gsap.from(".four_zero_four_bg", {
+        duration: 1.5,
+        scale: 0.8,
+        opacity: 0,
+        ease: "power2.out",
+    });
+
+    gsap.from(".contant_box_404 h3", {
+        duration: 1.5,
+        opacity: 0,
+        y: 50,
+        ease: "power2.out",
+        delay: 0.5,
+    });
+
+    gsap.from(".contant_box_404 p", {
+        duration: 1.5,
+        opacity: 0,
+        y: 50,
+        ease: "power2.out",
+        delay: 0.7,
+    });
+
+    gsap.from(".link_404", {
+        duration: 1,
+        scale: 0.8,
+        opacity: 0,
+        ease: "elastic.out(1, 0.5)",
+        delay: 1,
+    });
+</script>
+</body>
+</html>

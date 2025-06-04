@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Bikrante</title>
+    <title>Bikrente</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="{% static 'images/logo.png' %}">
@@ -63,6 +63,7 @@
 {% block extracss %}
 
 {% endblock extracss %}
+
   </head>
   <body class="{% if user.is_authenticated %}user-authenticated{% endif %}">
     {% if messages %}
@@ -133,6 +134,7 @@
 
 
 </script>
+
 {% endfor %}
 {% endif %}
 
@@ -161,12 +163,14 @@
         </div>
     </div>
     {% include 'shopapp/includes/_chatbot.html' %}
+
     <script>
         document.addEventListener("htmx:afterSwap", function(event) {
             if (event.detail.target.id === "product-modal-content") {
                 openModal();
             }
         });
+
         </script>
         
       <!--=============== SWIPER JS ===============-->
@@ -222,5 +226,8 @@
 });
 
     </script>
+    {% block extrajs %}
+    
+    {% endblock extrajs %}
 </body>
 </html>

@@ -17,6 +17,7 @@ load_dotenv()
 EMAIL = os.getenv("EMAIL")
 PASSKEY=os.getenv("PASSKEY")
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,8 +53,8 @@ INSTALLED_APPS = [
     'shopapp',
     'ckeditor',  #!for django_ckeditor
     'ckeditor_uploader', 
-    "django_htmx",##!for django-htmx
-    'paypal.standard.ipn',  # Add this line for PayPal IPN
+    'django_htmx',##!for django-htmx
+    'paypal.standard.ipn',  #! Add this line for PayPal IPN
 ]
 JAZZMIN_SETTINGS = {
     "theme": "darkly",  # Enable Dark Mode
@@ -199,6 +200,7 @@ LOGGING = {
     },
 }
 
+##! added for django mail
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587

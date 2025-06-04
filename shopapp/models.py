@@ -163,7 +163,11 @@ class Product(models.Model):
         for product in products:
             product.average_rating = product.calculate_star_rating()
         return products
-
+    @classmethod
+    def get_products(cls):
+        """ fetch all the products """
+        products=list(Product.objects.all())
+        return cls.add_star_ratings(products)
     @classmethod
     def get_trending_products(cls, limit=10):
         """Fetch trending products based on views_count and sales_count."""
@@ -386,6 +390,7 @@ class Transaction(models.Model):
 
     PAYMENT_METHODS = [
         ("Esewa", "Esewa"),
+        ("PayPal", "PayPal"),
         ("Khalti", "Khalti"),  # Add if supporting more gateways later
         ("Cash on Delivery", "Cash on Delivery"),
     ]

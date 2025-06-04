@@ -21,7 +21,7 @@
             </div>
         {% endfor %}
     </div>
-
+<span class="error-msg" ></span>
     <div class="review__form">
         <h4 class="review__form-title">Add a review</h4>
         <form hx-post="{% url 'product-detail' product.slug %}"

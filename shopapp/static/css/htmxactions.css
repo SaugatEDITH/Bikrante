@@ -265,7 +265,7 @@ input:checked:hover ~ .rating-counter:before {
     user-select: none;
 }
 
-/* navbar remeaning css */
+/* navbar remeaning css for search and filter */
 .search-input-wrapper {
   position: relative;
   display: flex;
@@ -374,4 +374,82 @@ input:checked:hover ~ .rating-counter:before {
   border-radius: 4px;
   cursor: pointer;
 }
+/* css for unbutton the buttom*/
+.out-of-stock{
+  pointer-events: none; 
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* css for alart message */
 
+/* Styles for the messages container */
+.messages {
+  min-height: 50px; /* Minimum height to reserve space */
+  max-height: 90px; /* Maximum height for larger messages */
+  overflow: hidden;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  display: flex; /* Use flex for proper alignment */
+  justify-content: center; /* Center-align content horizontally */
+  align-items: center; /* Center-align content vertically */
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  width: 100%; /* Take full available width */
+  box-sizing: border-box; /* Include padding and border in width calculation */
+}
+
+/* Default message style */
+.messages>p {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Hidden state for messages */
+.messages.hidden {
+  visibility: hidden; /* Keeps the space reserved */
+  opacity: 0; /* Fades out the message */
+}
+
+/* Error message style */
+.messages>p.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.messages>p.error::before {
+  content: "🚩";
+  font-size: 16px;
+}
+
+/* Success message style */
+.messages>p.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.messages>p.success::before {
+  content: "✅";
+  font-size: 16px;
+}
+
+/* Info message style */
+.messages>p.info {
+  background-color: #cce5ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+}
+
+.messages>p.info::before {
+  content: "ℹ️";
+  font-size: 16px;
+}

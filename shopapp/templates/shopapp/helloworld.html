@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -325,7 +326,7 @@
     <div class="profile-container">
       <div class="profile">
         <div class="profile-wrapper">
-          <img src="https://picsum.photos/150/150?random=1" alt="Saugat" class="profile-img">
+          <img src="https://scontent.fsif1-1.fna.fbcdn.net/v/t39.30808-1/468284366_1704612000318978_4048814543320826688_n.jpg?stp=c0.5000x0.5000f_dst-jpg_e15_p520x520_q65_tt1_u&efg=eyJ1cmxnZW4iOiJ1cmxnZW5fZnJvbV91cmwifQ&_nc_cid=0&_nc_ad=z-m&_nc_rml=0&_nc_ht=scontent.fsif1-1.fna&_nc_cat=110&_nc_ohc=xIFM1on1I2sQ7kNvwFQJGFU&_nc_gid=F4zy4kZl5GokwZHz_wk7XQ&ccb=1-7&_nc_sid=28885b&oh=00_AfIhkFMzwzf6ObRFgVxC7lVehfGoNULN3Ljmtz4TGpX-Og&oe=684191C4" alt="Saugat" class="profile-img">
         </div>
         <h3 style="color: white;">Saugat Pokharel</h3>
         <div style="color: white; margin: 5px 0;">
@@ -341,7 +342,7 @@
 
       <div class="profile">
         <div class="profile-wrapper">
-          <img src="https://picsum.photos/150/150?random=2" alt="Prem" class="profile-img">
+          <img src="{% static 'images/prem.jpg' %}" alt="Prem .p Dahal" class="profile-img">
         </div>
         <h3 style="color: white;">Prem .p Dahal</h3>
         <div style="color: white; margin: 5px 0;">
@@ -357,9 +358,9 @@
     </div>
 
     <div class="plate">
-      <h2 class="text-animation" data-js="text">Do not mistaken</h2>
-      <p class="text-animation" data-js="text">We are watching</p>
-      <p class="text-animation" data-js="text">You</p>
+      <h2 class="text-animation" data-js="text">Hello Customers</h2>
+      <p class="text-animation" data-js="text">We are Here to Help</p>
+      {% comment %} <p class="text-animation" data-js="text">You</p> {% endcomment %}
       <div class="social" id="social">
         <a href="#" class="social__icon" style="margin-right: 40px;">
           <i class="fas fa-robot fa-2x"></i>
@@ -606,7 +607,7 @@
           state.text = {
             baseLine: 'top',
             font: '800 170px Montserrat',
-            value: 'DEVELOPER'
+            value: 'BIKRENTE'
           }
         }
         initCheckingInterval() {

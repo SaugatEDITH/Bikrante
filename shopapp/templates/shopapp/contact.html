@@ -1,4 +1,5 @@
 {% extends "shopapp/base.html" %}
+{% load static %}
 {% block content %}
 <main class="main">
   {% include 'shopapp/includes/_breadcrumb.html' %}
@@ -49,7 +50,7 @@
           <div class="contact__card-content">
             <h3>Call Us</h3>
             <p>(+01) - 9876 - 5432-10</p>
-            <span>Mon-Fri 9am-6pm</span>
+            <span>Sun-Fri 9am-6pm</span>
           </div>
         </div>
         
@@ -59,7 +60,7 @@
           </div>
           <div class="contact__card-content">
             <h3>Visit Us</h3>
-            <p>123 Main Street, Your City</p>
+            <p>Hetauda-4,Schoolroad</p>
             <span>Find us on Google Maps</span>
           </div>
         </div>
@@ -68,11 +69,13 @@
           <div class="contact__card-icon">
             <i class="fas fa-envelope"></i>
           </div>
+          <a href="mailto:info@bikrente.com">
           <div class="contact__card-content">
             <h3>Email Us</h3>
-            <p>info@bikrante.com</p>
+            <p>info@bikrente.com</p>
             <span>We'll respond within 24 hours</span>
           </div>
+        </a>
         </div>
       </div>
 
@@ -81,10 +84,17 @@
         <div class="contact__form-wrapper">
           <div class="form__header">
             <h3 class="section__title">Send Us a Message</h3>
-            <p class="contact__form-description">Have a question or feedback? We'd love to hear from you.</p>
-            {% for message in messages %}
-            <p class="contact__form-description">{{ message }}</p>
-            {% endfor %}
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <p class="{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+          {{ message }}
+        </p>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="contact__form-description">Have a question or feedback? We'd love to hear from you.</p>
+  {% endif %}
           </div>
           
           <form action="" class="contact__form" method="POST">
@@ -121,7 +131,9 @@
                 <textarea id="message" name="message" placeholder="Write your message here..." class="form__input textarea" required></textarea>
               </div>
             </div>
-            
+            <div class="captcha-container">
+              <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8HzRvfB7oTzXFa"></div>
+              </div>  
             <button type="submit" class="btn btn--md submit__btn">
               <i class="fas fa-paper-plane"></i>
               Send Message
@@ -152,3 +164,7 @@
   </section>
 </main>
 {% endblock content %}
+
+{% block extrajs %}
+<script src="{% static 'js/hide-messages.js' %}"></script>
+{% endblock extrajs %}

@@ -2452,7 +2452,33 @@ select.form__input {
         grid-template-columns: 1fr;
     }
 }
+/*media query for form and map for smaller display then 480px width*/
+@media screen and (max-width:480px){
+  .container{
+    margin: 0;
+    padding: 0;
+  }
+  .contact__form-wrapper{
+    width: 100vw;
+    padding: 1rem !important;
+  }
+  .contact__form {
+    width: 100%;
+    padding: 0.5rem;
+    max-width: 100vw;
+  }
+  .contact__form .form__input,
+  .contact__form .textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .contact__map-wrapper{
+    width: 100vw;
+    padding: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
 
+}
 /* Enhanced Contact Page Styles */
 .contact-hero {
     background: linear-gradient(135deg, var(--first-color) 0%, var(--first-color-alt) 100%);
@@ -2505,7 +2531,7 @@ select.form__input {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-10px); /* Reduced movement for smoother animation */
   }
   100% {
     transform: translateY(0);
@@ -2521,13 +2547,12 @@ select.form__input {
     color: var(--body-color);
     width: 200px;
     transform: translateY(50%);
-    animation: float 3s ease-in-out infinite;
+    animation: float 2s ease-in-out infinite; /* Slower animation */
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
 }
 
 .floating-card:hover {
-    background: var(--body-color);
     transform: translateY(45%);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }

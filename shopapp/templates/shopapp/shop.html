@@ -59,7 +59,9 @@
                   </a>
                 </div>
                 
-                  <div class="product__badge {{ product.class_color|default:'light-blue' }}">{% if product.is_hot %}Hot{% else %}{{ product.category.discount_percentage }} % Off {% endif %}</div>
+                {% if product.is_hot %}
+                  <div class="product__badge {{ product.class_color|default:'light-blue' }}">Hot</div>
+                {% endif %}
       
               </div>
               <div class="product__content">
@@ -72,6 +74,7 @@
                   {{ rating|safe }}
                   {% endfor %}
                 </div>
+                
                 <div class="product__price flex">
                   <span class="new__price">रु{{ product.price_after_discount }}</span>
                   {% if product.price %}
@@ -79,18 +82,25 @@
                   {% endif %}
                 </div>
                 <a
-                  href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
-                  hx-post="{% url "add-remove-cart" product.slug %}"
+                  href="#"
+                  class="action__btn cart__btn"
+                  aria-label="Add To Cart"
+                  {% if product.stock > 0 %}
+                  hx-post="{% url 'add-remove-cart' product.slug %}"
                   hx-target="body"
                   hx-swap="none"
                   hx-trigger="click"
-                  data-product-slug="{{ product.slug }}"
-                  class="action__btn cart__btn"
                   hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                  aria-label="Add To Cart"
-                >
+                  data-product-slug="{{ product.slug }}"
+                  {% else %}
+                  tabindex="-1" aria-disabled="true"
+                  style="pointer-events: none; opacity: 0.5;"
+                  {% endif %}>
                   <i class="fi fi-rs-shopping-bag-add"></i>
                 </a>
+                {% if product.stock == 0 %}
+                <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
+                {% endif %}
               </div>
             </div>
           {% endfor %}

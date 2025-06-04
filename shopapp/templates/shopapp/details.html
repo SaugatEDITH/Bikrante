@@ -62,7 +62,7 @@
             </p>
             <ul class="products__list">
               <li class="list__item flex">
-                <i class="fi-rs-crown"></i> 1 Year Al Jazeera Brand Warranty
+                <i class="fi-rs-crown"></i> Affilieated Brand name:{{ product.brand_name }}
               </li>
               <li class="list__item flex">
                 <i class="fi-rs-refresh"></i> 30 Days Return Policy
@@ -110,11 +110,19 @@
                 <input type="number" 
                        min="1" 
                        class="quantity" 
-                       value="1" 
-                       name="quantity-{{ product.slug }}"/>
+                       name="quantity-{{ product.slug }}"
+                       {% if product.stock < 1 %}value=0 disabled {% else %} value=1 {% endif %}
+                       />
                 <input type="hidden" name="selected_color" id="form_selected_color">
                 <input type="hidden" name="selected_size" id="form_selected_size">
-                <button type="submit" class="btn btn--sm">Add To Cart</button>
+
+                <button type="submit" {% if product.stock == 0 %}disabled class="btn btn--sm out-of-stock"{% else %}class="btn btn--sm"{% endif %}>
+                  {% if product.stock == 0 %}
+                  Out of Stock
+                  {% else %}
+                  Add To Cart
+                  {% endif %}
+                </button>
               </form>
               <button type="button"
                     hx-post="{% url 'add_remove_wishlist' product.slug %}"

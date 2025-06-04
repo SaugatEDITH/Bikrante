@@ -1,4 +1,5 @@
 {% extends "shopapp/base.html" %}
+{% load static %}
 {% block content %}
 
 
@@ -13,19 +14,25 @@
           <li><span class="breadcrumb__link">{% if is_login %}Login{% else %}Register{% endif %}</span></li>
         </ul>
       </section>
-
+      <center>
+<div style="display:inline-block;">
+      {% if messages %}
+          <div class="messages">
+            {% for message in messages %}
+              <p class="{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+                {{ message }}
+              </p>
+            {% endfor %}
+          </div>
+        {% endif %}
+        </div>
+</center>
       <!--=============== LOGIN-REGISTER ===============-->
-      
       <section class="login-register section--lg">
         <div class="login-register__container container">
           {% if is_login %}
           <div class="login" style="max-width: 500px; margin: 0 auto;">
             <h3 class="section__title">Login</h3>
-            {% if message %}
-                {% for msg in message %}
-                    <div class="alert" style="color: red; margin-bottom: 10px;">{{ msg }}</div>
-                {% endfor %}
-            {% endif %}
             <form class="form grid" method="POST" action="{% url 'login' %}">
               {% csrf_token %}
               <input
@@ -57,11 +64,6 @@
           </div>
           {% else %}
           <div class="register" style="max-width: 500px; margin: 0 auto;">
-            {% if message %}
-            {% for msg in message %}
-                <div class="alert" style="color: red; margin-bottom: 10px;">{{ msg }}</div>
-            {% endfor %}
-        {% endif %}
             <h3 class="section__title">Create an Account</h3>
             <form class="form grid" method="POST" action="{% url 'signup' %}?next={% url 'profile-onboarding' %}">
               {% csrf_token %}
@@ -111,3 +113,6 @@
   
     </main>
     {% endblock content %}
+{% block extrajs %}
+<script src="{% static 'js/hide-messages.js' %}"></script>
+{% endblock extrajs %}

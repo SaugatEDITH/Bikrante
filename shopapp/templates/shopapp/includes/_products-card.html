@@ -30,6 +30,7 @@
                   class="product__img hover"
                 />
               </a>
+             
               <div class="product__actions">
                 <a href="#"
                 class="action__btn" 
@@ -76,19 +77,29 @@
                 <span class="new__price">रु{{ hot_product.price_after_discount }}</span>
                 <span class="old__price">रु{{ hot_product.price }}</span>
               </div>
-              <a
+                <a
                 href="#"
-                hx-post="{% url "add-remove-cart" hot_product.slug %}"
-                hx-target="body"
-                hx-swap="none"
-                hx-trigger="click"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                class="action__btn cart__btn"
-                aria-label="Add To Cart"
-                data-product-slug="{{ normal_product.slug }}"
-              >
+                {% if hot_product.stock == 0 %}
+                  class="action__btn cart__btn disabled"
+                  aria-label="Out Of Stock"
+                  tabindex="-1"
+                  style="pointer-events: none; opacity: 0.5;"
+                {% else %}
+                  hx-post="{% url 'add-remove-cart' hot_product.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  class="action__btn cart__btn"
+                  aria-label="Add To Cart"
+                  data-product-slug="{{ hot_product.slug }}"
+                {% endif %}
+                >
                 <i class="fi fi-rs-shopping-bag-add"></i>
-              </a>
+                </a>
+                {% if hot_product.stock == 0 %}
+              <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
+            {% endif %}
             </div>
           </div>
           {% endfor %}
@@ -157,19 +168,29 @@
                 <span class="new__price">रु{{ normal_product.price_after_discount }}</span>
                 <span class="old__price">रु{{ normal_product.price }}</span>
               </div>
-              <a
+                <a
                 href="#"
-                hx-post="{% url "add-remove-cart" normal_product.slug %}"
-                hx-target="body"
-                hx-swap="none"
-                hx-trigger="click"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                class="action__btn cart__btn"
-                aria-label="Add To Cart"
-                data-product-slug="{{ normal_product.slug }}"
-              >
+                {% if normal_product.stock == 0 %}
+                  class="action__btn cart__btn disabled"
+                  aria-label="Out Of Stock"
+                  tabindex="-1"
+                  style="pointer-events: none; opacity: 0.5;"
+                {% else %}
+                  hx-post="{% url 'add-remove-cart' normal_product.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  class="action__btn cart__btn"
+                  aria-label="Add To Cart"
+                  data-product-slug="{{ normal_product.slug }}"
+                {% endif %}
+                >
                 <i class="fi fi-rs-shopping-bag-add"></i>
-              </a>
+                </a>
+                {% if normal_product.stock == 0 %}
+              <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
+            {% endif %}
             </div>
           </div>
           {% endfor %}
@@ -241,19 +262,29 @@
                 <span class="new__price">रु{{ popular_product.price_after_discount }}</span>
                 <span class="old__price">रु{{ popular_product.price }}</span>
               </div>
-              <a
+                <a
                 href="#"
-                hx-post="{% url "add-remove-cart" popular_product.slug %}"
-                hx-target="body"
-                hx-swap="none"
-                hx-trigger="click"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                class="action__btn cart__btn"
-                aria-label="Add To Cart"
-                data-product-slug="{{ normal_product.slug }}"
-              >
+                {% if popular_product.stock == 0 %}
+                  class="action__btn cart__btn disabled"
+                  aria-label="Out Of Stock"
+                  tabindex="-1"
+                  style="pointer-events: none; opacity: 0.5;"
+                {% else %}
+                  hx-post="{% url 'add-remove-cart' popular_product.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  class="action__btn cart__btn"
+                  aria-label="Add To Cart"
+                  data-product-slug="{{ popular_product.slug }}"
+                {% endif %}
+                >
                 <i class="fi fi-rs-shopping-bag-add"></i>
-              </a>
+                </a>
+                {% if popular_product.stock == 0 %}
+              <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
+            {% endif %}
             </div>
           </div>
 
@@ -326,19 +357,29 @@
                 <span class="new__price">रु{{ new_arrival.price_after_discount }}</span>
                 <span class="old__price">रु{{ new_arrival.price }}</span>
               </div>
-              <a
+                <a
                 href="#"
-                hx-post="{% url "add-remove-cart" new_arrival.slug %}"
-                hx-target="body"
-                hx-swap="none"
-                hx-trigger="click"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                class="action__btn cart__btn"
-                aria-label="Add To Cart"
-                data-product-slug="{{ normal_product.slug }}"
-              >
+                {% if new_arrival.stock == 0 %}
+                  class="action__btn cart__btn disabled"
+                  aria-label="Out Of Stock"
+                  tabindex="-1"
+                  style="pointer-events: none; opacity: 0.5;"
+                {% else %}
+                  hx-post="{% url 'add-remove-cart' new_arrival.slug %}"
+                  hx-target="body"
+                  hx-swap="none"
+                  hx-trigger="click"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  class="action__btn cart__btn"
+                  aria-label="Add To Cart"
+                  data-product-slug="{{ new_arrival.slug }}"
+                {% endif %}
+                >
                 <i class="fi fi-rs-shopping-bag-add"></i>
-              </a>
+                </a>
+                {% if new_arrival.stock == 0 %}
+              <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
+            {% endif %}
             </div>
           </div>
           

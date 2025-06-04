@@ -33,20 +33,13 @@ from decimal import Decimal
 from django.http import HttpResponseNotFound
 from django.db.models import Avg
 # All the function call returning the objects are at models
-##! lodind key from .env file
-from dotenv import load_dotenv
-load_dotenv()
-CLOUDFLARE_SECRET_KEY = os.getenv("CLOUDFLARE_TURNSTILE_SECRET")
-DEEPSEEK_R1_SECRET = os.getenv("DEEPSEEK_R1_SECRET")
 from django.conf import settings
 from paypal.standard.forms import PayPalPaymentsForm
 from django.urls import reverse
 from django.template.loader import render_to_string  # Add this import at the top
 from django.views.decorators.csrf import csrf_exempt
 import logging
-
 logger = logging.getLogger(__name__)
-
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.http import HttpResponse
@@ -57,10 +50,20 @@ from django.utils.crypto import get_random_string
 from django.conf import settings
 from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.hashers import make_password
+from django.conf.urls import handler404
+##! lodind key from .env file
+from dotenv import load_dotenv
+load_dotenv()
+CLOUDFLARE_SECRET_KEY = os.getenv("CLOUDFLARE_TURNSTILE_SECRET")
+DEEPSEEK_R1_SECRET = os.getenv("DEEPSEEK_R1_SECRET")
+
 ##! home page view
 def home(request):
     colors=['light-pink','light-orange','light-green','light-blue','light-red', 'light-purple', 'light-yellow', 'light-cyan']
-    products=list(Product.objects.all())
+    # products=list(Product.objects.all())
+    products=Product.get_products()
+    
     for product in products:
         if product.is_hot:
             product.class_color=random.choice(colors)
@@ -90,7 +93,7 @@ def home(request):
     return render(request, 'shopapp/index.html', context)
 
 def shop(request):
-    products = Product.objects.all()
+    products = Product.get_products()
     # Get current compare items from session
     compare_items = request.session.get('compare_items', [])
     context = {
@@ -257,6 +260,7 @@ def calculate_page_range(paginator, current_page):
         return range(paginator.num_pages - 6, paginator.num_pages + 1)
     
     return range(current_page - 3, current_page + 4)
+
 ##! cloud flair captcha
 def verify_turnstile(token):
     secret_key = CLOUDFLARE_SECRET_KEY
@@ -286,20 +290,18 @@ def login(request):
                     auth_login(request, user)
                     return redirect('home')
                 else:
-                    context['message'].append("Invalid credentials")
+                    messages.error(request,"Invalid credentials")
             except User.DoesNotExist:
-                context['message'].append("No account found with this email")
-            return JsonResponse({"message": "Form submitted successfully!"})
+                messages.error(request,"No account found with this email")
         else:
-            return JsonResponse({"error": "CAPTCHA failed!"}, status=400)
+            messages.error(request, "CAPTCHA verification failed. Please try again.")
     return render(request, 'shopapp/login-register.html', context)
-
+      
 ##! Custome made signup page view
 def signup(request):
     context = {
         'is_login': False,
         'is_register': True,
-        'message': []
     }
     if request.method == 'POST':
         token = request.POST.get("cf-turnstile-response")
@@ -309,30 +311,30 @@ def signup(request):
             email = request.POST.get('email')
         # Email validation
             if not re.fullmatch(r'^[A-Za-z][A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$', email):
-                context['message'].append("Invalid email format. Email cannot start with a number.")
+                messages.error(request,"Invalid email format. Email cannot start with a number.")
                 return render(request, 'shopapp/login-register.html', context)
             password = request.POST.get('password')
             confirm_password = request.POST.get('cpassword')
 
         # Password validation
             if not re.fullmatch(r'(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}', password):
-                context['message'].append("Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.")
+                messages.error(request,"Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.")
                 return render(request, 'shopapp/login-register.html', context)
             if password != confirm_password:
-                context['message'].append("Passwords do not match.")
+                messages.error(request,"Passwords do not match.")
                 return render(request, 'shopapp/login-register.html', context)
             if User.objects.filter(username=username).exists():
-                context['message'].append("Username already taken!")
+                messages.error(request,"Username already taken!")
                 return render(request, 'shopapp/login-register.html', context)
             if User.objects.filter(email=email).exists():
-                context['message'].append("Email already in use!")
+                messages.error(render,"Email already in use!")
                 return render(request, 'shopapp/login-register.html', context)
             user = User.objects.create_user(username=username, email=email, password=password)
             user.save()
             auth_login(request, user)
             return redirect('profile-onboarding')
         else:
-            return JsonResponse({"error": "CAPTCHA failed!"}, status=400)
+            messages.error(request, "CAPTCHA verification failed. Please try again.")
     return render(request, 'shopapp/login-register.html', context)
 
 @login_required
@@ -341,31 +343,34 @@ def user_logout(request):
     return redirect('home')
 
 def contact(request):
-    messages=[]
     breadcrumb_items = [
         {'title': 'Home', 'url': reverse('home')},
         {'title': 'Contact', 'url': None},
-        {'messages':messages}
         # Current page doesn't need URL
     ]
+
     if request.method=="POST":
-        name=request.POST.get('name')
-        email=request.POST.get('email')
-        subject=request.POST.get('subject')
-        message=request.POST.get('message')
-        if not name or len(name) < 3: 
-            messages.append("Name must be at least 3 characters long.") 
-        if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email): 
-            messages.append("Enter a valid email address.") 
-        if not subject or len(subject) < 5: 
-            messages.append("Subject must be at least 5 characters long.") 
-        if not message or len(message) < 10: 
-            messages.append("Message must be at least 10 characters long.") 
+        token = request.POST.get("cf-turnstile-response")
+        verification = verify_turnstile(token)
+        if verification.get("success"):
+            name=request.POST.get('name')
+            email=request.POST.get('email')
+            subject=request.POST.get('subject')
+            message=request.POST.get('message')
+            if not name or len(name) < 3: 
+                messages.error(request,"Name must be at least 3 characters long.") 
+            if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email): 
+                messages.error(request,"Enter a valid email address.") 
+            if not subject or len(subject) < 5: 
+                messages.error(request,"Subject must be at least 5 characters long.") 
+            if not message or len(message) < 10: 
+                messages.error(request,"Message must be at least 10 characters long.") 
+            else:
+                tosave=Contact(name=name,email=email,subject=subject,message=message)
+                tosave.save()
+                messages.success(request,'form submitted sucessfully')
         else:
-            tosave=Contact(name=name,email=email,subject=subject,message=message)
-            tosave.save()
-            messages.append('form submitted sucessfully')
-        
+            messages.error(request,"captcha failed")
     return render(request, 'shopapp/contact.html', {'breadcrumb_items': breadcrumb_items})
 
 @login_required(login_url='login')
@@ -484,16 +489,17 @@ def product_detail(request, slug):
             return JsonResponse({
                 "status": "error", 
                 "message": "Please login to leave a review",
-                "redirect": "/login/"
+                "reload": True
             })
         
         rating = request.POST.get('rating')
         review_text = request.POST.get('review', '').strip()
         
-        if not rating or not review_text:
+        # Fix validation logic
+        if not (rating and int(rating) >= 1 and len(review_text) >= 4):
             return JsonResponse({
                 "status": "error",
-                "message": "Both rating and review are required"
+                "message": "Rating and review required."
             })
         
         try:
@@ -603,14 +609,19 @@ def add_remove_wishlist(request, slug):
             is_liked = True
             
         count = request.user.liked_products.count()
-        
+        action="added" if is_liked else "removed"
         return JsonResponse({
+            ##!for toster
+            "status": "success",
+            "message": f"The product has been {action}",
+            ##!
             'success': True,
             'is_liked': is_liked,
             'wishlist_count': count,
             'wishlist_action':"wishlist_update",
             'product_slug': slug
         })
+     
     ##! To delete from the wishlist
     if request.method == "DELETE":
         product = get_object_or_404(Product, slug=slug)
@@ -619,6 +630,10 @@ def add_remove_wishlist(request, slug):
         
         # Update both the wishlist count and remove the item
         return JsonResponse({
+            ##!for toster
+            "status": "success",
+            "message": f"The product has been removed",
+            ##!
             'success': True,
             'wishlist_count': count,
             'wishlist_action':"wishlist_update",
@@ -648,6 +663,10 @@ def cart(request):
             district = request.POST.get("district")
             city = request.POST.get("city")
             postcode=request.POST.get("postcode")
+            print(province,district,city,postcode)
+            not_updated=False ##!to check is value is selected or not
+            if province=="" or district=="" or city=="":
+                not_updated=True
             if province and district and city and postcode:
                 request.session['shipping_data'] = {
                     'province': province,
@@ -659,6 +678,10 @@ def cart(request):
             request.session.modified = True
             response = JsonResponse({"reload": True})
             response["HX-Refresh"] = "true"
+            if not_updated:
+                messages.error(request, "Shipping information and price have not been updated.")
+            else:
+                messages.success(request, "Shipping information and price have been successfully updated.")
             return response
         elif form_type=="coupon":
             coupon_code=request.POST.get("couponcode")
@@ -720,6 +743,10 @@ def add_remove_cart(request, slug):
         total_price = cart_subtotal + shipping_price
 
         return JsonResponse({
+            ##!for toster
+            "status": "success",
+            "message": f"Product added to cart",
+            ##!
             'success': True,
             'action': 'updated',
             'cart_count': cart_items.count(),
@@ -743,6 +770,10 @@ def add_remove_cart(request, slug):
         count = request.user.cart_items.count()
 
         return JsonResponse({
+            ##!for toster
+            "status": "success",
+            "message": "Product removed from cart",
+            ##!
             'success': True,
             'action': 'removed',
             'cart_count': count,
@@ -856,9 +887,8 @@ def checkout(request):
         city = shipping_data.get('city')
         postcode = shipping_data.get('postcode')
     else:
+        messages.error(request, "Shipping information is missing. Please fill out your shipping details.")
         return redirect('cart')
-
-
     
     context = {
         'address':province+" "+district,
@@ -1191,16 +1221,26 @@ def profile_onboarding(request):
         profile_image = request.FILES.get("profile_image")
 
         if username:
-            request.user.username = username
-            request.user.save()
+            # Username validation: check if already taken (excluding current user)
+            if User.objects.filter(username=username).exclude(pk=request.user.pk).exists():
+                messages.error(request, "Username already taken!")
+            else:
+                request.user.username = username
+                request.user.save()
         if email:
-            request.user.email = email
-            request.user.save()
+            # Email validation: must match pattern and not already in use (excluding current user)
+            if not re.fullmatch(r'^[A-Za-z][A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$', email):
+                messages.error(request, "Invalid email format. Email cannot start with a number.")
+            elif User.objects.filter(email=email).exclude(pk=request.user.pk).exists():
+                messages.error(request, "Email already in use!")
+            else:
+                request.user.email = email
+                request.user.save()
         if phone_number:
             mobile_regex = r"^(97|98)\d{7,8}$"
             landline_regex = r"^(01|04|05|06|07)\d{6,7}$"
             if not (re.match(mobile_regex, phone_number) or re.match(landline_regex, phone_number)):
-                messages.error(request, "Enter a valid phone number.")
+                messages.error(request, "Enter a valid Nepali phone number.")
             else:
                 profile.phone_number = phone_number
         if address:
@@ -1234,21 +1274,33 @@ def forgot_password(request):
             )
             subject = "Password Reset Request"
             text_content = f"Click the link to reset your password: {reset_url}"
+            
+            # Use an externally hosted logo image URL
+            logo_url = "https://i.imgur.com/2kLUNbL.png"
+            
             html_content = f"""
-                <div style="text-align:center;">
-                  <h2>BIKRANTE</h2>
+                <div style="max-width: 600px; margin: auto; font-family: Arial, sans-serif; border-radius: 8px; overflow: hidden; background-color: #f4f4f9; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                  <div style="background-color: #000; padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                    <img src="{logo_url}" alt="BIKRENTE Logo" style="width: 120px; height: auto; margin-bottom: 10px;">
+                    <h1 style="color: #fff; font-size: 24px; margin: 0;">BIKRENTE</h1>
+                  </div>
+                  <div style="padding: 20px; background-color: #ffffff;">
+                    <h2 style="color: #333; font-size: 20px; margin-bottom: 10px;">Password Reset Request</h2>
+                    <p style="color: #555; font-size: 16px; margin-bottom: 20px;">Hello <b>{user.username}</b>,</p>
+                    <p style="color: #555; font-size: 16px; margin-bottom: 20px;">We received a request to reset your password. Click the button below to reset it:</p>
+                    <p style="text-align: center; margin-bottom: 20px;">
+                      <a href="{reset_url}" style="background-color: #4a90e2; color: #fff; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-size: 16px; font-weight: bold;">
+                        Reset Password
+                      </a>
+                    </p>
+                    <p style="color: #555; font-size: 14px; margin-bottom: 20px;">If you did not request this, you can safely ignore this email.</p>
+                  </div>
+                  <div style="background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 12px; color: #777; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                    <p>This link will expire soon for your security.</p>
+                    <p>© {timezone.now().year} BIKRENTE. All rights reserved.</p>
+                    <p>This is an automated email. Please do not reply.</p>
+                  </div>
                 </div>
-                <h2>Password Reset Request</h2>
-                <p>Hello <b>{user.username}</b>,</p>
-                <p>We received a request to reset your password. Click the button below to reset it:</p>
-                <p>
-                  <a href="{reset_url}" style="background:#4a90e2;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;">
-                    Reset Password
-                  </a>
-                </p>
-                <p>If you did not request this, you can safely ignore this email.</p>
-                <br>
-                <small>This link will expire soon for your security.</small>
             """
             email_msg = EmailMultiAlternatives(
                 subject=subject,
@@ -1265,7 +1317,6 @@ def forgot_password(request):
     return render(request, "shopapp/forgot-password.html", {"message": message})
 
 def reset_password(request):
-    from django.contrib.auth.hashers import make_password
     uid = request.GET.get("uid")
     token = request.GET.get("token")
     message = []
@@ -1288,3 +1339,10 @@ def reset_password(request):
         else:
             message.append("Passwords do not match or are too short.")
     return render(request, "shopapp/reset-password.html", {"user": user, "message": message})
+
+def helloworld(request):
+    return render(request,'shopapp/helloworld.html')
+def custom_404(request, exception):
+    return render(request, 'shopapp/includes/caseno404.html', status=404)
+
+handler404 = custom_404

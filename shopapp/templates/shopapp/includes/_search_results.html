@@ -1,3 +1,7 @@
+{% load static %}
+{% block extracss %}
+<link rel="stylesheet/css" href="{% static 'css/search-page.css' %}"
+{% endblock extracss %}
 <section class="products section--lg">
   <div class="container">
     <div class="search-results-header">
@@ -63,6 +67,11 @@
               <a href="{% url 'product-detail' product.slug %}">
                 <h3 class="product__title">{{ product.name }}</h3>
               </a>
+            <div class="product__rating">
+                {% for rating in product.average_rating %}
+                {{ rating|safe }}
+                {% endfor %}
+              </div>
               <div class="product__price flex">
                 <span class="new__price">रु{{ product.price_after_discount }}</span>
                 {% if product.price %}
@@ -70,18 +79,25 @@
                 {% endif %}
               </div>
               <a
-              href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
-              hx-post="{% url "add-remove-cart" product.slug %}"
-              hx-target="body"
-              hx-swap="none"
-              hx-trigger="click"
-              data-product-slug="{{ product.slug }}"
-              class="action__btn cart__btn"
-              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-              aria-label="Add To Cart"
-            >
-              <i class="fi fi-rs-shopping-bag-add"></i>
-            </a>
+                href="#"
+                class="action__btn cart__btn"
+                aria-label="Add To Cart"
+                {% if product.stock > 0 %}
+                hx-post="{% url 'add-remove-cart' product.slug %}"
+                hx-target="body"
+                hx-swap="none"
+                hx-trigger="click"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                data-product-slug="{{ product.slug }}"
+                {% else %}
+                tabindex="-1" aria-disabled="true"
+                style="pointer-events: none; opacity: 0.5;"
+                {% endif %}>
+                <i class="fi fi-rs-shopping-bag-add"></i>
+              </a>
+              {% if product.stock == 0 %}
+              <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
+              {% endif %}
             </div>
           </div>
         {% endfor %}
@@ -176,51 +192,3 @@
   });
   
   </script>
-<style>
-  .search-results-header {
-    display: flex;
-    flex-wrap: wrap; /* Allow wrapping for smaller screens */
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 15px; /* Add spacing between elements */
-  }
-  .filter-form-container {
-    flex: 1; /* Allow the filter form to adjust its size */
-    max-width: 100%; /* Prevent it from exceeding the container width */
-  }
-  .filter-options-row {
-    display: flex;
-    flex-wrap: wrap; /* Allow wrapping for smaller screens */
-    align-items: center;
-    gap: 10px; /* Add spacing between form elements */
-  }
-  .filter-options-row label {
-    flex: 0 0 auto; /* Prevent labels from shrinking */
-    margin-right: 5px;
-  }
-  .filter-options-row input,
-  .filter-options-row select,
-  .filter-options-row button {
-    flex: 1; /* Allow inputs, selects, and buttons to adjust their size */
-    min-width: 100px; /* Set a minimum width for better usability */
-    margin: 0;
-    padding: 5px 10px; /* Add padding for better visibility */
-    border: 1px solid #ccc; /* Add a border to make inputs visible */
-    border-radius: 4px; /* Add rounded corners */
-    background-color: #fff; /* Set a white background */
-    color: #333; /* Set text color */
-  }
-  .filter-options-row input::placeholder {
-    color: #aaa; /* Set placeholder text color */
-  }
-  .filter-options-row button {
-    flex: 0 0 auto; /* Prevent the button from stretching */
-    background-color: #007bff; /* Set button background color */
-    color: #fff; /* Set button text color */
-    border: none; /* Remove button border */
-    cursor: pointer; /* Change cursor to pointer */
-  }
-  .filter-options-row button:hover {
-    background-color: #0056b3; /* Darken button color on hover */
-  }
-</style>

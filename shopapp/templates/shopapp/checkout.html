@@ -10,7 +10,7 @@
         <div class="checkout__container container grid">
           <div class="checkout__group">
             <h3 class="section__title">Billing Details</h3>
-            <form class="form grid" method="POST" >
+            <form id="checkout-form" class="form grid" method="POST" >
 
               {% csrf_token %}
               <input type="text" value="{{ user }}" name="name" placeholder="Name" class="form__input" required />

@@ -24,7 +24,7 @@
                 <th>Price</th>
                 <th>Stock Status</th>
                 <th>Action</th>
-                <th>Rename</th>
+                <th>Remove</th>
               </tr>
             </thead>
             <tbody>
@@ -49,7 +49,28 @@
                   <span class="table__price">${{ product.price }}</span>
                 </td>
                 <td><span class="table__stock">{% if product.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}</span></td>
-                <td><a href="#" class="btn btn--sm">Add to Cart</a></td>
+                <td>
+                  <a
+                    href="#"
+                    {% if product.stock > 0 %}
+                    class="btn btn--sm"
+                    hx-post="{% url 'add-remove-cart' product.slug %}"
+                    hx-target="body"
+                    hx-swap="none"
+                    hx-trigger="click"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    {% else %}
+                    tabindex="-1" aria-disabled="true"
+                    class="btn btn--sm out-of-stock"
+                    {% endif %}>
+                    {% if product.stock == 0 %}
+                    Out of Stock
+                    {% else %}
+                    Add to Cart
+                    {% endif %}
+                  </a>
+                 
+                </td>
                 <td>
                   <a
                     href="#"
@@ -72,32 +93,35 @@
       </section>
     </main>
 
-    <!-- Add this script at the bottom of the template -->
     <script>
     document.addEventListener('htmx:afterRequest', function(evt) {
         if (evt.detail.successful) {
             try {
                 const response = JSON.parse(evt.detail.xhr.response);
                 if (response.success) {
-                    // Remove the product item from wishlist
-                    const itemToRemove = document.getElementById(`wishlist-item-${response.product_slug}`);
-                    if (itemToRemove) {
-                        itemToRemove.remove();
-                    }
+                    if (response.action === 'updated') {
+                        // Update cart count in navbar
+                        const navCartCount = document.getElementById('nav-cart-count');
+                        if (navCartCount && response.cart_count !== undefined) {
+                            navCartCount.textContent = response.cart_count;
+                        }
 
-                    // Update wishlist count in navbar
-                    const navCount = document.getElementById('nav-wishlist-count');
-                    if (navCount) {
-                        navCount.textContent = response.wishlist_count;
-                    }
+                        console.log('Product added to cart:', response.product_slug);
+                    } else if (response.wishlist_action === 'wishlist_update') {
+                        // Remove the product item from wishlist
+                        const itemToRemove = document.getElementById(`wishlist-item-${response.product_slug}`);
+                        if (itemToRemove) {
+                            itemToRemove.remove();
+                        }
 
-                    // If no items left, show empty message
-                    const wishlistContainer = document.querySelector('.products__container');
-                    if (response.count === 0 && wishlistContainer) {
-                        wishlistContainer.innerHTML = '<div class="no-items">Your wishlist is empty</div>';
-                    }
+                        // Update wishlist count in navbar
+                        const navWishlistCount = document.getElementById('nav-wishlist-count');
+                        if (navWishlistCount && response.wishlist_count !== undefined) {
+                            navWishlistCount.textContent = response.wishlist_count;
+                        }
 
-                    console.log('Product removed from wishlist:', response.product_slug);
+                        console.log('Product removed from wishlist:', response.product_slug);
+                    }
                 }
             } catch (e) {
                 console.error('Error processing response:', e);

@@ -6,20 +6,27 @@
         <p>{{ product.description }}</p>
         <p><strong>Price:</strong> {{ product.price }}</p>
         <button 
-        class="btn btn-primary"
-        href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
-        hx-post="{% url "add-remove-cart" product.slug %}"
-        hx-target="body"
-        hx-swap="none"
-        hx-trigger="click"
-        data-product-slug="{{ product.slug }}"
-        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-        aria-label="Add To Cart"
-     
-        
+            {% if product.stock < 1 %}
+                disabled
+                class="btn btn-primary out-of-stock"
+            {% else %}
+                class="btn btn-primary"
+                href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
+                hx-post="{% url 'add-remove-cart' product.slug %}"
+                hx-target="body"
+                hx-swap="none"
+                hx-trigger="click"
+                data-product-slug="{{ product.slug }}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+            {% endif %}
+            aria-label="Add To Cart"
     >
     <i class="fi fi-rs-shopping-bag-add"></i>
+    {% if product.stock < 1 %}
+    Out Of Stock
+    {% else %}
     Add to Cart
+    {% endif %}
     </button>
     </div>
 

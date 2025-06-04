@@ -5,254 +5,7 @@
 <head>
     <title>Invoice #{{ order.id }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        @media print {
-            .no-print {
-                display: none;
-            }
-            @page {
-                margin: 0;
-                size: A4;
-            }
-            body {
-                margin: 1.6cm;
-            }
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f8f9fa;
-            margin: 0;
-            padding: 0 20px;
-        }
-
-        .print-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            z-index: 1000;
-        }
-
-        .print-button:hover {
-            background: #2980b9;
-        }
-
-        .invoice-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* Add all the existing styles from your checkout table */
-        .order__table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0px 0;
-        }
-
-        .order__table th {
-            background: #f8f9fa;
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        .order__img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .table__title {
-            margin: 0;
-            font-size: 16px;
-            color: #333;
-        }
-
-        .table__quantity {
-            color: #666;
-            margin: 5px 0;
-        }
-
-        .table__price {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .order__subtitle {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .order__grand-total {
-            font-size: 18px;
-            font-weight: 700;
-            color: #3498db;
-        }
-
-        /* Add these new styles */
-        .invoice-logo {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 190px;  /* Increased from 50px */
-            height: 190px; /* Increased from 50px */
-            object-fit: contain;
-            margin: 0;
-        }
-
-        .invoice-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 2px solid #3498db;
-            position: relative;
-        }
-
-        .store-info, .bill-info {
-            width: 35%;  /* Give fixed width to prevent overlap */
-            z-index: 1;  /* Ensure text stays above logo */
-        }
-
-        .store-info h1 {
-            color: #3498db;
-            margin: 0;
-        }
-
-        .bill-info {
-            text-align: right;
-        }
-
-        .two-columns {
-            display: flex;
-            justify-content: space-between;
-            gap: 40px;
-            margin-bottom: 0px;
-        }
-
-        .column {
-            flex: 1;
-        }
-
-        .details-box {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            min-height: 200px; /* Make both boxes same height */
-        }
-
-        .details-box h3 {
-            color: #3498db;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 16px;
-            text-transform: uppercase;
-        }
-
-        .details-box p {
-            margin: 5px 0;
-            color: #555;
-        }
-
-        .details-box strong {
-            color: #333;
-        }
-
-        .details-box .detail-row {
-            display: flex;
-            margin-bottom: 8px;
-        }
-
-        .details-box .label {
-            width: 120px;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .details-box .value {
-            color: #333;
-            flex: 1;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: 12px;
-        }
-
-        .status-completed {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-cancelled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .discount-badge {
-            display: inline-block;
-            background: #ff6b6b;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-left: 8px;
-        }
-
-        .footer {
-            margin-top: 40px;
-            text-align: center;
-            padding: 30px 0;
-        }
-
-        .footer-logo {
-            width: 120px;
-            margin: 0 auto 20px;
-            display: block;
-        }
-
-        .footer p {
-            margin: 8px 0;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .footer .website {
-            color: #3498db;
-            font-weight: 500;
-            text-decoration: none;
-        }
-    </style>
+<link rel="stylesheet" href=" {% static 'css/bill-gen-page.css' %} "> 
 </head>
 <body>
     {% if show_print %}
@@ -264,9 +17,9 @@
     <div class="invoice-container">
         <div class="header-content">
             <div class="store-info">
-                <h1>BIKRANTE</h1>
+                <h1>BIKRENTE</h1>
                 <p>Your Trusted Shopping Partner</p>
-                <p>123 Commerce Street, Kathmandu</p>
+                <p>Hetauda-4-Schoolroad,Makwanpur,Nepal</p>
                 <p>Phone: +977-9876543210</p>
             </div>
             <img src="{% static 'images/logo.svg' %}" alt="Bikrante Logo" class="invoice-logo">
@@ -313,14 +66,18 @@
                     <div class="detail-row">
                         <span class="label">Status:</span>
                         <span class="value">
-                            <span class="status-badge status-{{ order.status|lower }}">
+                            <span class="status-badge status-{{ order.get_payment_status|lower }}">
                                 {{ order.get_payment_status }}
                             </span>
                         </span>
                     </div>
                     <div class="detail-row">
                         <span class="label">Order Status:</span>
-                        <span class="value">{{ order.status }}</span>
+                        <span class="value">
+                           <span class="status-badge status-{{ order.status|lower }}"> 
+                            {{ order.status }}
+                           </span>
+                        </span>
                     </div>
                     {% if order.order_note %}
                     <div class="detail-row">
@@ -385,10 +142,10 @@
         </table>
 
         <div class="footer">
-            <img src="{% static 'images/logo.svg' %}" alt="Bikrante Logo" class="footer-logo">
+            <img src="{% static 'images/logo.svg' %}" alt="Bikrente Logo" class="footer-logo">
             <p><strong>Thank you for shopping with us!</strong></p>
-            <p>For any queries, please contact us at <strong>support@bikrante.com</strong></p>
-            <p class="website">www.bikrante.com</p>
+            <p>For any queries, please contact us at <strong>support@bikrente.com</strong></p>
+            <p class="website">www.bikrente.com</p>
         </div>
     </div>
 </body>

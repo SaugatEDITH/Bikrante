@@ -30,6 +30,7 @@
               >
                 <i class="fi fi-rs-eye"></i>
               </a>
+
               <a href="#" 
               href="#"
               hx-post="{% url 'add_remove_wishlist' new_arrival.slug %}"
@@ -63,13 +64,27 @@
               <span class="new__price">{{ new_arrival.price_after_discount }}</span>
               <span class="old__price">{{ new_arrival.price }}</span>
             </div>
+            
             <a
               href="#"
               class="action__btn cart__btn"
               aria-label="Add To Cart"
-            >
+              {% if new_arrival.stock > 0 %}
+                hx-post="{% url 'add-remove-cart' new_arrival.slug %}"
+                hx-target="body"
+                hx-swap="none"
+                hx-trigger="click"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                data-product-slug="{{ new_arrival.slug }}"
+              {% else %}
+                tabindex="-1" aria-disabled="true"
+                style="pointer-events: none; opacity: 0.5;"
+              {% endif %}>
               <i class="fi fi-rs-shopping-bag-add"></i>
             </a>
+            {% if new_arrival.stock == 0 %}
+              <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
+            {% endif %}
           </div>
         </div>
         {% endfor %}
