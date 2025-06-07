@@ -483,6 +483,9 @@ def category_detail(request, slug):
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
     
+    # Fetch related products using the improved method
+    related_products = Product.get_related_products(product)
+
     # Handle review submission via HTMX
     if request.method == "POST" and 'review' in request.POST:
         if not request.user.is_authenticated:
@@ -547,7 +550,6 @@ def product_detail(request, slug):
     user = request.user if request.user.is_authenticated else None
     user_reviews = Review.objects.filter(product=product, user=user).first()
     reviews = Review.objects.filter(product=product).exclude(user=user)
-    
     if user_reviews:
         reviews = [user_reviews] + list(reviews)
 
@@ -563,8 +565,7 @@ def product_detail(request, slug):
             {'title': product.category.name, 'url': product.category.get_absolute_url()},
             {'title': product.name, 'url': None}
         ],
-        'cross_sell_products': product.get_cross_sell_products(),
-        'upsell_products': product.get_upsell_products(),
+        'related_products': related_products,
     }
 
     if request.htmx:

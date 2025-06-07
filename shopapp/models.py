@@ -4,7 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 import re
 from django.forms import ValidationError
 from django.utils import timezone
-from django.db.models import Count, Sum, Avg
+from django.db.models import Count, Sum, Avg, Q
 from datetime import timedelta
 from django.core.files.storage import default_storage
 from django.core.files import File
@@ -14,6 +14,9 @@ from django.db import transaction  # Make sure this import is at the top
 ##! for word like gui type text typing (if also image upload required un comment below and comment up one)
 from ckeditor.fields import RichTextField
 ## from ckeditor_uploader.fields import RichTextUploadingField
+from difflib import SequenceMatcher
+#! Product recommendation system utilities and logic
+
 def generate_slug(title):
     # Convert to lowercase and replace spaces with hyphens
     slug = title.lower().strip().replace(' ', '-')
@@ -199,20 +202,40 @@ class Product(models.Model):
         ).order_by('-like_count')[:limit])
         return cls.add_star_ratings(products)
 
-    def get_cross_sell_products(self, limit=4):
-        """Products from same category that others bought"""
-        products = list(Product.objects.filter(
-            category=self.category
-        ).exclude(id=self.id).order_by('-sales_count')[:limit])
-        return Product.add_star_ratings(products)
+    @classmethod
+    def get_related_products(cls, product, limit=4):
+        """
+        Fetch related products using an advanced algorithm.
+        Factors considered:
+        - Name similarity
+        - Category match
+        - Brand match
+        - Popularity (e.g., number of reviews or sales)
+        """
 
-    def get_upsell_products(self, limit=4):
-        """More expensive products in same category"""
-        products = list(Product.objects.filter(
-            category=self.category,
-            price__gt=self.price
-        ).order_by('price')[:limit])
-        return Product.add_star_ratings(products)
+        def calculate_similarity_score(p):
+            score = 0
+            # Name similarity (weighted heavily)
+            score += SequenceMatcher(None, product.name, p.name).ratio() * 3
+            # Category match
+            if product.category == p.category:
+                score += 2
+            # Brand match
+            if product.brand_name == p.brand_name:
+                score += 1
+            # Popularity (e.g., number of reviews)
+            score += p.reviews.count() * 0.5
+            return score
+
+        # Query for potential related products
+        related_query = Q(category=product.category) | Q(brand_name=product.brand_name)
+        related_products = cls.objects.filter(related_query).exclude(id=product.id).distinct()
+
+        # Sort products by similarity score
+        related_products = sorted(related_products, key=calculate_similarity_score, reverse=True)
+
+        # Limit the number of products
+        return related_products[:limit]
 
     def increment_views(self):
         """Increment view count when product is viewed"""

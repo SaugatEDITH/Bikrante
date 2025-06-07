@@ -218,7 +218,7 @@
     strings: [
         'Collection'
         {% for category in categories %}
-            , '{{ category.name }}'
+            , '{{ category.name|slice:":16" }}{% if category.name|length > 16 %}...{% endif %}'
         {% endfor %}
     ],
     typeSpeed: 95,

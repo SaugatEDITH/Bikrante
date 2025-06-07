@@ -128,7 +128,7 @@
                     hx-post="{% url 'add_remove_wishlist' product.slug %}"
                     hx-target="body"
                     hx-swap="none"
-                    data-product-slug="{{ product.slug }}"
+                    data-wishlist-product-slug="{{ product.slug }}"
                     class="details__action-btn action__btn wishlist-btn {% if request.user.is_authenticated and product in request.user.liked_products.all %}liked{% endif %}"
                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                     aria-label="Add to Wishlist"
@@ -183,70 +183,83 @@
         </div>
       </section>
 
-      <!--=============== PRODUCTS ===============-->
+      <!--=============== RELATED PRODUCTS ===============-->
       <section class="products container section--lg">
-        <h3 class="section__title"><span>Related</span> Products</h3>
-        <div class="products__container grid">
-          {% for product in related_products %}
-          <div class="product__item">
+    <h3 class="section__title"><span>Related</span> Products</h3>
+    <div class="products__container grid">
+        {% for product in related_products %}
+        <div class="product__item">
             <div class="product__banner">
-              <a href="{% url 'product-detail' product.slug %}" class="product__images">
-                <img
-                  src="assets/img/product-1-1.jpg"
-                  alt=""
-                  class="product__img default"
-                />
-                <img
-                  src="assets/img/product-1-2.jpg"
-                  alt=""
-                  class="product__img hover"
-                />
-              </a>
-              <div class="product__actions">
-                <a href="#" class="action__btn" aria-label="Quick View">
-                  <i class="fi fi-rs-eye"></i>
+                <a href="{% url 'product-detail' product.slug %}" class="product__images">
+                    <img src="{{ product.image1.url }}" alt="{{ product.name }}" class="product__img default" />
+                    {% if product.image2 %}
+                    <img src="{{ product.image2.url }}" alt="{{ product.name }}" class="product__img hover" />
+                    {% endif %}
                 </a>
-                <a
-                  href="#"
-                  class="action__btn"
-                  aria-label="Add to Wishlist"
-                >
-                  <i class="fi fi-rs-heart"></i>
-                </a>
-                <a href="#" class="action__btn" aria-label="Compare">
-                  <i class="fi fi-rs-shuffle"></i>
-                </a>
-              </div>
-              <div class="product__badge light-pink">Hot</div>
+                <div class="product__actions">
+                    <a href="#" class="action__btn" aria-label="Quick View"
+                       hx-get="{% url 'product-detail' product.slug %}"
+                       hx-trigger="click"
+                       hx-target="#product-modal-content"
+                       hx-swap="innerHTML">
+                        <i class="fi fi-rs-eye"></i>
+                    </a>
+                    <a href="#" 
+                       hx-post="{% url 'add_remove_wishlist' product.slug %}"
+                       hx-target="body"
+                       hx-swap="none"
+                       hx-trigger="click"
+                       data-wishlist-product-slug="{{ product.slug }}"
+                       class="action__btn wishlist-btn {% if request.user.is_authenticated and product in request.user.liked_products.all %}liked{% endif %}"
+                       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                       aria-label="Add to Wishlist">
+                        <i class="fi fi-rs-heart"></i>
+                    </a>
+                    <a href="{% url 'add-remove-compare' product.slug %}" 
+                       class="action__btn" 
+                       aria-label="Compare">
+                        <i class="fi fi-rs-shuffle"></i>
+                    </a>
+                </div>
             </div>
             <div class="product__content">
-              <span class="product__category">Clothing</span>
-              <a href="details.html">
-                <h3 class="product__title">Colorful Pattern Shirts</h3>
-              </a>
-              <div class="product__rating">
-                <i class="fi fi-rs-star"></i>
-                <i class="fi fi-rs-star"></i>
-                <i class="fi fi-rs-star"></i>
-                <i class="fi fi-rs-star"></i>
-                <i class="fi fi-rs-star"></i>
-              </div>
-              <div class="product__price flex">
-                <span class="new__price">$238.85</span>
-                <span class="old__price">$245.8</span>
-              </div>
-              <a
-                href="#"
-                class="action__btn cart__btn"
-                aria-label="Add To Cart"
-              >
-                <i class="fi fi-rs-shopping-bag-add"></i>
-              </a>
+                <span class="product__category">{{ product.category.name }}</span>
+                <a href="{% url 'product-detail' product.slug %}">
+                    <h3 class="product__title">{{ product.name }}</h3>
+                </a>
+                <div class="product__rating">
+                    {% for rating in product.average_rating %}
+                    {{ rating|safe }}
+                    {% endfor %}
+                </div>
+                <div class="product__price flex">
+                    <span class="new__price">रु{{ product.price_after_discount }}</span>
+                    {% if product.price %}
+                    <span class="old__price">रु{{ product.price }}</span>
+                    {% endif %}
+                </div>
+                <a href="#" class="action__btn cart__btn" aria-label="Add To Cart"
+                   {% if product.stock > 0 %}
+                   hx-post="{% url 'add-remove-cart' product.slug %}"
+                   hx-target="body"
+                   hx-swap="none"
+                   hx-trigger="click"
+                   hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                   data-product-slug="{{ product.slug }}"
+                   {% else %}
+                   tabindex="-1" aria-disabled="true"
+                   style="pointer-events: none; opacity: 0.5;"
+                   {% endif %}>
+                    <i class="fi fi-rs-shopping-bag-add"></i>
+                </a>
+                {% if product.stock == 0 %}
+                <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
+                {% endif %}
             </div>
-          </div>
-          {% endfor %}
         </div>
-      </section>
+        {% endfor %}
+    </div>
+</section>
     </main>
     <script>
 document.addEventListener('htmx:afterRequest', function(evt) {
@@ -260,7 +273,7 @@ document.addEventListener('htmx:afterRequest', function(evt) {
     if (evt.detail.successful) {
         try {
             const response = JSON.parse(evt.detail.xhr.response);
-            if (response.success) { // Handle only cart/wishlist updates
+            if (response.success) {
                 if(response.cart_count !== undefined) {
                     const navCartCount = document.getElementById('nav-cart-count');
                     if(navCartCount) {
@@ -275,7 +288,8 @@ document.addEventListener('htmx:afterRequest', function(evt) {
                 }
                 // Update wishlist button appearance
                 if(response.wishlist_action === "wishlist_update") {
-                    const buttons = document.querySelectorAll(`[data-product-slug="${response.product_slug}"]`);
+                    // Use the same selector as other cards
+                    const buttons = document.querySelectorAll(`[data-wishlist-product-slug="${response.product_slug}"]`);
                     buttons.forEach(btn => {
                         if (response.is_liked) {
                             btn.classList.add('liked');
