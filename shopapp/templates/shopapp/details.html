@@ -187,6 +187,7 @@
       <section class="products container section--lg">
     <h3 class="section__title"><span>Related</span> Products</h3>
     <div class="products__container grid">
+      {% if related_products %}
         {% for product in related_products %}
         <div class="product__item">
             <div class="product__banner">
@@ -258,6 +259,11 @@
             </div>
         </div>
         {% endfor %}
+        {% else %}
+        <div class="no-results">
+            <p>No Related products found</p>
+        </div>
+        {% endif %}
     </div>
 </section>
     </main>

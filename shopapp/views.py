@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 import re, random,os,requests 
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed
-from .models import Category, CategoryDeal, Product,CartItem,Review,Order,OrderItem,Transaction, UserProfile,Contact
+from .models import Category, CategoryDeal, Product,CartItem,Review,Order,OrderItem,Transaction, UserProfile,Contact, NewsletterSubscriber
 from django.urls import reverse
 ##! for create custom highend search querys
 from django.db.models import Q
@@ -93,7 +93,7 @@ def home(request):
     return render(request, 'shopapp/index.html', context)
 
 def shop(request):
-    products = Product.get_products()
+    products = Product.get_products()[::-1]
     # Get current compare items from session
     compare_items = request.session.get('compare_items', [])
     context = {
@@ -482,7 +482,7 @@ def category_detail(request, slug):
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
-    
+    product.increment_views()
     # Fetch related products using the improved method
     related_products = Product.get_related_products(product)
 
@@ -720,6 +720,17 @@ def add_remove_cart(request, slug):
         quantity = int(request.POST.get(f"quantity-{slug}", 1))
         selected_color = request.POST.get("selected_color", "")
         selected_size = request.POST.get("selected_size", "")
+
+        if quantity > product.stock:
+            return JsonResponse({
+                ##!for toster
+                "status": "error",
+                "message": f"Only {product.stock} items available in stock.",
+                ##!
+                'success': False,
+                'product_slug': slug,
+            })
+
         cart_item, created = CartItem.objects.get_or_create(
             user=request.user, 
             product=product,
@@ -1266,56 +1277,71 @@ def profile_onboarding(request):
 def forgot_password(request):
     message = []
     if request.method == "POST":
-        email = request.POST.get("email")
-        try:
-            user = User.objects.get(email=email)
-            token = default_token_generator.make_token(user)
-            reset_url = request.build_absolute_uri(
-                reverse("reset-password") + f"?uid={user.pk}&token={token}"
-            )
-            subject = "Password Reset Request"
-            text_content = f"Click the link to reset your password: {reset_url}"
-            
-            # Use an externally hosted logo image URL
-            logo_url = "https://i.imgur.com/2kLUNbL.png"
-            
-            html_content = f"""
-                <div style="max-width: 600px; margin: auto; font-family: Arial, sans-serif; border-radius: 8px; overflow: hidden; background-color: #f4f4f9; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-                  <div style="background-color: #000; padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
-                    <img src="{logo_url}" alt="BIKRENTE Logo" style="width: 120px; height: auto; margin-bottom: 10px;">
-                    <h1 style="color: #fff; font-size: 24px; margin: 0;">BIKRENTE</h1>
-                  </div>
-                  <div style="padding: 20px; background-color: #ffffff;">
-                    <h2 style="color: #333; font-size: 20px; margin-bottom: 10px;">Password Reset Request</h2>
-                    <p style="color: #555; font-size: 16px; margin-bottom: 20px;">Hello <b>{user.username}</b>,</p>
-                    <p style="color: #555; font-size: 16px; margin-bottom: 20px;">We received a request to reset your password. Click the button below to reset it:</p>
-                    <p style="text-align: center; margin-bottom: 20px;">
-                      <a href="{reset_url}" style="background-color: #4a90e2; color: #fff; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-size: 16px; font-weight: bold;">
-                        Reset Password
-                      </a>
-                    </p>
-                    <p style="color: #555; font-size: 14px; margin-bottom: 20px;">If you did not request this, you can safely ignore this email.</p>
-                  </div>
-                  <div style="background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 12px; color: #777; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
-                    <p>This link will expire soon for your security.</p>
-                    <p>© {timezone.now().year} BIKRENTE. All rights reserved.</p>
-                    <p>This is an automated email. Please do not reply.</p>
-                  </div>
-                </div>
-            """
-            email_msg = EmailMultiAlternatives(
-                subject=subject,
-                body=text_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[email],
-            )
-            email_msg.attach_alternative(html_content, "text/html")
-            email_msg.send()
-            message.append("If an account with that email exists, a password reset link has been sent.")
-        except User.DoesNotExist:
-            # Do not reveal if the email exists for security reasons
-            message.append("If an account with that email exists, a password reset link has been sent.")
-    return render(request, "shopapp/forgot-password.html", {"message": message})
+        # Fix: Use the correct POST key for Turnstile response
+        token = request.POST.get("cf-turnstile-response") or request.POST.get("cf_turnstile_response")
+        if not token:
+            message.append("Captcha verification failed! Please try again.")
+            return render(request, "shopapp/forgot-password.html", {"message": message})
+        verification = verify_turnstile(token)
+        if verification.get("success"):
+            email = request.POST.get("email")
+            # Email validation
+            if not re.fullmatch(r'^[A-Za-z][A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$', email):
+                messages.error(request, "Invalid email format. Email cannot start with a number.")
+                return render(request, "shopapp/forgot-password.html", {"message": message})
+            try:
+                user = User.objects.get(email=email)
+                token = default_token_generator.make_token(user)
+                reset_url = request.build_absolute_uri(
+                    reverse("reset-password") + f"?uid={user.pk}&token={token}"
+                )
+                subject = "Password Reset Request"
+                text_content = f"Click the link to reset your password: {reset_url}"
+                
+                # Use an externally hosted logo image URL
+                logo_url = "https://i.imgur.com/2kLUNbL.png"
+                
+                html_content = f"""
+                    <div style="max-width: 600px; margin: auto; font-family: Arial, sans-serif; border-radius: 8px; overflow: hidden; background-color: #f4f4f9; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                    <div style="background-color: #000; padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                        <img src="{logo_url}" alt="BIKRENTE Logo" style="width: 120px; height: auto; margin-bottom: 10px;">
+                        <h1 style="color: #fff; font-size: 24px; margin: 0;">BIKRENTE</h1>
+                    </div>
+                    <div style="padding: 20px; background-color: #ffffff;">
+                        <h2 style="color: #333; font-size: 20px; margin-bottom: 10px;">Password Reset Request</h2>
+                        <p style="color: #555; font-size: 16px; margin-bottom: 20px;">Hello <b>{user.username}</b>,</p>
+                        <p style="color: #555; font-size: 16px; margin-bottom: 20px;">We received a request to reset your password. Click the button below to reset it:</p>
+                        <p style="text-align: center; margin-bottom: 20px;">
+                        <a href="{reset_url}" style="background-color: #4a90e2; color: #fff; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-size: 16px; font-weight: bold;">
+                            Reset Password
+                        </a>
+                        </p>
+                        <p style="color: #555; font-size: 14px; margin-bottom: 20px;">If you did not request this, you can safely ignore this email.</p>
+                    </div>
+                    <div style="background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 12px; color: #777; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                        <p>This link will expire soon for your security.</p>
+                        <p>© {timezone.now().year} BIKRENTE. All rights reserved.</p>
+                        <p>This is an automated email. Please do not reply.</p>
+                    </div>
+                    </div>
+                """
+                email_msg = EmailMultiAlternatives(
+                    subject=subject,
+                    body=text_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[email],
+                )
+                email_msg.attach_alternative(html_content, "text/html")
+                email_msg.send()
+                message.append("If an account with that email exists, a password reset link has been sent.")
+            except User.DoesNotExist:
+                # Do not reveal if the email exists for security reasons
+                message.append("If an account with that email exists, a password reset link has been sent.")
+            return render(request, "shopapp/forgot-password.html", {"message": message})
+        else:
+            message.append("Captcha failed!")
+            return render(request, "shopapp/forgot-password.html", {"message": message})
+    return render(request, "shopapp/forgot-password.html")
 
 def reset_password(request):
     uid = request.GET.get("uid")
@@ -1347,3 +1373,20 @@ def custom_404(request, exception):
     return render(request, 'shopapp/includes/caseno404.html', status=404)
 
 handler404 = custom_404
+
+def subscribe_newsletter(request):
+    """
+    Handles newsletter subscription with HTMX support.
+    """
+    if request.method == "POST":
+        email = request.POST.get("email")
+        email_regex = r'^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z{2,}$'
+        if email and re.match(email_regex, email):
+            subscriber, created = NewsletterSubscriber.objects.get_or_create(email=email)
+            if created:
+                return HttpResponse('<p class="newsletter__description success-message">Subscribed successfully!</p>')
+            else:
+                return HttpResponse('<p class="newsletter__description info-message">Already subscribed.</p>')
+        else:
+            return HttpResponse('<p class="newsletter__description error-message">Invalid email address.</p>', status=400)
+    return HttpResponse('<p class="newsletter__description error-message">Invalid request.</p>', status=400)

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Review, Order, OrderItem, UserProfile,Transaction,CategoryDeal,Contact
+from .models import Category, Product, Review, Order, OrderItem, UserProfile,Transaction,CategoryDeal,Contact,NewsletterSubscriber
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -50,3 +50,4 @@ admin.site.register(UserProfile)
 admin.site.register(Transaction)
 admin.site.register(CategoryDeal)
 admin.site.register(Contact)
+admin.site.register(NewsletterSubscriber)

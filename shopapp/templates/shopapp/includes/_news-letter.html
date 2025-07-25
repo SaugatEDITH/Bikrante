@@ -7,21 +7,21 @@
           alt=""
           class="newsletter__icon"
         />
-     
-
         Sign in to Newsletter
-        
       </h3>
       <p class="newsletter__description">
         ...and receive latest update on Bikrente.
       </p>
-      <form action="" class="newsletter__form">
-        <input
-          type="text"
-          placeholder="Enter Your Email"
-          class="newsletter__input"
-        />
-        <button type="submit" class="newsletter__btn">Subscribe</button>
+      <form action="{% url 'subscribe-newsletter' %}" method="POST" class="newsletter__form" hx-post="{% url 'subscribe-newsletter' %}" hx-trigger="submit" hx-target=".newsletter__description" hx-swap="outerHTML">
+            {% csrf_token %}
+            <input
+                type="email"  
+                name="email"
+                placeholder="Enter Your Email"
+                class="newsletter__input"
+                required
+            />
+            <button type="submit" class="newsletter__btn">Subscribe</button>
       </form>
     </div>
   </section>

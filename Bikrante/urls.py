@@ -22,7 +22,8 @@ from django.conf.urls import handler404
 from shopapp.views import custom_404
 
 urlpatterns = [
-    
+     path('jet/', include('jet.urls', 'jet')),  # Jet base admin UI
+    path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # optional dashboard
     path('admin/', admin.site.urls),
     path('', include('shopapp.urls')),
         ##! for word like gui type text typing

@@ -32,18 +32,16 @@ SECRET_KEY = 'django-insecure-v+7!67j=x!e!xhfg(csz271#z@w1(td$^10y%_z(m$9g8p@&xk
 DEBUG = True
 
 ALLOWED_HOSTS = [
- "192.168.1.66",
- "localhost",
- "127.0.0.1"
- "*"
-    
+ "*" 
 ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
+    # 'jazzmin',
+    'jet.dashboard',  # this should go BEFORE 'jet'
+    'jet',             # Django JET UI
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,9 +54,9 @@ INSTALLED_APPS = [
     'django_htmx',##!for django-htmx
     'paypal.standard.ipn',  #! Add this line for PayPal IPN
 ]
-JAZZMIN_SETTINGS = {
-    "theme": "darkly",  # Enable Dark Mode
-}
+# JAZZMIN_SETTINGS = {
+#     "theme": "darkly",  # Enable Dark Mode
+# }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -83,7 +81,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                'django.contrib.messages.context_processors.messages',  
             ],
         },
     },
@@ -208,3 +206,9 @@ EMAIL_HOST_USER = EMAIL  # your Gmail address
 EMAIL_HOST_PASSWORD = PASSKEY  # the 16-character app password from Google
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL
+
+#! for django jet
+JET_DASHBOARD_APP = 'shopapp'
+JET_DASHBOARD_ENABLE = True
+JET_INDEX_DASHBOARD = 'shopapp.dashboard.CustomIndexDashboard'
+JET_DEFAULT_INDEX_DASHBOARD = 'shopapp.dashboard.CustomIndexDashboard'

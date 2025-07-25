@@ -70,6 +70,12 @@ class Category(models.Model):
             self.slug = generate_slug(self.name)
         super().save(*args, **kwargs)
 
+        # Update the price of products in this category if discount percentage changes
+        if self.category_discount_apply:
+            for product in self.products.all():
+                product.update_discount_price()
+                product.save()
+
     def get_absolute_url(self):
         return reverse('category-detail', kwargs={'slug': self.slug})
 
@@ -479,3 +485,11 @@ class Contact(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
+
+class NewsletterSubscriber(models.Model):
+    email = models.EmailField(unique=True)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+    

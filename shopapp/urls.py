@@ -33,5 +33,6 @@ urlpatterns = [
     path('generate-bill/<int:order_id>/', views.generate_bill, name='generate-bill'),
     path('forgot-password/', views.forgot_password, name='forgot-password'),
     path('reset-password/', views.reset_password, name='reset-password'),
-    path('helloworld/',views.helloworld,name="helloworld")
+    path('helloworld/',views.helloworld,name="helloworld"),
+    path("subscribe-newsletter/", views.subscribe_newsletter, name="subscribe-newsletter"),
 ]
