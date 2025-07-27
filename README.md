@@ -48,8 +48,21 @@ python manage.py migrate
 ```bash
 python manage.py createsuperuser
 ```
+### 6. Setup Environment Variables in .env File
+```.env
+EMAIL = "SomethingSomething.example.com"
+PASSKEY="SomethingSomething"
+CLOUDFLARE_SECRET_KEY = "SomethingSomethingSomething"
+```
+- EMAIL and PASSKEY: For sending emails (e.g., registration, password reset).
+- CLOUDFLARE_SECRET_KEY: For CAPTCHA verification using Cloudflare Turnstile.
+> **Note:** We have integrated Zipher AI using an iframe for multilingual chatbot-based search functionality.You do not need to set up a custom LLM API like DeepSeek unless you want to host your own model. If you plan to replace Zipher with your own LLM (e.g., DeepSeek), uncomment the related backend code and add:
+```.env
+DEEPSEEK_R1_SECRET="SomethingSomething"
 
-### 6. Start Development Server
+```
+
+### 7. Start Development Server
 
 ```bash
 python manage.py runserver
@@ -57,7 +70,7 @@ python manage.py runserver
 
 Visit: `http://localhost:8000/` the 127.0.0.1:8000 wont work properly because Trunstile havent configured for that. 
 
-### 7. Access Admin Panel
+### 8. Access Admin Panel
 
 Go to: `http://localhost:8000/admin/`
 
