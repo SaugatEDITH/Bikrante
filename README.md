@@ -110,7 +110,7 @@ bikrente/
 
 ## 📧 Contact
 
-- Email: info@bikrente.com
+- Email: [bikrente@saikripa.com.np](mailto:bikrente@saikripa.com.np)
 - GitHub Issues: [Submit a Bug](https://github.com/SaugatEDITH/Bikrante/issues)
 
 ---
