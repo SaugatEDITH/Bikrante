@@ -10,7 +10,7 @@
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/bikrente.git
+git clone https://github.com/SaugatEDITH/Bikrante.git
 cd bikrente
 ```
 
@@ -64,3 +64,55 @@ Go to: `http://localhost:8000/admin/`
 Login with your superuser credentials.
 
 ---
+
+## 🧪 Features
+
+- ✅ Product listing, cart, checkout
+- 🔒 Secure login/logout/signup
+- 📦 Order & Inventory Management
+- 🧾 PDF Invoice Generation
+- 🔍 Advanced Search & Filters
+- 🤖 Zipher AI Chatbot and Smart Search
+- 🎯 Trending / Popular / Top-selling Products
+- 🌐 Payment Integration: Esewa, Khalti, PayPal
+- 📱 Mobile-responsive UI
+- 🛒 Wishlist and Product Comparison
+- 👤 User & Admin Dashboards
+
+---
+
+## 📁 Project Structure (Simplified)
+
+```
+bikrente/
+├── manage.py
+├── bikrente/             ← Django settings and URLs
+├── shopapp/              ← App: products, cart, orders, etc.
+├── templates/
+├── static/
+├── media/
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 📌 Notes
+
+- Python 3.8+ recommended
+- SQLite used for development
+- To collect static files for production:
+  ```bash
+  python manage.py collectstatic
+  ```
+
+---
+
+## 📧 Contact
+
+- Email: info@bikrente.com
+- GitHub Issues: [Submit a Bug](https://github.com/SaugatEDITH/Bikrante/issues)
+
+---
+
+🚀 Happy Coding!
