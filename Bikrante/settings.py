@@ -33,7 +33,6 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
  "*",
- "https://bikrante.onrender.com" 
 ]
 
 
@@ -70,7 +69,7 @@ MIDDLEWARE = [
     "django_htmx.middleware.HtmxMiddleware", ##!for django-htmx
 
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 ROOT_URLCONF = 'Bikrante.urls'
 
 TEMPLATES = [
@@ -152,6 +151,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
