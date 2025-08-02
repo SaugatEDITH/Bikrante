@@ -32,7 +32,8 @@ SECRET_KEY = 'django-insecure-v+7!67j=x!e!xhfg(csz271#z@w1(td$^10y%_z(m$9g8p@&xk
 DEBUG = False
 
 ALLOWED_HOSTS = [
- "*" 
+ "*",
+ "https://bikrante.onrender.com" 
 ]
 
 
