@@ -40,18 +40,17 @@ from django.template.loader import render_to_string  # Add this import at the to
 from django.views.decorators.csrf import csrf_exempt
 import logging
 logger = logging.getLogger(__name__)
-from django.template.loader import get_template
-from xhtml2pdf import pisa
+# s
 from django.http import HttpResponse
 from io import BytesIO
 from django.utils import timezone
 from django.core.mail import send_mail, EmailMultiAlternatives
-from django.utils.crypto import get_random_string
+# from django.utils.crypto import get_random_string
 from django.conf import settings
 from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.hashers import make_password
-from django.conf.urls import handler404
+# from django.conf.urls import handler404
 ##! lodind key from .env file
 from dotenv import load_dotenv
 load_dotenv()
