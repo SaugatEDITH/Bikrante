@@ -6,112 +6,9 @@
   
   {% include "shopapp/includes/_breadcrumb.html" %}
 
-  <section class="products section--lg">
-    <div class="container">
-      {% if search_text %}
-        <h2 class="section__title">Search Results for "{{ search_text }}"</h2>
-        {% if total_results %}
-          <p class="total__products">Found <span>{{ total_results }}</span> products</p>
-        {% endif %}
-      {% endif %}
-      
-      <div class="products__container grid">
-        {% if products %}
-          {% for product in products %}
-            <div class="product__item">
-              <div class="product__banner">
-                <a href="{% url 'product-detail' product.slug %}" class="product__images">
-                  <img src="{{ product.image1.url }}" alt="{{ product.name }}" class="product__img default" />
-                  {% if product.image2 %}
-                  <img src="{{ product.image2.url }}" alt="{{ product.name }}" class="product__img hover" />
-                  {% endif %}
-                </a>
-        
-                <div class="product__actions">
-                  <a href="#" 
-                    class="action__btn" 
-                    aria-label="Quick View"
-                    hx-get="{% url 'product-detail' product.slug %}"
-                    hx-trigger="click"
-                    hx-target="#product-modal-content"
-                    hx-swap="innerHTML"
-                    >
-                    <i class="fi fi-rs-eye"></i>
-                  </a>
-                  <a
-                    href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
-                    hx-post="{% url 'add_remove_wishlist' product.slug %}"
-                    hx-target="body"
-                    hx-swap="none"
-                    hx-trigger="click"
-                    data-wishlist-product-slug="{{ product.slug }}"
-                    class="action__btn wishlist-btn {% if request.user.is_authenticated and product in request.user.liked_products.all %}liked{% endif %}"
-                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                    aria-label="Add to Wishlist"
-                  >
-                    <i class="fi fi-rs-heart"></i>
-                  </a>
-                  <!-- Change the compare button -->
-                  <a href="{% url 'add-remove-compare' product.slug %}" 
-                     class="action__btn {% if product.slug in compare_items %}active{% endif %}"
-                     aria-label="Compare">
-                      <i class="fi fi-rs-shuffle"></i>
-                  </a>
-                </div>
-                
-                {% if product.is_hot %}
-                  <div class="product__badge {{ product.class_color|default:'light-blue' }}">Hot</div>
-                {% endif %}
-      
-              </div>
-              <div class="product__content">
-                <span class="product__category">{{ product.category.name }}</span>
-                <a href="{% url 'product-detail' product.slug %}">
-                  <h3 class="product__title">{{ product.name }}</h3>
-                </a>
-                <div class="product__rating">
-                  {% for rating in product.average_rating %}
-                  {{ rating|safe }}
-                  {% endfor %}
-                </div>
-                
-                <div class="product__price flex">
-                  <span class="new__price">रु{{ product.price_after_discount }}</span>
-                  {% if product.price %}
-                  <span class="old__price">रु{{ product.price }}</span>
-                  {% endif %}
-                </div>
-                <a
-                  href="#"
-                  class="action__btn cart__btn"
-                  aria-label="Add To Cart"
-                  {% if product.stock > 0 %}
-                  hx-post="{% url 'add-remove-cart' product.slug %}"
-                  hx-target="body"
-                  hx-swap="none"
-                  hx-trigger="click"
-                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                  data-product-slug="{{ product.slug }}"
-                  {% else %}
-                  tabindex="-1" aria-disabled="true"
-                  style="pointer-events: none; opacity: 0.5;"
-                  {% endif %}>
-                  <i class="fi fi-rs-shopping-bag-add"></i>
-                </a>
-                {% if product.stock == 0 %}
-                <span class="out-of-stock-label" style="color: red; font-size: 0.9em;">Out of stock</span>
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
-        {% else %}
-          <div class="no-results">
-            <p>No products available.</p>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-  </section>
+  <div id="shop-results">
+    {% include "shopapp/includes/_shop_results.html" %}
+  </div>
 </main>
 
 <!-- Update the script at the end of the template -->
@@ -171,4 +68,7 @@ document.addEventListener('htmx:afterRequest', function(evt) {
   });
 
 </script>
+{% block extrajs %}
+<script src="{% static 'js/shop-tracking.js' %}"></script>
+{% endblock extrajs %}
 {% endblock content %}

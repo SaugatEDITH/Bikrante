@@ -6,6 +6,7 @@
         <h1 class="home__title">
           Fashion Trending <span>Great</span> <br>
           <span id="element"></span>
+          <span id="typed-data" data-strings='["Collection"{% for category in categories %}, "{{ category.name|slice:":16"|escapejs }}{% if category.name|length > 16 %}...{% endif %}"{% endfor %}]' style="display:none"></span>
         </h1>
         <p class="home__description">
           Save more with deals & Category Discount

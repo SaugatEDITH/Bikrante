@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="{% static "css/htmxactions.css" %}"
+    <link rel="stylesheet" href="{% static "css/htmxactions.css" %}">
     
     <!-- Optional: Add HTMX loading indicator styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -46,11 +46,13 @@
     function openModal() {
         let modal = document.getElementById("product-modal");
         modal.classList.add("active");
+        document.body.classList.add("modal-open");
     }
     
     function closeModal() {
         let modal = document.getElementById("product-modal");
         modal.classList.remove("active");
+        document.body.classList.remove("modal-open");
     }
     
     window.onclick = function(event) {
@@ -59,6 +61,12 @@
             closeModal();
         }
     };
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    });
 </script>
 {% block extracss %}
 
@@ -197,14 +205,27 @@
         if (evt.detail.successful) {
             try {
                 const response = JSON.parse(evt.detail.xhr.response);
-                if (response.status) {
+
+                // If server provided a redirect_url, follow it immediately
+                if (response && response.redirect_url) {
+                    // Optionally show a toast first if message exists
+                    if (response.message) {
+                        toastr.info(response.message);
+                        setTimeout(() => window.location.href = response.redirect_url, 600);
+                        return;
+                    }
+                    window.location.href = response.redirect_url;
+                    return;
+                }
+
+                if (response && response.status) {
                     if (response.status === 'success') {
-                        toastr.success(response.message);
+                        toastr.success(response.message || 'Success');
                         if (response.redirect) {
                             setTimeout(() => window.location.href = response.redirect, 1500);
                         }
                     } else if (response.status === 'error') {
-                        toastr.error(response.message);
+                        toastr.error(response.message || 'Error');
                     }
                 }
             } catch (e) {
@@ -213,17 +234,22 @@
         }
     });
 
-   
+   var typedDataEl = document.getElementById('typed-data');
+   var typedStrings = ["Collection"];
+   if (typedDataEl) {
+        try {
+            var raw = typedDataEl.getAttribute('data-strings');
+            if (raw) typedStrings = JSON.parse(raw);
+        } catch (e) {
+            typedStrings = ["Collection"];
+        }
+   }
+
    var typed = new Typed('#element', {
-    strings: [
-        'Collection'
-        {% for category in categories %}
-            , '{{ category.name|slice:":16" }}{% if category.name|length > 16 %}...{% endif %}'
-        {% endfor %}
-    ],
-    typeSpeed: 95,
-    loop: true,
-});
+        strings: typedStrings,
+        typeSpeed: 95,
+        loop: true,
+   });
 
     </script>
     {% block extrajs %}

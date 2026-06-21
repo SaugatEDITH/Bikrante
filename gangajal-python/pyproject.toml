@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+ 
+[project]
+name = "gangajal"
+version = "0.1.0"
+description = "Gangajal profanity filter (WASM-based)"
+requires-python = ">=3.9"
+dependencies = ["wasmtime"]
+authors = [{ name = "Saugat" }]
+
+[project.urls]
+Repository = "https://github.com/SaugatEDITH/gangajal"
+Bug-Tracker = "https://github.com/SaugatEDITH/gangajal/issues"
+ 
+[tool.setuptools]
+packages = ["gangajal"]
+ 
+[tool.setuptools.package-data]
+gangajal = ["gangajal.wasm", "assets/*"]

@@ -1,18 +1,32 @@
-<section class="breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb">
     <ul class="breadcrumb__list flex container">
         {% for item in breadcrumb_items %}
-        <li>
+        <li class="breadcrumb__item">
             {% if item.url %}
             <a href="{{ item.url }}" class="breadcrumb__link">
+                {% if item.icon %}
+                <i class="{{ item.icon }} breadcrumb__icon" aria-hidden="true"></i>
+                {% elif item.title == 'Home' %}
+                <i class="fi fi-rs-home breadcrumb__icon" aria-hidden="true"></i>
+                {% endif %}
                 {{ item.title|truncatechars:30 }}
             </a>
             {% else %}
-            <span class="breadcrumb__link">
+            <span class="breadcrumb__link breadcrumb__current" aria-current="page">
+                {% if item.icon %}
+                <i class="{{ item.icon }} breadcrumb__icon" aria-hidden="true"></i>
+                {% elif item.title == 'Home' %}
+                <i class="fi fi-rs-home breadcrumb__icon" aria-hidden="true"></i>
+                {% endif %}
                 {{ item.title|truncatechars:30 }}
             </span>
             {% endif %}
         </li>
-        <li><span class="breadcrumb__link separator">&nbsp;>&nbsp;</span></li>
+        {% if not forloop.last %}
+        <li class="breadcrumb__separator" aria-hidden="true">
+            <span class="breadcrumb__sep">›</span>
+        </li>
+        {% endif %}
         {% endfor %}
     </ul>
-</section>
+</nav>

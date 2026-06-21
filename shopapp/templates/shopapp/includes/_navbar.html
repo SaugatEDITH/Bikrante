@@ -60,7 +60,11 @@
           {% endif %}
         </ul>
         <div class="header__search">
-          <form class="search-form" action="{% url "search" %}">
+          <form class="search-form" action="{% url "search" %}"
+                hx-get="{% url 'search' %}"
+                hx-trigger="submit, input changed delay:300ms, change"
+                hx-target="#main-content"
+                hx-swap="innerHTML">
             <div class="search-input-wrapper">
               <button type="button" class="filter__btn" onclick="toggleFilter()">
                 <i class="fas fa-filter"></i>
@@ -71,26 +75,25 @@
                 class="form__input"
                 name="search_text"
                 autocomplete="off"
-                hx-get="{% url 'search' %}"
-                hx-trigger="input changed delay:300ms"
-                hx-target="#main-content"
-                hx-swap="innerHTML"
+                value="{{ request.GET.search_text|default:'' }}"
               />
               <button type="submit" class="search__btn">
                 <img src="{% static 'images/search.png' %}" alt="search icon" class="search-indicator" />
               </button>
               <div id="filterDropdown" class="filter-content">
                 <div class="filter-group">
-                  <label>Price Range:</label>
-                  <input type="number" placeholder="Min Price" name="min_price">
-                  <input type="number" placeholder="Max Price" name="max_price">
+                  <label><i class="fas fa-tags"></i> Price Range:</label>
+                  <div style="display: flex; gap: 8px;">
+                    <input type="number" placeholder="Min" name="min_price" value="{{ request.GET.min_price|default:'' }}">
+                    <input type="number" placeholder="Max" name="max_price" value="{{ request.GET.max_price|default:'' }}">
+                  </div>
                 </div>
                 <div class="filter-group">
-                  <label>Sort By:</label>
+                  <label><i class="fas fa-sort-amount-down"></i> Sort By:</label>
                   <select name="sort">
-                    <option value="">Default</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
+                    <option value="" {% if request.GET.sort == '' or not request.GET.sort %}selected{% endif %}>Default</option>
+                    <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
                   </select>
                 </div>
                 <button type="submit" class="filter-apply">Apply Filters</button>
@@ -104,15 +107,17 @@
             }
             
             // Close dropdown when clicking outside
-            window.onclick = function(event) {
+            document.addEventListener('click', function(event) {
               const dropdown = document.getElementById('filterDropdown');
               const filterBtn = document.querySelector('.filter__btn');
-              
+
+              if (!dropdown || !filterBtn) return;
+
               // Check if click is outside both the dropdown and filter button
               if (!dropdown.contains(event.target) && !filterBtn.contains(event.target)) {
                 dropdown.classList.remove('show');
               }
-            }
+            });
           </script>
         </div>
       </div>

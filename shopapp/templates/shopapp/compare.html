@@ -11,57 +11,96 @@
     <div class="container">
       {% if products %}
         <div class="compare__table">
-          <table>
+          <table class="compare__grid" cellspacing="0" cellpadding="0">
             <tbody>
               <tr>
                 <th>Product Info</th>
                 {% for product in products %}
-                <td>
-                  <a href="{% url 'add-remove-compare' product.slug %}" class="remove__btn">
-                    <i class="fi-rs-trash"></i>
-                  </a>
-                  <a href="{% url 'product-detail' product.slug %}" class="product__name">
-                    <img src="{{ product.image1.url }}" alt="{{ product.name }}" />
-                    <h4>{{ product.name }}</h4>
-                  </a>
+                <td class="compare__product">
+                  <div class="compare__product-card">
+                    <a href="{% url 'add-remove-compare' product.slug %}" class="compare__remove" aria-label="Remove from compare">
+                      <i class="fi-rs-trash"></i>
+                    </a>
+                    <a href="{% url 'product-detail' product.slug %}" class="compare__product-link">
+                      <img src="{{ product.image1.url }}" alt="{{ product.name }}" class="compare__img" />
+                      <div class="compare__title">{{ product.name }}</div>
+                    </a>
+                    <div class="compare__sub">
+                      <div class="compare__price">
+                        <span class="compare__price-new">रु{{ product.price_after_discount }}</span>
+                        <span class="compare__price-old">रु{{ product.price }}</span>
+                      </div>
+                      <div class="compare__stock {% if product.stock > 0 %}in{% else %}out{% endif %}">
+                        {% if product.stock > 0 %}In stock{% else %}Out of stock{% endif %}
+                      </div>
+                    </div>
+                  </div>
                 </td>
+                {% endfor %}
+              </tr>
+              <tr>
+                <th>Category</th>
+                {% for product in products %}
+                <td>{{ product.category.name }}</td>
+                {% endfor %}
+              </tr>
+              <tr>
+                <th>Tags</th>
+                {% for product in products %}
+                <td>{% if product.tags %}{{ product.tags }}{% else %}N/A{% endif %}</td>
                 {% endfor %}
               </tr>
               <tr>
                 <th>Price</th>
                 {% for product in products %}
-                <td>रु{{ product.price }}</td>
+                <td>
+                  <div class="compare__price">
+                    <span class="compare__price-new">रु{{ product.price_after_discount }}</span>
+                    <span class="compare__price-old">रु{{ product.price }}</span>
+                  </div>
+                </td>
                 {% endfor %}
               </tr>
-              
               <tr>
                 <th>Description</th>
                 {% for product in products %}
                 <td>{{ product.description|truncatewords:30 }}</td>
                 {% endfor %}
               </tr>
-
               <tr>
                 <th>Brand</th>
                 {% for product in products %}
                 <td>{{ product.brand_name }}</td>
                 {% endfor %}
               </tr>
-              
               <tr>
                 <th>SKU</th>
                 {% for product in products %}
                 <td>{{ product.sku }}</td>
                 {% endfor %}
               </tr>
-              
+              <tr>
+                <th>Rating</th>
+                {% for product in products %}
+                <td>
+                  <div class="compare__rating">
+                    {% for star in product.calculate_star_rating %}
+                      {{ star|safe }}
+                    {% endfor %}
+                  </div>
+                </td>
+                {% endfor %}
+              </tr>
               <tr>
                 <th>Stock</th>
                 {% for product in products %}
-                <td>{{ product.stock }}</td>
+                <td>
+                  <span class="compare__stock {% if product.stock > 0 %}in{% else %}out{% endif %}">
+                    {% if product.stock > 0 %}{{ product.stock }} available{% else %}Out of stock{% endif %}
+                  </span>
+                </td>
                 {% endfor %}
               </tr>
-
               <tr>
                 <th>Colors</th>
                 {% for product in products %}
@@ -127,7 +166,7 @@
                            min="1" 
                            max="{{ product.stock }}"
                            required>
-                    <button type="submit" class="btn" {% if product.stock == 0 %}disabled style="pointer-events: none; opacity: 0.5;" {% endif %}>
+                    <button type="submit" class="btn" {% if product.stock == 0 %}disabled{% endif %}>
                       {% if product.stock == 0 %}Out of Stock{% else %}Add to Cart{% endif %}
                     </button>
                   </form>
@@ -140,7 +179,7 @@
       {% else %}
         <div class="empty-compare">
           <h3>No products added to compare</h3>
-          <a href="{% url 'shop' %}" class="btn">Go to Shop</a>
+          <a href="{% url 'shop' %}" class="btn btn-primary">Go to Shop</a>
         </div>
       {% endif %}
     </div>
@@ -159,8 +198,10 @@ document.addEventListener('htmx:afterRequest', function(evt) {
                     cartCount.textContent = response.cart_count;
                 }
                 
-                // Show success message
-                alert('Product added to cart successfully!');
+                // Show success message (avoid duplicates with base.html global toaster)
+                if (!response.status && typeof toastr !== 'undefined' && toastr && toastr.success) {
+                    toastr.success('Product added to cart successfully!');
+                }
                 
                 // Reset form
                 evt.detail.elt.reset();
@@ -171,4 +212,5 @@ document.addEventListener('htmx:afterRequest', function(evt) {
     }
 });
 </script>
+
 {% endblock content %}

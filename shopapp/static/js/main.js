@@ -103,12 +103,14 @@ tabs.forEach((tab) => {
       tabsContent.classList.remove("active-tab");
     });
 
-    target.classList.add("active-tab");
+    if (target) {
+      target.classList.add("active-tab");
+    }
 
-    tabs.forEach((tab) => {
-      tab.classList.remove("active-tab");
+    tabs.forEach((t) => {
+      t.classList.remove("active-tab");
     });
 
-    tab.classList.add("active-tab");
+    tab.classList.add("active-tab"); /* clicked tab gets fill */
   });
 });

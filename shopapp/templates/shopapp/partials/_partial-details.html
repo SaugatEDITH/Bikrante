@@ -1,41 +1,108 @@
-<div class="custom-modal-content">
-    {% comment %} <span class="custom-modal-close" onclick="closeModal()">&times;</span> {% endcomment %}
-    <div id="product-modal-content">
-        <h5>{{ product.name }}</h5>
-        <img src="{{ product.image1.url }}" class="img-fluid" alt="{{ product.name }}">
-        <p>{{ product.description }}</p>
-        <p><strong>Price:</strong> {{ product.price }}</p>
-        <button 
-            {% if product.stock < 1 %}
-                disabled
-                class="btn btn-primary out-of-stock"
-            {% else %}
-                class="btn btn-primary"
-                href="{% if user.is_authenticated %}#{% else %}{% url 'login' %}{% endif %}"
-                hx-post="{% url 'add-remove-cart' product.slug %}"
-                hx-target="body"
-                hx-swap="none"
-                hx-trigger="click"
-                data-product-slug="{{ product.slug }}"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-            {% endif %}
-            aria-label="Add To Cart"
-    >
-    <i class="fi fi-rs-shopping-bag-add"></i>
-    {% if product.stock < 1 %}
-    Out Of Stock
-    {% else %}
-    Add to Cart
-    {% endif %}
-    </button>
-    </div>
+<div class="qv">
+    <div class="qv__grid">
+        <div class="qv__media">
+            <div class="qv__main-image">
+                <img src="{{ product.image1.url }}" alt="{{ product.name }}" loading="lazy">
+            </div>
+            <div class="qv__thumbs">
+                {% if product.image2 %}
+                <button type="button" class="qv__thumb" data-qv-img="{{ product.image2.url }}">
+                    <img src="{{ product.image2.url }}" alt="{{ product.name }}" loading="lazy">
+                </button>
+                {% endif %}
+                {% if product.image3 %}
+                <button type="button" class="qv__thumb" data-qv-img="{{ product.image3.url }}">
+                    <img src="{{ product.image3.url }}" alt="{{ product.name }}" loading="lazy">
+                </button>
+                {% endif %}
+                {% if product.image4 %}
+                <button type="button" class="qv__thumb" data-qv-img="{{ product.image4.url }}">
+                    <img src="{{ product.image4.url }}" alt="{{ product.name }}" loading="lazy">
+                </button>
+                {% endif %}
+            </div>
+        </div>
 
+        <div class="qv__info">
+            <div class="qv__header">
+                <div class="qv__title-wrap">
+                    <div class="qv__category">{{ product.category.name }}</div>
+                    <h3 class="qv__title">{{ product.name }}</h3>
+                </div>
+                <a class="qv__details-link" href="{% url 'product-detail' product.slug %}">View details</a>
+            </div>
+
+            <div class="qv__rating">
+                {% for star in product.calculate_star_rating %}
+                    {{ star|safe }}
+                {% endfor %}
+            </div>
+
+            <div class="qv__price">
+                <span class="qv__price-new">रु{{ product.price_after_discount }}</span>
+                {% if product.price %}
+                <span class="qv__price-old">रु{{ product.price }}</span>
+                {% endif %}
+                {% if product.category.discount_percentage %}
+                <span class="qv__badge">{{ product.category.discount_percentage }}% Off</span>
+                {% endif %}
+            </div>
+
+            <div class="qv__meta">
+                <div class="qv__meta-row"><span class="qv__meta-k">Brand</span><span class="qv__meta-v">{{ product.brand_name }}</span></div>
+                <div class="qv__meta-row"><span class="qv__meta-k">SKU</span><span class="qv__meta-v">{{ product.sku }}</span></div>
+                <div class="qv__meta-row"><span class="qv__meta-k">Stock</span><span class="qv__meta-v">{% if product.stock > 0 %}{{ product.stock }} available{% else %}Out of stock{% endif %}</span></div>
+                {% if product.tags %}
+                <div class="qv__meta-row"><span class="qv__meta-k">Tags</span><span class="qv__meta-v">{{ product.tags }}</span></div>
+                {% endif %}
+            </div>
+
+            <div class="qv__desc">{{ product.description|truncatechars:220 }}</div>
+
+            <div class="qv__actions">
+                <form
+                    hx-post="{% url 'add-remove-cart' product.slug %}"
+                    hx-target="body"
+                    hx-swap="none"
+                    class="qv__cart-form"
+                >
+                    {% csrf_token %}
+                    <input type="number" min="1" name="quantity-{{ product.slug }}" class="qv__qty" {% if product.stock < 1 %}value="0" disabled{% else %}value="1"{% endif %}>
+                    <button type="submit" class="qv__btn" {% if product.stock < 1 %}disabled{% endif %}>
+                        {% if product.stock < 1 %}Out of stock{% else %}Add to cart{% endif %}
+                    </button>
+                </form>
+
+                <button
+                    type="button"
+                    hx-post="{% url 'add_remove_wishlist' product.slug %}"
+                    hx-target="body"
+                    hx-swap="none"
+                    data-wishlist-product-slug="{{ product.slug }}"
+                    class="qv__icon-btn wishlist-btn {% if request.user.is_authenticated and product in request.user.liked_products.all %}liked{% endif %}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    aria-label="Add to Wishlist"
+                >
+                    <i class="fi fi-rs-heart"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
+
 <script>
-    if (typeof openModal === "function") {
-        openModal();  // Ensure modal opens after content loads
-    } else {
-        console.error("openModal() function not found!");
-    }
+    (function () {
+        const root = document.querySelector('#product-modal-content');
+        if (!root) return;
+
+        const mainImg = root.querySelector('.qv__main-image img');
+        const thumbs = root.querySelectorAll('[data-qv-img]');
+        thumbs.forEach((btn) => {
+            btn.addEventListener('click', function () {
+                const url = this.getAttribute('data-qv-img');
+                if (url && mainImg) mainImg.src = url;
+            });
+        });
+    })();
 </script>
 

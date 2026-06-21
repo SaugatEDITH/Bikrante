@@ -16,7 +16,7 @@
       <div class="tab__item active-tab" content id="featured">
         <div class="products__container grid">
           {% for hot_product in hot_products %}
-          <div class="product__item">
+          <div class="product__item js-track-product" data-product-id="{{ hot_product.id }}">
             <div class="product__banner">
               <a href="{% url 'product-detail' hot_product.slug %}" class="product__images">
                 <img
@@ -109,7 +109,7 @@
         {% if normal_products %}
 
           {% for normal_product in normal_products %}
-          <div class="product__item">
+          <div class="product__item js-track-product" data-product-id="{{ normal_product.id }}">
             <div class="product__banner">
               <a href="{% url 'product-detail' normal_product.slug %}" class="product__images">
                 <img
@@ -202,16 +202,16 @@
       <div class="tab__item" content id="popular">
         <div class="products__container grid">
           {% for popular_product in popular_products %}
-          <div class="product__item">
+          <div class="product__item js-track-product" data-product-id="{{ popular_product.id }}">
             <div class="product__banner">
-              <a href="" class="product__images">
+              <a href="{% url 'product-detail' popular_product.slug %}" class="product__images">
                 <img
                   src="{{ popular_product.image1.url }}"
-                  alt=""
+                  alt="{{ popular_product.name }}"
                   class="product__img default"
                 />
                 <img
-                  src="{% url 'product-detail' popular_product.slug %}"
+                  src="{{ popular_product.image2.url }}"
                   alt="{{ popular_product.name }}"
                   class="product__img hover"
                 />
@@ -249,9 +249,9 @@
               <div class="product__badge {{ popular_product.class_color|default:'light-pink' }}">Hot</div>
             </div>
             <div class="product__content">
-              <span class="product__category">Clothing</span>
+              <span class="product__category">{{ popular_product.category.name }}</span>
               <a href="{% url 'product-detail' popular_product.slug %}">
-                <h3 class="product__title">Colorful Pattern Shirts</h3>
+                <h3 class="product__title">{{ popular_product.name }}</h3>
               </a>
               <div class="product__rating">
                 {% for rating in popular_product.average_rating %}
@@ -297,7 +297,7 @@
       <div class="tab__item" content id="new-added">
         <div class="products__container grid">
           {% for new_arrival in new_arrivals %}
-          <div class="product__item">
+          <div class="product__item js-track-product" data-product-id="{{ new_arrival.id }}">
             <div class="product__banner">
               <a href="{% url 'product-detail' new_arrival.slug %}" class="product__images">
                 <img
@@ -344,9 +344,9 @@
               <div class="product__badge {{ new_arrival.class_color|default:'light-blue' }} ">{% if new_arrival.is_hot %}Hot{% else %} {{ new_arrival.category.discount_percentage }}  % Off {% endif %}</div>
             </div>
             <div class="product__content">
-              <span class="product__category">Clothing</span>
+              <span class="product__category">{{ new_arrival.category.name }}</span>
               <a href="{% url 'product-detail' new_arrival.slug %}">
-                <h3 class="product__title">Colorful Pattern Shirts</h3>
+                <h3 class="product__title">{{ new_arrival.name }}</h3>
               </a>
               <div class="product__rating">
                 {% for rating in new_arrival.average_rating %}

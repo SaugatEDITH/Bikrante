@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: gangajal
+Version: 0.1.0
+Summary: Gangajal profanity filter (WASM-based)
+Author: Saugat
+Project-URL: Repository, https://github.com/SaugatEDITH/gangajal
+Project-URL: Bug-Tracker, https://github.com/SaugatEDITH/gangajal/issues
+Requires-Python: >=3.9
+Requires-Dist: wasmtime

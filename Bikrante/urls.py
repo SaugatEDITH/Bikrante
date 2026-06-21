@@ -28,8 +28,7 @@ urlpatterns = [
     path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # optional dashboard
     path('admin/', admin.site.urls),
     path('', include('shopapp.urls')),
-        ##! for word like gui type text typing
-    path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('ckeditor5/', include('django_ckeditor_5.urls')),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
 if settings.DEBUG:

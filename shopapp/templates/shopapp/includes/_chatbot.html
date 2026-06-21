@@ -36,7 +36,7 @@
                 </button>
             </div>
         </form> {% endcomment %}
-        <iframe src='https://interfaces.zapier.com/embed/chatbot/cm8yh3h2m000vhigud6pxxv7p' height='600px' width='350px' allow='clipboard-write *' style="border: none;"></iframe>  
+        <div id="zapier-chat-container" style="flex: 1; display: flex;"></div>
     </div>
 </div>
 
@@ -45,18 +45,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatButton = document.querySelector('.chatbot__button');
     const chatBox = document.querySelector('.chatbot__box');
     const closeButton = document.querySelector('.chat__close');
+    /* Not required when using Zapier iframe - elements below don't exist in DOM:
     const messagesList = document.querySelector('.chat__messages');
     const chatForm = document.querySelector('.chat__input-form');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
 
-/*
     function handleMessageSend(e) {
         e.preventDefault();
         const message = chatInput.value.trim();
         
         if (message) {
-            // Show user message
             const userMessage = `
                 <div class="chat__message user__message">
                     <div class="message__content">
@@ -67,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             messagesList.insertAdjacentHTML('beforeend', userMessage);
             
-            // Show loading animation
             const loadingMessage = `
                 <div class="chat__message bot__message loading">
                     <div class="message__content">
@@ -81,25 +79,29 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             messagesList.insertAdjacentHTML('beforeend', loadingMessage);
             
-            // Clear input and scroll
             chatInput.value = '';
             scrollToBottom();
             
-            // Trigger HTMX request manually
             htmx.trigger(chatForm, 'submit');
         }
-    } */
+    }
 
-    // Function to scroll to bottom
     function scrollToBottom() {
         messagesList.scrollTop = messagesList.scrollHeight;
     }
+    */
 
+    let iframeLoaded = false;
     // Chat button toggle
     chatButton.addEventListener('click', () => {
+        if (!iframeLoaded) {
+            const container = document.getElementById('zapier-chat-container');
+            container.innerHTML = "<iframe src='https://interfaces.zapier.com/embed/chatbot/cm8yh3h2m000vhigud6pxxv7p' height='100%' width='100%' allow='clipboard-write *' style='border: none; border-radius: 0 0 20px 20px;'></iframe>";
+            iframeLoaded = true;
+        }
         chatBox.classList.toggle('show');
         chatButton.classList.toggle('active');
-        scrollToBottom();
+        /* scrollToBottom(); */  // Not required for Zapier iframe
     });
 
     closeButton.addEventListener('click', () => {
@@ -107,10 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
         chatButton.classList.remove('active');
     });
 
-    // Handle form submission (both click and enter)
+    /* Not required when using Zapier iframe - chatForm, chatInput, sendButton don't exist:
     chatForm.addEventListener('submit', handleMessageSend);
 
-    // Handle enter key
     chatInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -118,22 +119,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Reset input after HTMX request
     chatForm.addEventListener('htmx:afterRequest', function() {
         chatInput.value = '';
         scrollToBottom();
     });
+    */
 });
+</script>
 
-// Handle HTMX events
+{% comment %}
+// Handle HTMX events - not required when using Zapier iframe
 document.addEventListener('htmx:afterSwap', function() {
     const messagesList = document.querySelector('.chat__messages');
     const loadingMessages = messagesList.querySelectorAll('.loading');
     
-    // Remove loading animations
     loadingMessages.forEach(msg => msg.remove());
     
-    // Scroll to bottom
     messagesList.scrollTop = messagesList.scrollHeight;
 });
-</script> 
+{% endcomment %}

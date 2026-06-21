@@ -1,0 +1,12 @@
+pyproject.toml
+gangajal/__init__.py
+gangajal/gangajal.wasm
+gangajal/validate.py
+gangajal.egg-info/PKG-INFO
+gangajal.egg-info/SOURCES.txt
+gangajal.egg-info/dependency_links.txt
+gangajal.egg-info/requires.txt
+gangajal.egg-info/top_level.txt
+gangajal/assets/badwords.bloom
+gangajal/assets/badwords.hash.bin
+gangajal/assets/meta.json

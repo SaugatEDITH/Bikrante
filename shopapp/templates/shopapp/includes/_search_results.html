@@ -116,24 +116,27 @@
       <div class="pagination">
         {% if products.has_previous %}
           <a class="pagination__link" 
-             hx-get="{% url 'search' %}?search_text={{ search_text }}&page={{ products.previous_page_number }}"
-             hx-target="#search-results">
+             hx-get="{% url 'search' %}?search_text={{ search_text }}&min_price={{ min_price|default:'' }}&max_price={{ max_price|default:'' }}&sort={{ sort|default:'' }}&page={{ products.previous_page_number }}"
+             hx-target="#main-content"
+             hx-swap="innerHTML show:top">
             <i class="fas fa-chevron-left"></i>
           </a>
         {% endif %}
 
         {% for num in page_range %}
           <a class="pagination__link {% if num == current_page %}active{% endif %}"
-             hx-get="{% url 'search' %}?search_text={{ search_text }}&page={{ num }}"
-             hx-target="#search-results">
+             hx-get="{% url 'search' %}?search_text={{ search_text }}&min_price={{ min_price|default:'' }}&max_price={{ max_price|default:'' }}&sort={{ sort|default:'' }}&page={{ num }}"
+             hx-target="#main-content"
+             hx-swap="innerHTML show:top">
             {{ num }}
           </a>
         {% endfor %}
 
         {% if products.has_next %}
           <a class="pagination__link" 
-             hx-get="{% url 'search' %}?search_text={{ search_text }}&page={{ products.next_page_number }}"
-             hx-target="#search-results">
+             hx-get="{% url 'search' %}?search_text={{ search_text }}&min_price={{ min_price|default:'' }}&max_price={{ max_price|default:'' }}&sort={{ sort|default:'' }}&page={{ products.next_page_number }}"
+             hx-target="#main-content"
+             hx-swap="innerHTML show:top">
             <i class="fas fa-chevron-right"></i>
           </a>
         {% endif %}

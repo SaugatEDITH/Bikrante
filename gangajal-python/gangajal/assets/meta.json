@@ -1,0 +1,7 @@
+{
+  "version": 0.1,
+  "hash_algorithm": "sha256",
+  "normalization": "NFKC + lowercase",
+  "tokenization": "\\p{L}+",
+  "bloom_bits": 1048576
+}

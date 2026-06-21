@@ -26,10 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-v+7!67j=x!e!xhfg(csz271#z@w1(td$^10y%_z(m$9g8p@&xk'
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key-for-dev")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
  "*",
@@ -48,9 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shopapp',
-    'ckeditor',  #!for django_ckeditor
-    'ckeditor_uploader', 
+    'shopapp.apps.ShopappConfig',
+    'django_ckeditor_5',  #! CKEditor 5 - modern rich text editor
     'django_htmx',##!for django-htmx
     'paypal.standard.ipn',  #! Add this line for PayPal IPN
 ]
@@ -155,28 +154,40 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-##! CKEditor settings
-CKEDITOR_UPLOAD_PATH = "ckeditor/"
-CKEDITOR_IMAGE_BACKEND = "pillow"
-CKEDITOR_FORCE_JPEG_COMPRESSION = True
-CKEDITOR_IMAGE_QUALITY = 90
-CKEDITOR_CONFIGS = {
+##! CKEditor 5 settings
+CKEDITOR_5_CONFIGS = {
     'default': {
-        'toolbar': 'full',
+        'toolbar': [
+            'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 
+            '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'mediaEmbed',
+            'undo', 'redo', '|', 'sourceEditing'
+        ],
         'height': 300,
         'width': '100%',
-        'removePlugins': 'stylesheetparser',
-        'extraPlugins': ','.join([
-            'uploadimage',
-            'image2',
-            'codesnippet',
-        ]),
-        # Simple table class configuration
-        'table_default_attributes': {
-            'class': 'info__table'
-        }
     },
+    'extends': {
+        'blockToolbar': [
+            'paragraph', 'heading1', 'heading2', 'heading3', '|',
+            'bulletedList', 'numberedList', '|',
+            'blockQuote', 'insertTable', '|',
+            'outdent', 'indent', '|',
+            'undo', 'redo'
+        ],
+        'toolbar': [
+            'heading', '|', 'bold', 'italic', 'underline', 'strikethrough', '|',
+            'link', 'bulletedList', 'numberedList', '|',
+            'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+            'alignment:left', 'alignment:right', 'alignment:center', 'alignment:justify', '|',
+            'blockQuote', 'insertTable', 'mediaEmbed', 'codeBlock', 'htmlEmbed', '|',
+            'outdent', 'indent', '|', 'undo', 'redo', '|', 'sourceEditing'
+        ],
+        'height': 300,
+        'width': '100%',
+    }
 }
+
+# Custom CSS class for tables in CKEditor 5
+CKEDITOR_5_CUSTOM_CSS = ''  # Add custom CSS if needed
 
 # PayPal Settings
 PAYPAL_TEST = True
@@ -213,3 +224,21 @@ JET_DASHBOARD_APP = 'shopapp'
 JET_DASHBOARD_ENABLE = True
 JET_INDEX_DASHBOARD = 'shopapp.dashboard.CustomIndexDashboard'
 JET_DEFAULT_INDEX_DASHBOARD = 'shopapp.dashboard.CustomIndexDashboard'
+
+##! Production Security Settings (enable when deploying with HTTPS)
+# Uncomment these when you have HTTPS enabled in production:
+# SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
+# CSRF_COOKIE_SECURE = True       # Only send CSRF cookie over HTTPS
+# SECURE_SSL_REDIRECT = True      # Redirect all HTTP to HTTPS
+# SECURE_HSTS_SECONDS = 31536000  # Enable HSTS for 1 year
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+# SECURE_BROWSER_XSS_FILTER = True
+# SECURE_CONTENT_TYPE_NOSNIFF = True
+# X_FRAME_OPTIONS = 'DENY'        # Prevent clickjacking
+
+##! CKEditor 5 Upload Security Settings
+CKEDITOR_5_FILE_UPLOAD_PERMISSION = "staff"  # Only staff users can upload files
+CKEDITOR_5_ALLOW_ALL_FILE_TYPES = False      # Restrict file types
+CKEDITOR_5_UPLOAD_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']  # Allowed image types
+CKEDITOR_5_MAX_FILE_SIZE = 5242880  # 5MB max file size

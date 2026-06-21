@@ -216,10 +216,15 @@
                        aria-label="Add to Wishlist">
                         <i class="fi fi-rs-heart"></i>
                     </a>
-                    <a href="{% url 'add-remove-compare' product.slug %}" 
-                       class="action__btn" 
+                    <a href="#"
+                       hx-post="{% url 'add-remove-compare' product.slug %}"
+                       hx-target="body"
+                       hx-swap="none"
+                       hx-trigger="click"
+                       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                       class="action__btn"
                        aria-label="Compare">
-                        <i class="fi fi-rs-shuffle"></i>
+                      <i class="fi fi-rs-shuffle"></i>
                     </a>
                 </div>
             </div>

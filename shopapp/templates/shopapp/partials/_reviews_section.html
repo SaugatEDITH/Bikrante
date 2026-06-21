@@ -1,14 +1,38 @@
 <div id="reviews-section">
     <div class="reviews__container grid">
-
         {% for review in reviews %}
-            <div class="review__single">
+            <div class="review__single" data-review-id="{{ review.id }}">
                 <div>
                     <img src="{{ review.user.profile.profile_image.url }}" 
                          alt="{{review.user.username}}" 
                          class="review__img"/>
                     <h4 class="review__title">{{ review.user.username }}</h4>
                 </div>
+
+                {% if user.is_authenticated and review.user == user %}
+                    <button type="button"
+                            class="review__edit-icon review__edit-icon--floating"
+                            onclick="showEditForm()"
+                            title="Edit your review">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <form id="review-delete-form-{{ review.id }}" hx-post="{% url 'product-detail' product.slug %}"
+                          hx-target="#reviews-section"
+                          hx-swap="outerHTML"
+                          class="review__delete-form"
+                          style="display: inline;"
+                          >
+                        {% csrf_token %}
+                        <input type="hidden" name="review_delete" value="true">
+                        <button type="button"
+                                class="review__delete-icon review__delete-icon--floating"
+                                title="Delete your review"
+                                onclick="openReviewDeleteModal('review-delete-form-{{ review.id }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                {% endif %}
+
                 <div class="review__data">
                     <div class="review__rating">
                         {% for star_icon in review.star_icons %}
@@ -16,42 +40,134 @@
                         {% endfor %}
                     </div>
                     <p class="review__description">{{ review.review_text }}</p>
-                    <span class="review__date">{{ review.created_at|date:"M. d, Y, g:i a" }}</span>
+                    <div class="review__meta">
+                        <div class="review__meta-left">
+                            {% if review.is_edited %}
+                                <span class="review__edited-tag">Edited</span>
+                                <span class="review__date">{{ review.updated_at|date:"M. d, Y, g:i a" }}</span>
+                            {% else %}
+                                <span class="review__date">{{ review.created_at|date:"M. d, Y, g:i a" }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         {% endfor %}
     </div>
-<span class="error-msg" ></span>
-    <div class="review__form">
-        <h4 class="review__form-title">Add a review</h4>
-        <form hx-post="{% url 'product-detail' product.slug %}"
-              hx-target="body"
-              hx-swap="none"
-              class="form grid">
-            {% csrf_token %}
-            <input type="hidden" name="review" value="true">
-            <div class="rating-stars">
-                <input type="radio" required name="rating" id="rs0" value="0" checked hidden>
-                <label for="rs0"></label>
-                <input type="radio" required name="rating" value="1" id="rs1">
-                <label for="rs1"></label>
-                <input type="radio" required name="rating" value="2" id="rs2">
-                <label for="rs2"></label>
-                <input type="radio" required name="rating" value="3" id="rs3">
-                <label for="rs3"></label>
-                <input type="radio" required name="rating" value="4" id="rs4">
-                <label for="rs4"></label>
-                <input type="radio" required name="rating" value="5" id="rs5">
-                <label for="rs5"></label>
-                <span class="rating-counter"></span>
+
+    <span class="error-msg"></span>
+
+    {# Review Form - Hidden by default if user has review, shown always if no review #}
+    <div class="review__form-container" id="review-form-container" {% if user_review %}style="display: none;"{% endif %}>
+        <div class="review__form">
+            <div class="review__form-header">
+                <h4 class="review__form-title">
+                    {% if user_review %}Edit your review{% else %}Add a review{% endif %}
+                </h4>
+                {% if user_review %}
+                    <button type="button" class="review__close-btn" onclick="hideEditForm()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                {% endif %}
             </div>
             
-            <textarea class="form__input textarea"
-                      placeholder="Write your review"
-                      name="review"
-                      required></textarea>
-            
-            <button type="submit" class="btn btn--sm">Submit Review</button>
-        </form>
+            <form hx-post="{% url 'product-detail' product.slug %}"
+                  hx-target="#reviews-section"
+                  hx-swap="outerHTML"
+                  class="form grid"
+                  id="review-form">
+                {% csrf_token %}
+                <input type="hidden" name="review_submit" value="true">
+                
+                <div class="rating-stars">
+                    <input type="radio" required name="rating" id="rs0" value="0" {% if not user_review %}checked{% endif %} hidden>
+                    <label for="rs0"></label>
+                    <input type="radio" required name="rating" value="1" id="rs1" {% if user_review and user_review.rating == 1 %}checked{% endif %}>
+                    <label for="rs1"></label>
+                    <input type="radio" required name="rating" value="2" id="rs2" {% if user_review and user_review.rating == 2 %}checked{% endif %}>
+                    <label for="rs2"></label>
+                    <input type="radio" required name="rating" value="3" id="rs3" {% if user_review and user_review.rating == 3 %}checked{% endif %}>
+                    <label for="rs3"></label>
+                    <input type="radio" required name="rating" value="4" id="rs4" {% if user_review and user_review.rating == 4 %}checked{% endif %}>
+                    <label for="rs4"></label>
+                    <input type="radio" required name="rating" value="5" id="rs5" {% if user_review and user_review.rating == 5 %}checked{% endif %}>
+                    <label for="rs5"></label>
+                    <span class="rating-counter"></span>
+                </div>
+                
+                <textarea class="form__input textarea"
+                          placeholder="Write your review..."
+                          name="review_text"
+                          id="review-textarea"
+                          rows="4"
+                          required>{% if user_review %}{{ user_review.review_text }}{% endif %}</textarea>
+                
+                <div class="review__form-actions">
+                    <button type="submit" class="btn btn--sm btn--primary" id="review-submit-btn">
+                        {% if user_review %}Update Review{% else %}Submit Review{% endif %}
+                    </button>
+                    {% if user_review %}
+                        <button type="button" class="btn btn--sm btn--secondary" onclick="hideEditForm()">
+                            Cancel
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function showEditForm() {
+    document.getElementById('review-form-container').style.display = 'block';
+    document.getElementById('review-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hideEditForm() {
+    document.getElementById('review-form-container').style.display = 'none';
+}
+
+let _pendingReviewDeleteFormId = null;
+
+function openReviewDeleteModal(formId) {
+    _pendingReviewDeleteFormId = formId;
+    const modal = document.getElementById('review-delete-modal');
+    const overlay = document.getElementById('review-delete-overlay');
+    if (overlay) overlay.classList.add('is-open');
+    if (modal) modal.classList.add('is-open');
+}
+
+function closeReviewDeleteModal() {
+    _pendingReviewDeleteFormId = null;
+    const modal = document.getElementById('review-delete-modal');
+    const overlay = document.getElementById('review-delete-overlay');
+    if (overlay) overlay.classList.remove('is-open');
+    if (modal) modal.classList.remove('is-open');
+}
+
+function confirmReviewDelete() {
+    if (!_pendingReviewDeleteFormId) return;
+    const form = document.getElementById(_pendingReviewDeleteFormId);
+    closeReviewDeleteModal();
+    if (form) {
+        form.requestSubmit();
+    }
+}
+</script>
+
+<div class="review__modal-overlay" id="review-delete-overlay" onclick="closeReviewDeleteModal()"></div>
+<div class="review__modal" id="review-delete-modal" role="dialog" aria-modal="true" aria-labelledby="review-delete-title">
+    <div class="review__modal-header">
+        <h4 class="review__modal-title" id="review-delete-title">Delete review?</h4>
+        <button type="button" class="review__modal-close" onclick="closeReviewDeleteModal()" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="review__modal-body">
+        This will permanently remove your review.
+    </div>
+    <div class="review__modal-actions">
+        <button type="button" class="btn btn--sm btn--secondary" onclick="closeReviewDeleteModal()">Cancel</button>
+        <button type="button" class="btn btn--sm btn--primary" onclick="confirmReviewDelete()">Yes, delete</button>
     </div>
 </div>

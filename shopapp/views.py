@@ -16,7 +16,7 @@ from django.urls import reverse
 ##! for create custom highend search querys
 from django.db.models import Q
 ##! to seperate large data set to smaller managable pages
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.middleware.csrf import get_token  # Add this import at the top
 from django.db import transaction
@@ -37,7 +37,7 @@ from django.conf import settings
 from paypal.standard.forms import PayPalPaymentsForm
 from django.urls import reverse
 from django.template.loader import render_to_string  # Add this import at the top
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 import logging
 logger = logging.getLogger(__name__)
 # s
@@ -51,11 +51,50 @@ from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.hashers import make_password
 # from django.conf.urls import handler404
+##! lodind gangajal
+import gangajal
 ##! lodind key from .env file
 from dotenv import load_dotenv
 load_dotenv()
 CLOUDFLARE_SECRET_KEY = os.getenv("CLOUDFLARE_TURNSTILE_SECRET")
 DEEPSEEK_R1_SECRET = os.getenv("DEEPSEEK_R1_SECRET")
+
+from .models import UserActivityEvent
+from .recommender import recommend_for_request, fallback_recommendations
+
+
+def _get_or_create_session_key(request):
+    if not request.session.session_key:
+        request.session.create()
+    return request.session.session_key or ""
+
+
+def _get_anon_id(request):
+    return request.COOKIES.get("anon_id", "")
+
+
+def _get_fingerprint(request):
+    return request.COOKIES.get("fp", "")
+
+
+def _merge_activity_to_user(request, user):
+    anon_id = _get_anon_id(request)
+    fp = _get_fingerprint(request)
+    session_key = request.session.session_key or ""
+
+    q = UserActivityEvent.objects.filter(user__isnull=True)
+    filters = Q()
+    if anon_id:
+        filters |= Q(anon_id=anon_id)
+    if fp:
+        filters |= Q(fingerprint=fp)
+    if session_key:
+        filters |= Q(session_key=session_key)
+
+    if filters:
+        q = q.filter(filters)
+        q.update(user=user)
+
 
 ##! home page view
 def home(request):
@@ -92,17 +131,133 @@ def home(request):
     return render(request, 'shopapp/index.html', context)
 
 def shop(request):
-    products = Product.get_products()[::-1]
+    page_num = int(request.GET.get('page', 1))
+
+    # ensure we have a stable identity even for anonymous users
+    _get_or_create_session_key(request)
+    anon_id = _get_anon_id(request)
+    fp = _get_fingerprint(request)
+
+    # Pull products and apply recommendation ordering
+    base_products = list(Product.objects.select_related("category").annotate(avg_rating_cache=Avg('reviews__rating')).all())
+
+    reco = recommend_for_request(user=request.user, anon_id=anon_id, fingerprint=fp, limit=200)
+    if not reco.product_ids:
+        reco = fallback_recommendations(limit=200)
+
+    reco_rank = {pid: idx for idx, pid in enumerate(reco.product_ids)}
+
+    def _sort_key(p):
+        # 0 = in stock, 1 = out of stock
+        stock_group = 0 if (getattr(p, "stock", 0) and p.stock > 0) else 1
+        # recommended products come first; then by latest id
+        rank = reco_rank.get(p.id, 10**9)
+        return (stock_group, rank, -p.id)
+
+    base_products.sort(key=_sort_key)
+    products_qs = Product.add_star_ratings(base_products)
+    
+    paginator = Paginator(products_qs, 12)
+    try:
+        products_page = paginator.page(page_num)
+    except PageNotAnInteger:
+        products_page = paginator.page(1)
+        page_num = 1
+    except EmptyPage:
+        products_page = paginator.page(paginator.num_pages)
+        page_num = paginator.num_pages
+
     # Get current compare items from session
     compare_items = request.session.get('compare_items', [])
+
     context = {
         'is_home': False,
-        'products': products,
-        'compare_items': compare_items
+        'products': products_page,
+        'products_page': products_page,
+        'compare_items': compare_items,
+        'current_page': page_num,
+        'page_range': calculate_page_range(paginator, page_num),
+        'breadcrumb_items': [
+            {'title': 'Home', 'url': reverse('home')},
+            {'title': 'Shop', 'url': None},
+        ],
     }
-    return render(request, 'shopapp/shop.html', context)
+
+    if request.htmx:
+        return render(request, 'shopapp/includes/_shop_results.html', context)
+
+    response = render(request, 'shopapp/shop.html', context)
+    # If anon_id isn't set yet, JS will set it; still keep session stable.
+    return response
 
 
+@require_POST
+def activity_track(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    try:
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except Exception:
+        return JsonResponse({"success": False, "error": "invalid_json"}, status=400)
+
+    events = payload.get("events") or []
+    if not isinstance(events, list) or not events:
+        return JsonResponse({"success": True, "ingested": 0})
+
+    anon_id = payload.get("anon_id") or _get_anon_id(request)
+    fp = payload.get("fingerprint") or _get_fingerprint(request)
+    page = payload.get("page") or "shop"
+    session_key = _get_or_create_session_key(request)
+
+    user = request.user if request.user.is_authenticated else None
+
+    to_create = []
+    for e in events:
+        try:
+            product_id = int(e.get("product_id"))
+        except Exception:
+            continue
+
+        event_type = (e.get("event_type") or "").strip()
+        duration_ms = e.get("duration_ms")
+        if duration_ms is not None:
+            try:
+                duration_ms = int(duration_ms)
+            except Exception:
+                duration_ms = None
+
+        meta = e.get("meta")
+        if not isinstance(meta, dict):
+            meta = {}
+
+        if event_type not in {"impression", "dwell", "hover", "click", "quick_view", "add_to_cart", "wishlist"}:
+            continue
+
+        to_create.append(
+            UserActivityEvent(
+                user=user,
+                anon_id=str(anon_id or ""),
+                session_key=str(session_key or ""),
+                fingerprint=str(fp or ""),
+                product_id=product_id,
+                event_type=event_type,
+                duration_ms=duration_ms,
+                page=page,
+                metadata=meta,
+            )
+        )
+
+    if not to_create:
+        return JsonResponse({"success": True, "ingested": 0})
+
+    UserActivityEvent.objects.bulk_create(to_create, batch_size=500)
+    resp = JsonResponse({"success": True, "ingested": len(to_create)})
+    if anon_id:
+        resp.set_cookie("anon_id", str(anon_id), max_age=60 * 60 * 24 * 365, samesite="Lax")
+    if fp:
+        resp.set_cookie("fp", str(fp), max_age=60 * 60 * 24 * 365, samesite="Lax")
+    return resp
 
 
 ##! OLD search
@@ -233,6 +388,23 @@ def search(request):
             'has_results': True,
             'page_range': calculate_page_range(paginator, page_num),
         })
+    except PageNotAnInteger:
+        products = paginator.page(1)
+        context.update({
+            'products': products,
+            'total_results': paginator.count,
+            'has_results': True,
+            'page_range': calculate_page_range(paginator, 1),
+        })
+    except EmptyPage:
+        # fallback if beyond page range
+        products = paginator.page(paginator.num_pages)
+        context.update({
+             'products': products,
+             'total_results': paginator.count,
+             'has_results': True,
+             'page_range': calculate_page_range(paginator, paginator.num_pages),
+        })
     except Exception as e:
         print(f"Pagination error: {e}")
         context.update({
@@ -261,50 +433,75 @@ def calculate_page_range(paginator, current_page):
     return range(current_page - 3, current_page + 4)
 
 ##! cloud flair captcha
-def verify_turnstile(token):
+def verify_turnstile(token, remoteip=None):
     secret_key = CLOUDFLARE_SECRET_KEY
+    if not secret_key or not token:
+        return {"success": False}
+
     url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
     data = {"secret": secret_key, "response": token}
+    if remoteip:
+        data["remoteip"] = remoteip
 
-    response = requests.post(url, data=data)
-    return response.json()
+    try:
+        response = requests.post(url, data=data, timeout=10)
+        return response.json()
+    except Exception:
+        logger.exception("Turnstile verification request failed")
+        return {"success": False}
 
 ##! Custom made Login page view
 def login(request):
+
     context = {
         'is_login': True,
         'is_register': False,
-        'message': []
+        'message': [],
+        'breadcrumb_items': [
+            {'title': 'Home', 'url': reverse('home')},
+            {'title': 'Login', 'url': None},
+        ],
     }
+    
     if request.method == 'POST':
-        token = request.POST.get("cf-turnstile-response")
-        verification = verify_turnstile(token)
+        token = request.POST.get("cf-turnstile-response") or request.POST.get("cf_turnstile_response")
+        verification = verify_turnstile(token, remoteip=request.META.get('REMOTE_ADDR'))
         if verification.get("success"):
             email = request.POST.get('email')
             password = request.POST.get('password')
             try:
                 user = User.objects.get(email=email)
+
                 user = authenticate(username=user.username, password=password)
                 if user is not None:
                     auth_login(request, user)
+                    _merge_activity_to_user(request, user)
                     return redirect('home')
                 else:
                     messages.error(request,"Invalid credentials")
             except User.DoesNotExist:
                 messages.error(request,"No account found with this email")
         else:
+            if verification.get("error-codes"):
+                logger.warning("Turnstile login failed: %s", verification.get("error-codes"))
             messages.error(request, "CAPTCHA verification failed. Please try again.")
     return render(request, 'shopapp/login-register.html', context)
-      
+
 ##! Custome made signup page view
 def signup(request):
+
     context = {
         'is_login': False,
         'is_register': True,
+        'breadcrumb_items': [
+            {'title': 'Home', 'url': reverse('home')},
+            {'title': 'Register', 'url': None},
+        ],
     }
+    
     if request.method == 'POST':
-        token = request.POST.get("cf-turnstile-response")
-        verification = verify_turnstile(token)
+        token = request.POST.get("cf-turnstile-response") or request.POST.get("cf_turnstile_response")
+        verification = verify_turnstile(token, remoteip=request.META.get('REMOTE_ADDR'))
         if verification.get("success"):
             username = request.POST.get('username')
             email = request.POST.get('email')
@@ -312,6 +509,7 @@ def signup(request):
             if not re.fullmatch(r'^[A-Za-z][A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$', email):
                 messages.error(request,"Invalid email format. Email cannot start with a number.")
                 return render(request, 'shopapp/login-register.html', context)
+
             password = request.POST.get('password')
             confirm_password = request.POST.get('cpassword')
 
@@ -326,13 +524,15 @@ def signup(request):
                 messages.error(request,"Username already taken!")
                 return render(request, 'shopapp/login-register.html', context)
             if User.objects.filter(email=email).exists():
-                messages.error(render,"Email already in use!")
+                messages.error(request,"Email already in use!")
                 return render(request, 'shopapp/login-register.html', context)
             user = User.objects.create_user(username=username, email=email, password=password)
             user.save()
             auth_login(request, user)
             return redirect('profile-onboarding')
         else:
+            if verification.get("error-codes"):
+                logger.warning("Turnstile signup failed: %s", verification.get("error-codes"))
             messages.error(request, "CAPTCHA verification failed. Please try again.")
     return render(request, 'shopapp/login-register.html', context)
 
@@ -378,12 +578,35 @@ def user_dashboard(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
     address_parts = profile.address.split(',') if profile.address else []
     city = address_parts[-1].strip() if address_parts else "Unknown"
+
+    liked_products = (
+        Product.objects.filter(likes=request.user)
+        .select_related("category")
+        .annotate(avg_rating_cache=Avg('reviews__rating'))
+    )
+    user_reviews = (
+        Review.objects.filter(user=request.user)
+        .select_related("product", "product__category")
+        .order_by("-updated_at")
+    )
+
+    # Sanitize review text before rendering
+    for r in user_reviews:
+        if r.review_text:
+            r.review_text = gangajal.validate(r.review_text, 1)
+
     context = {
         'message': [],
         'orders': orders,
         'profile': profile,
         'city': city,  # Pass city separately
-        "onboarding": False
+        'liked_products': liked_products,
+        'user_reviews': user_reviews,
+        "onboarding": False,
+        'breadcrumb_items': [
+            {'title': 'Home', 'url': reverse('home')},
+            {'title': 'My Account', 'url': None},
+        ],
     }
     
     if request.method == "POST":
@@ -472,21 +695,45 @@ def user_dashboard(request):
 
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
-    products = category.products.all()  # Get all products in this category
+    products = category.products.select_related("category").annotate(avg_rating_cache=Avg('reviews__rating'))  # Get all products in this category
+    products = Product.add_star_ratings(list(products))
     context={
         'category':category,
-        'products':products
-             }
+        'products':products,
+        'breadcrumb_items': [
+            {'title': 'Home', 'url': reverse('home')},
+            {'title': category.name, 'url': None},
+        ],
+    }
     return render(request, 'shopapp/shop.html',context)
 
 def product_detail(request, slug):
-    product = get_object_or_404(Product, slug=slug)
+    product = get_object_or_404(Product.objects.select_related("category"), slug=slug)
     product.increment_views()
     # Fetch related products using the improved method
     related_products = Product.get_related_products(product)
 
+    def _ensure_review_user_profiles(review_list):
+        """Bulk-create missing UserProfiles for review users to avoid template crashes."""
+        user_ids = [r.user_id for r in review_list if getattr(r, "user_id", None)]
+        if not user_ids:
+            return
+        existing_user_ids = set(
+            UserProfile.objects.filter(user_id__in=user_ids).values_list("user_id", flat=True)
+        )
+        missing_user_ids = [uid for uid in set(user_ids) if uid not in existing_user_ids]
+        if missing_user_ids:
+            UserProfile.objects.bulk_create([UserProfile(user_id=uid) for uid in missing_user_ids])
+
+    def _sanitize_review_text(review_list):
+        """Apply gangajal bad word validation to review text before rendering."""
+        for r in review_list:
+            if r.review_text:
+                r.review_text = gangajal.validate(r.review_text, 1)
+        return review_list
+
     # Handle review submission via HTMX
-    if request.method == "POST" and 'review' in request.POST:
+    if request.method == "POST" and 'review_submit' in request.POST:
         if not request.user.is_authenticated:
             return JsonResponse({
                 "status": "error", 
@@ -495,7 +742,7 @@ def product_detail(request, slug):
             })
         
         rating = request.POST.get('rating')
-        review_text = request.POST.get('review', '').strip()
+        review_text = request.POST.get('review_text', '').strip()
         
         # Fix validation logic
         if not (rating and int(rating) >= 1 and len(review_text) >= 4):
@@ -515,16 +762,31 @@ def product_detail(request, slug):
                 }
             )
             
-            # Get updated reviews without star calculation
-            user_reviews = Review.objects.filter(product=product, user=request.user).first()
-            reviews = list(Review.objects.filter(product=product).exclude(user=request.user))
+            # Get updated reviews
+            user_reviews = (
+                Review.objects.select_related("user")
+                .filter(product=product, user=request.user)
+                .first()
+            )
+            reviews = list(
+                Review.objects.select_related("user")
+                .filter(product=product)
+                .exclude(user=request.user)
+            )
             if user_reviews:
                 reviews = [user_reviews] + reviews
+
+            for r in reviews:
+                r.star_icons = ["⭐" for _ in range(0, r.rating or 0)]
+
+            _ensure_review_user_profiles(reviews)
+            _sanitize_review_text(reviews)
 
             context = {
                 'product': product,
                 'reviews': reviews,
                 'reviews_count': len(reviews),
+                'user_review': user_reviews,
             }
             
             response_html = render_to_string(
@@ -533,32 +795,80 @@ def product_detail(request, slug):
                 request=request
             ).strip()
 
-            return JsonResponse({
-                "status": "success",
-                "message": "Review submitted successfully!",
-                "html": response_html
-            })
+            return HttpResponse(response_html)
             
         except Exception as e:
+            logger.exception("Review submit failed: %s", e)
             return JsonResponse({
                 "status": "error",
                 "message": "An error occurred while saving your review"
             })
 
+    # Handle review delete via HTMX
+    if request.method == "POST" and 'review_delete' in request.POST:
+        if not request.user.is_authenticated:
+            return JsonResponse({"status": "error", "message": "Login required"}, status=403)
+        
+        try:
+            # Delete user's review for this product
+            Review.objects.filter(product=product, user=request.user).delete()
+            
+            # Get updated reviews
+            user_reviews = None
+            reviews = list(
+                Review.objects.select_related("user")
+                .filter(product=product)
+            )
+            
+            for r in reviews:
+                r.star_icons = ["⭐" for _ in range(0, r.rating or 0)]
+
+            _sanitize_review_text(reviews)
+
+            context = {
+                'product': product,
+                'reviews': reviews,
+                'reviews_count': len(reviews),
+                'user_review': user_reviews,
+            }
+            
+            response_html = render_to_string(
+                'shopapp/partials/_reviews_section.html',
+                context=context,
+                request=request
+            ).strip()
+
+            return HttpResponse(response_html)
+            
+        except Exception as e:
+            logger.exception("Review delete failed: %s", e)
+            return JsonResponse({"status": "error", "message": "Could not delete review"}, status=500)
+
     # Rest of view logic for GET request
     user = request.user if request.user.is_authenticated else None
-    user_reviews = Review.objects.filter(product=product, user=user).first()
-    reviews = Review.objects.filter(product=product).exclude(user=user)
+    user_reviews = (
+        Review.objects.select_related("user")
+        .filter(product=product, user=user)
+        .first()
+    )
+    reviews = (
+        Review.objects.select_related("user")
+        .filter(product=product)
+        .exclude(user=user)
+    )
     if user_reviews:
         reviews = [user_reviews] + list(reviews)
 
     for review in reviews:
         review.star_icons = ["⭐" for _ in range(0, review.rating or 0)]
 
+    _sanitize_review_text(reviews)
+
     context = {
         'product': product,
         'reviews': reviews,
         'reviews_count': len(reviews),
+        'user_review': user_reviews,
         'breadcrumb_items': [
             {'title': 'Home', 'url': reverse('home')},
             {'title': product.category.name, 'url': product.category.get_absolute_url()},
@@ -570,7 +880,6 @@ def product_detail(request, slug):
     if request.htmx:
         return render(request, "shopapp/partials/_partial-details.html", {"product": product})
     return render(request, 'shopapp/details.html', context)
-
 def product_review_count(request, slug):
     """HTMX view to return updated review count."""
     product = get_object_or_404(Product, slug=slug)
@@ -580,15 +889,20 @@ def product_review_count(request, slug):
 @login_required(login_url='login')
 def wishlist(request):
     liked_products = Product.objects.filter(likes=request.user)
+    breadcrumb_items = [
+        {'title': 'Home', 'url': reverse('home')},
+        {'title': 'Wishlist', 'url': None},
+    ]
     if request.htmx:
         if not request.user.is_authenticated:
             return redirect('login')
         liked_products.likes.remove(request.user)
         liked_products.save()
         return render(request, 'shopapp/wishlist.html', {
-            'liked_products': liked_products
+            'liked_products': liked_products,
+            'breadcrumb_items': breadcrumb_items,
             })
-    return render(request, 'shopapp/wishlist.html',{'liked_products':liked_products})
+    return render(request, 'shopapp/wishlist.html',{'liked_products':liked_products, 'breadcrumb_items': breadcrumb_items})
 
 def add_remove_wishlist(request, slug):
     if not request.user.is_authenticated:
@@ -641,6 +955,7 @@ def add_remove_wishlist(request, slug):
         })
     
     return JsonResponse({'success': False}, status=400)
+
 ##! for calculating shipping price
 @login_required(login_url='login')
 def set_shipping_price_in_session(request, province=None, district=None, city=None):
@@ -652,6 +967,7 @@ def set_shipping_price_in_session(request, province=None, district=None, city=No
         request.session['shipping_price'] = shipping_price
         request.session.modified = True
     return request.session.get('shipping_price', 400)
+
 @login_required(login_url='login')
 def cart(request):
 
@@ -686,7 +1002,7 @@ def cart(request):
         elif form_type=="coupon":
             coupon_code=request.POST.get("couponcode")
         
-    cart_items=CartItem.objects.filter(user=request.user)
+    cart_items = CartItem.objects.filter(user=request.user).select_related("product", "product__category")
     overall_subtotal = sum([
         (setattr(cart_item, 'subtotal', cart_item.product.price_after_discount * cart_item.quantity) or cart_item.subtotal)
         if cart_item.product.price_after_discount else
@@ -701,6 +1017,10 @@ def cart(request):
         'subtotal':overall_subtotal,
         'shipping_price':shipping_price,
         'total_price':total_price,
+        'breadcrumb_items': [
+            {'title': 'Home', 'url': reverse('home')},
+            {'title': 'Cart', 'url': None},
+        ],
         }
     
     return render(request,'shopapp/cart.html',context=context)
@@ -801,7 +1121,7 @@ def add_remove_cart(request, slug):
 def checkout(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
     # Generate breadcrumb data
-    cart_items = CartItem.objects.filter(user=request.user)
+    cart_items = CartItem.objects.filter(user=request.user).select_related("product", "product__category")
     # Check if cart is empty
     if not cart_items.exists():
         messages.error(request, "Your cart is empty. Please add items to your cart before proceeding.")
@@ -809,6 +1129,7 @@ def checkout(request):
     
     # Breadcrumb context
     breadcrumb_items = [
+        {'title': 'Home', 'url': reverse('home')},
         {'title': 'Shop', 'url': reverse('shop')},
         {'title': 'Checkout', 'url': None}  # Current page doesn't need URL
     ]
@@ -828,7 +1149,8 @@ def checkout(request):
         phone=request.POST.get("phone")
         email=request.POST.get("email")
         payment_method=request.POST.get("payment_method")
-        order_note=request.POST.get("order_note")
+        raw_order_note = request.POST.get("order_note", "")
+        order_note = gangajal.validate(raw_order_note, 1) if raw_order_note else ""
         
         try:
             with transaction.atomic():
@@ -953,6 +1275,7 @@ def esewa(request, order_id):
 
 def esewa_payment_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
+    
     if request.method == "GET":
         try:
             # Get the encoded data from URL
@@ -1069,7 +1392,7 @@ def paypal_success(request, order_id):
 # def chat(request):
 #     return render(request,'shopapp/chatbot.html')
 
-@csrf_exempt 
+@require_POST
 def chat_bot(request):
     if request.method == "POST":
         user_message = request.POST.get('message', '').strip()
@@ -1187,10 +1510,11 @@ def add_remove_compare(request, slug):
         compare_items.remove(slug)
         messages.info(request, "Product removed from comparison")
     else:
+        # FIFO: If already at max capacity, remove the oldest (first) item
         if len(compare_items) >= 4:
-            messages.warning(request, "Maximum 4 products can be compared")
+            removed_slug = compare_items.pop(0)  # Remove oldest (FIFO)
+            messages.info(request, "Oldest product removed to add new one")
             return redirect('compare')
-            
         compare_items.append(slug)
         messages.success(request, "Product added to comparison")
     

@@ -1,32 +1,46 @@
 {% load static %}
 {% load bill_extras %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Invoice #{{ order.id }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href=" {% static 'css/bill-gen-page.css' %} "> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice #{{ order.id }} - Bikrante</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/bill-gen-page.css' %}"> 
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-straight/css/uicons-regular-straight.css'>
 </head>
 <body>
     {% if show_print %}
     <button onclick="window.print()" class="print-button no-print">
-        <i class="fi fi-rs-print"></i> Print Bill
+        <i class="fi fi-rs-print"></i> Download / Print Invoice
     </button>
     {% endif %}
 
     <div class="invoice-container">
+        <img src="{% static 'images/logo.svg' %}" alt="Bikrante Watermark" class="invoice-watermark">
+        
         <div class="header-content">
             <div class="store-info">
                 <h1>BIKRENTE</h1>
-                <p>Your Trusted Shopping Partner</p>
-                <p>Hetauda-4-Schoolroad,Makwanpur,Nepal</p>
+                <p>High-End Shopping Experience</p>
+                <p>Hetauda-4, Schoolroad, Makwanpur, Nepal</p>
                 <p>Phone: +977-9876543210</p>
             </div>
-            <img src="{% static 'images/logo.svg' %}" alt="Bikrante Logo" class="invoice-logo">
+            
+            <img src="{% static 'images/logo.svg' %}" alt="Bikrante Logo" class="invoice-header-logo">
+            
             <div class="bill-info">
                 <h2>INVOICE</h2>
-                <p><strong>Invoice #:</strong> {{ order.id }}</p>
-                <p><strong>Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+                <p><strong>Ref:</strong> #{{ order.id }}</p>
+                <p><strong>Date:</strong> {{ order.created_at|date:"d M, Y" }}</p>
+                {% if order.get_payment_status|lower == 'success' or order.get_payment_status|lower == 'paid' %}
+                <div style="margin-top: 10px;">
+                    <span class="status-badge status-success" style="font-size: 14px; padding: 8px 16px;">
+                        <i class="fi fi-rs-check-circle"></i> PAID
+                    </span>
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -142,9 +156,10 @@
         </table>
 
         <div class="footer">
-            <img src="{% static 'images/logo.svg' %}" alt="Bikrente Logo" class="footer-logo">
-            <p><strong>Thank you for shopping with us!</strong></p>
-            <p>For any queries, please contact us at <strong>support@bikrente.com</strong></p>
+            <img src="{% static 'images/logo.svg' %}" alt="Bikrante Logo" class="footer-logo">
+            <p><strong>Thank you for choosing Bikrante!</strong></p>
+            <p>This is a computer-generated document and does not require a physical signature.</p>
+            <p>For support, please email <strong>support@bikrente.com</strong></p>
             <p class="website">www.bikrente.com</p>
         </div>
     </div>
